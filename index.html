@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Rocket Lander</title>
     <style>
-        /* ===== ESTILOS GERAIS ===== */
+        /* ===== ESTILOS ===== */
         * {
             margin: 0;
             padding: 0;
@@ -460,7 +460,6 @@
         }
         canvas {
             display: block;
-            background: linear-gradient(#000814, #001d3d);
             border-radius: 8px;
             width: auto;
             height: auto;
@@ -496,8 +495,6 @@
         #skin-selector {
             display: none !important;
         }
-
-        /* Mostra apenas quando estiver no menu ou em pausa */
         #sound-toggle.show-buttons,
         #ranking-btn.show-buttons,
         #skin-toggle.show-buttons,
@@ -806,7 +803,7 @@
             <button class="menu-btn help" id="menuHelp">❓ COMO JOGAR</button>
             <button class="menu-btn sound" id="menuSound">🔊 SOM</button>
         </div>
-        <div class="version">v2.0 - Com Skins</div>
+        <div class="version">v2.0 - Com Atmosfera</div>
     </div>
 
     <!-- ===== TELA DE LOGIN ===== -->
@@ -905,7 +902,6 @@
                 ranking = ranking.slice(0, 3);
             }
             localStorage.setItem('rocketScores', JSON.stringify(ranking));
-            console.log('💾 Recorde salvo:', ranking);
         }
 
         function atualizarRankingPreview() {
@@ -928,10 +924,7 @@
 
         function atualizarRankingFull() {
             const list = document.getElementById('rankingListFull');
-            if (!list) {
-                console.error('❌ Elemento rankingListFull não encontrado!');
-                return;
-            }
+            if (!list) return;
             if (ranking.length === 0) {
                 list.innerHTML = '<div class="empty">Nenhum recorde ainda.<br>Seja o primeiro! 🚀</div>';
                 return;
@@ -943,7 +936,6 @@
                 html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
             });
             list.innerHTML = html;
-            console.log('✅ Ranking atualizado:', ranking);
         }
 
         // =========================================
@@ -1016,7 +1008,6 @@
                 desbloquearSkin('ice');
             }
 
-            // Atualiza grid do menu de skins
             const grid = document.getElementById('skinsGridMenu');
             if (grid) {
                 grid.innerHTML = '';
@@ -1032,7 +1023,6 @@
                 });
             }
 
-            // Atualiza seletor in-game
             let html = '';
             SKINS.forEach(skin => {
                 const disponivel = skinsDisponiveis.includes(skin.id);
@@ -1279,7 +1269,6 @@
         const skinToggle = document.getElementById('skin-toggle');
         const skinSelector = document.getElementById('skin-selector');
 
-        // Menu elements
         const menuScreen = document.getElementById('menuScreen');
         const helpScreen = document.getElementById('helpScreen');
         const skinsMenuScreen = document.getElementById('skinsMenuScreen');
@@ -1333,7 +1322,123 @@
         let engineWasOn = false;
         let gameLoopStarted = false;
 
-        // Meteoros
+        // =========================================
+        // NUVENS
+        // =========================================
+        let nuvens = [];
+
+        function criarNuvem() {
+            const largura = 100 + Math.random() * 200;
+            const altura = 30 + Math.random() * 50;
+            nuvens.push({
+                x: -largura - Math.random() * 200,
+                y: 50 + Math.random() * 300,
+                largura: largura,
+                altura: altura,
+                velocidade: 0.2 + Math.random() * 0.4,
+                opacity: 0.15 + Math.random() * 0.25
+            });
+        }
+
+        function atualizarNuvens() {
+            if (nuvens.length < 6) {
+                criarNuvem();
+            }
+            nuvens.forEach(n => {
+                n.x += n.velocidade;
+                if (n.x > canvas.width + n.largura) {
+                    n.x = -n.largura - Math.random() * 200;
+                    n.y = 50 + Math.random() * 300;
+                }
+            });
+        }
+
+        function desenharNuvens() {
+            nuvens.forEach(n => {
+                ctx.save();
+                ctx.globalAlpha = n.opacity;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                
+                const cx = n.x + n.largura / 2;
+                const cy = n.y + n.altura / 2;
+                const r = n.altura / 2;
+                
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(cx - r * 0.7, cy + r * 0.1, r * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(cx + r * 0.7, cy - r * 0.1, r * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(cx - r * 0.3, cy - r * 0.5, r * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(cx + r * 0.3, cy + r * 0.5, r * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            });
+        }
+
+        // =========================================
+        // POEIRA NO POUSO
+        // =========================================
+        let poeira = [];
+
+        function criarPoeira(x, y, quantidade = 25) {
+            for (let i = 0; i < quantidade; i++) {
+                const angulo = Math.random() * Math.PI * 2;
+                const velocidade = 1 + Math.random() * 3;
+                const tamanho = 3 + Math.random() * 6;
+                poeira.push({
+                    x: x + (Math.random() - 0.5) * 20,
+                    y: y + (Math.random() - 0.5) * 10,
+                    vx: Math.cos(angulo) * velocidade,
+                    vy: -Math.random() * 2 - 0.5,
+                    tamanho: tamanho,
+                    vida: 1,
+                    decay: 0.008 + Math.random() * 0.012,
+                    cor: `hsl(${30 + Math.random() * 20}, 80%, ${60 + Math.random() * 30}%)`
+                });
+            }
+        }
+
+        function atualizarPoeira() {
+            poeira.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.02;
+                p.vx *= 0.99;
+                p.vida -= p.decay;
+                p.tamanho *= 0.99;
+            });
+            poeira = poeira.filter(p => p.vida > 0 && p.tamanho > 0.5);
+        }
+
+        function desenharPoeira() {
+            poeira.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.vida * 0.7;
+                ctx.fillStyle = p.cor;
+                ctx.shadowColor = 'rgba(255, 200, 100, 0.1)';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.tamanho, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        // =========================================
+        // METEOROS
+        // =========================================
         let meteoros = [];
 
         function criarMeteoro() {
@@ -1413,7 +1518,9 @@
                     maxAngle: 12,
                     fuelBonus: 1.0,
                     label: "🌙 FASE 1",
-                    consumoMultiplicador: 1.0
+                    consumoMultiplicador: 1.0,
+                    corCeu1: '#000814',
+                    corCeu2: '#001d3d'
                 },
                 2: {
                     nome: "🛸 Foguete Médio",
@@ -1431,7 +1538,9 @@
                     maxAngle: 10,
                     fuelBonus: 1.5,
                     label: "🪐 FASE 2",
-                    consumoMultiplicador: 1.2
+                    consumoMultiplicador: 1.2,
+                    corCeu1: '#1a0a2e',
+                    corCeu2: '#2d1b4e'
                 },
                 3: {
                     nome: "🚀 Foguete Grande",
@@ -1449,7 +1558,9 @@
                     maxAngle: 8,
                     fuelBonus: 2.0,
                     label: "☄️ FASE 3",
-                    consumoMultiplicador: 1.5
+                    consumoMultiplicador: 1.5,
+                    corCeu1: '#2d0a0a',
+                    corCeu2: '#4d1b1b'
                 },
                 4: {
                     nome: "🛰️ Foguete de Carga",
@@ -1467,7 +1578,9 @@
                     maxAngle: 6,
                     fuelBonus: 2.5,
                     label: "🔥 FASE 4",
-                    consumoMultiplicador: 1.8
+                    consumoMultiplicador: 1.8,
+                    corCeu1: '#2d1a0a',
+                    corCeu2: '#4d2b1b'
                 },
                 5: {
                     nome: "🔥 Foguete Turbo",
@@ -1485,7 +1598,9 @@
                     maxAngle: 4,
                     fuelBonus: 3.0,
                     label: "🚀 FASE 5",
-                    consumoMultiplicador: 2.0
+                    consumoMultiplicador: 2.0,
+                    corCeu1: '#1a1a0a',
+                    corCeu2: '#2d2d1b'
                 }
             };
             if (level > 5) {
@@ -1505,7 +1620,9 @@
                     maxAngle: Math.max(2, 4 - (level - 5) * 0.3),
                     fuelBonus: 3.0 + (level - 5) * 0.2,
                     label: `💫 FASE ${level}`,
-                    consumoMultiplicador: Math.min(3.0, 2.0 + (level - 5) * 0.2)
+                    consumoMultiplicador: Math.min(3.0, 2.0 + (level - 5) * 0.2),
+                    corCeu1: '#1a0a2e',
+                    corCeu2: '#3d1b5e'
                 };
             }
             return configs[level] || configs[1];
@@ -1567,6 +1684,11 @@
             audio.stopEngine();
             nextBtn.style.display = 'none';
             rastro = [];
+            poeira = [];
+            nuvens = [];
+            for (let i = 0; i < 6; i++) {
+                criarNuvem();
+            }
             atualizarSkinsDisponiveis();
             atualizarUI_Skins();
         }
@@ -1925,11 +2047,21 @@
         // FUNÇÕES DE DESENHO
         // =========================================
         function drawStars() {
+            const fog = fogueteAtual || getFogueteConfig(currentLevel);
+            const corCeu1 = fog.corCeu1 || '#000814';
+            const corCeu2 = fog.corCeu2 || '#001d3d';
+
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, corCeu1);
+            grad.addColorStop(1, corCeu2);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
             for (let i = 0; i < 120; i++) {
                 const x = (i * 97 + currentLevel * 13) % canvas.width;
                 const y = (i * 53 + currentLevel * 7) % canvas.height;
                 const size = 0.5 + (i % 3) * 0.5;
-                const brightness = 0.5 + (i % 5) / 5;
+                const brightness = 0.3 + (i % 5) / 5;
                 ctx.fillStyle = `rgba(255,255,255,${brightness})`;
                 ctx.beginPath();
                 ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -2076,6 +2208,8 @@
             if (rocket.x < -30) rocket.x = canvas.width + 30;
             if (rocket.x > canvas.width + 30) rocket.x = -30;
 
+            atualizarNuvens();
+            atualizarPoeira();
             atualizarRastro();
             atualizarMeteoros();
 
@@ -2100,6 +2234,9 @@
                     audio.stopEngine();
                     engineWasOn = false;
                     audio.playLanding();
+
+                    // CRIA POEIRA NO POUSO
+                    criarPoeira(rocket.x, pad.y, 30);
 
                     const fuelBonus = config.fuelBonus || 1;
                     const baseScore = 1000 + Math.floor(rocket.fuel * 20) + Math.floor((config.maxSpeedV - speedV) * 300);
@@ -2166,6 +2303,7 @@
                 audio.stopEngine();
                 engineWasOn = false;
                 nextBtn.style.display = 'none';
+                poeira = [];
             } else if (gameState === "gameComplete") {
                 resetGame();
                 audio.stopEngine();
@@ -2222,17 +2360,13 @@
         // RANKING - EVENTOS
         // =========================================
         document.getElementById('menuRanking').addEventListener('click', function() {
-            console.log('🔍 Abrindo ranking pelo menu...');
             atualizarRankingFull();
             rankingScreen.classList.add('active');
-            console.log('✅ Ranking aberto!');
         });
 
         document.getElementById('ranking-btn').addEventListener('click', function() {
-            console.log('🔍 Abrindo ranking pelo jogo...');
             atualizarRankingFull();
             rankingScreen.classList.toggle('active');
-            console.log('✅ Ranking alternado!');
         });
 
         document.getElementById('backRanking').addEventListener('click', function() {
@@ -2244,7 +2378,7 @@
         });
 
         // =========================================
-        // BOTÕES DE VOLTAR (Skins e Help)
+        // BOTÕES DE VOLTAR
         // =========================================
         document.getElementById('backSkins').addEventListener('click', function() {
             skinsMenuScreen.classList.remove('active');
@@ -2460,6 +2594,7 @@
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawStars();
+            desenharNuvens();
             desenharMeteoros();
             drawGround();
             drawTarget();
@@ -2467,6 +2602,7 @@
             drawRocket();
             drawFuelBar();
             drawSpeedometer();
+            desenharPoeira();
             drawMessage();
             drawHUD();
         }
@@ -2538,10 +2674,8 @@
             atualizarRankingPreview();
             atualizarUI_Skins();
 
-            // Oculta os botões durante o jogo
             toggleButtons(false);
 
-            // Mostra apenas o necessário
             soundBtn.style.display = 'none';
             rankingBtn.style.display = 'none';
             skinToggle.style.display = 'none';
@@ -2554,17 +2688,6 @@
 
             render();
             console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
-        }
-
-        // =========================================
-        // VOLTAR AO MENU
-        // =========================================
-        function voltarMenu() {
-            menuScreen.classList.remove('hidden');
-            loginScreen.classList.add('hidden');
-            
-            // Mostra os botões novamente (mas só no menu)
-            toggleButtons(true);
         }
 
         // =========================================
@@ -2594,7 +2717,6 @@
                 }
             });
 
-            // Sincroniza som
             const menuSoundBtn = document.getElementById('menuSound');
             if (!audio.enabled) {
                 menuSoundBtn.textContent = '🔇 SOM';
@@ -2609,13 +2731,13 @@
             console.log("🚀 Rocket Lander - Menu Principal carregado!");
         });
 
-        // Fallback para áudio
         document.addEventListener('click', function initAudio() {
             audio.init();
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - BOTÕES OCULTOS DURANTE O JOGO");
+        console.log("🚀 ROCKET LANDER - COM ATMOSFERA");
+        console.log("🌥️ Nuvens, 🌈 Céu colorido, 💨 Poeira no pouso");
         console.log("🎮 Aproveite!");
     </script>
 </body>
