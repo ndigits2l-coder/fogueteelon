@@ -21,14 +21,32 @@ body {
     overflow: hidden;
     font-family: Arial, sans-serif;
     touch-action: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+#game-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000;
 }
 
 canvas {
     display: block;
-    margin: auto;
     background: linear-gradient(#000814, #001d3d);
-    width: 100%;
-    height: 100vh;
+    border-radius: 8px;
+    /* O tamanho vai ser controlado pelo JavaScript */
+    width: auto;
+    height: auto;
+    max-width: 100vw;
+    max-height: 100vh;
 }
 
 #info {
@@ -39,6 +57,7 @@ canvas {
     font-size: 18px;
     z-index: 10;
     pointer-events: none;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
 
 #fase-info {
@@ -50,6 +69,7 @@ canvas {
     z-index: 10;
     pointer-events: none;
     text-align: right;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
 
 #sound-toggle {
@@ -165,8 +185,8 @@ canvas {
 
 /* ===== BOTÃO PRÓXIMA FASE ===== */
 #next-btn {
-    position: fixed;
-    bottom: 180px;
+    position: absolute;
+    bottom: 160px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 30;
@@ -205,7 +225,7 @@ canvas {
 
 /* ===== CONTROLES TOUCH ===== */
 #touch-controls {
-    position: fixed;
+    position: absolute;
     bottom: 80px;
     left: 0;
     width: 100%;
@@ -271,42 +291,64 @@ canvas {
 
 @media (max-width: 480px) {
     #touch-controls button {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
+        width: 55px;
+        height: 55px;
+        font-size: 20px;
     }
     #touch-controls .thrust-btn {
-        width: 70px;
-        height: 70px;
-        font-size: 28px;
+        width: 65px;
+        height: 65px;
+        font-size: 24px;
     }
     #next-btn {
         padding: 12px 30px;
         font-size: 18px;
-        bottom: 170px;
+        bottom: 150px;
+    }
+    #info {
+        font-size: 12px;
+        top: 5px;
+        left: 5px;
+    }
+    #fase-info {
+        font-size: 12px;
+        top: 5px;
+        right: 5px;
+    }
+    #sound-toggle {
+        font-size: 10px;
+        padding: 4px 12px;
+        bottom: 10px;
+    }
+    #ranking-btn {
+        font-size: 10px;
+        padding: 4px 12px;
+        bottom: 55px;
     }
 }
 </style>
 </head>
 <body>
 
-<div id="info"></div>
-<div id="fase-info"></div>
-<canvas id="game"></canvas>
-<button id="sound-toggle">🔊 Som: Ligado</button>
-<button id="ranking-btn">🏆 VER RANKING</button>
+<div id="game-wrapper">
+    <div id="info"></div>
+    <div id="fase-info"></div>
+    <canvas id="game"></canvas>
+    <button id="sound-toggle">🔊 Som: Ligado</button>
+    <button id="ranking-btn">🏆 VER RANKING</button>
 
-<!-- BOTÃO PRÓXIMA FASE -->
-<button id="next-btn">▶ PRÓXIMA FASE</button>
+    <!-- BOTÃO PRÓXIMA FASE -->
+    <button id="next-btn">▶ PRÓXIMA FASE</button>
 
-<!-- CONTROLES TOUCH -->
-<div id="touch-controls">
-    <div class="left-group">
-        <button id="btn-left">◀</button>
-        <button id="btn-right">▶</button>
-    </div>
-    <div class="right-group">
-        <button id="btn-thrust" class="thrust-btn">🔥</button>
+    <!-- CONTROLES TOUCH -->
+    <div id="touch-controls">
+        <div class="left-group">
+            <button id="btn-left">◀</button>
+            <button id="btn-right">▶</button>
+        </div>
+        <div class="right-group">
+            <button id="btn-thrust" class="thrust-btn">🔥</button>
+        </div>
     </div>
 </div>
 
@@ -319,6 +361,50 @@ canvas {
 </div>
 
 <script>
+// ====================================================
+// AJUSTE DE TAMANHO DO CANVAS
+// ====================================================
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const wrapper = document.getElementById("game-wrapper");
+
+// Tamanho lógico do jogo (interno)
+const GAME_WIDTH = 1000;
+const GAME_HEIGHT = 700;
+
+function resizeCanvas() {
+    const wrapperWidth = wrapper.clientWidth;
+    const wrapperHeight = wrapper.clientHeight;
+
+    // Calcula a proporção
+    const aspectRatio = GAME_WIDTH / GAME_HEIGHT;
+    let displayWidth = wrapperWidth;
+    let displayHeight = wrapperHeight;
+
+    // Ajusta para manter a proporção
+    if (displayWidth / displayHeight > aspectRatio) {
+        displayWidth = displayHeight * aspectRatio;
+    } else {
+        displayHeight = displayWidth / aspectRatio;
+    }
+
+    // Aplica o tamanho no canvas (CSS)
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
+
+    // Tamanho interno do canvas (resolução do jogo)
+    canvas.width = GAME_WIDTH;
+    canvas.height = GAME_HEIGHT;
+}
+
+// Chama no carregamento e no redimensionamento
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', function() {
+    resizeCanvas();
+    // Inicializa o jogo depois que o canvas estiver pronto
+    iniciarJogo();
+});
+
 // ====================================================
 // ⭐ NOME DO JOGADOR (troque aqui)
 // ====================================================
@@ -565,12 +651,6 @@ class AudioManager {
 // ====================================================
 // CONFIGURAÇÕES DO JOGO
 // ====================================================
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-canvas.width = 1000;
-canvas.height = 700;
-
 const info = document.getElementById("info");
 const faseInfo = document.getElementById("fase-info");
 const soundBtn = document.getElementById("sound-toggle");
@@ -726,7 +806,7 @@ function applyLevel(level){
 }
 
 // ====================================================
-// PRÓXIMA FASE (via botão ou toque)
+// PRÓXIMA FASE
 // ====================================================
 function avancarFase() {
     if (gameState === "levelComplete") {
@@ -745,14 +825,12 @@ function avancarFase() {
     }
 }
 
-// Botão "PRÓXIMA FASE"
 nextBtn.addEventListener('click', avancarFase);
 nextBtn.addEventListener('touchend', function(e) {
     e.preventDefault();
     avancarFase();
 });
 
-// Toque na tela também avança (qualquer lugar)
 canvas.addEventListener('click', function() {
     if (gameState === "levelComplete" || gameState === "gameComplete") {
         avancarFase();
@@ -1058,7 +1136,6 @@ let engineWasOn = false;
 
 function update(){
     if(gameState === "levelComplete" || gameState === "gameComplete") {
-        // Mostra o botão "PRÓXIMA FASE" quando completa
         if (gameState === "levelComplete" || gameState === "gameComplete") {
             nextBtn.style.display = 'block';
             if (gameState === "gameComplete") {
@@ -1072,11 +1149,9 @@ function update(){
     }
     if(gameState !== "playing") return;
 
-    // Rotação
     if(keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
     if(keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
 
-    // Empuxo
     const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
 
     if(isThrusting){
@@ -1317,6 +1392,19 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 }
 
 // ====================================================
+// INICIALIZAÇÃO
+// ====================================================
+function iniciarJogo() {
+    applyLevel(1);
+    resetRocket();
+    gameLoop();
+    atualizarRankingUI();
+    console.log(`🚀 Rocket Lander - Jogador: ${NOME_JOGADOR}`);
+    console.log(`📱 Controles touch ativados!`);
+    console.log(`👆 Toque na tela ou clique em "PRÓXIMA FASE" para avançar`);
+}
+
+// ====================================================
 // LOOP
 // ====================================================
 function gameLoop(){
@@ -1325,21 +1413,11 @@ function gameLoop(){
     requestAnimationFrame(gameLoop);
 }
 
-applyLevel(1);
-resetRocket();
-gameLoop();
-
+// Inicializa áudio no primeiro clique
 document.addEventListener('click', function initAudio() {
     audio.init();
     document.removeEventListener('click', initAudio);
 }, { once: true });
-
-// Atualiza o ranking ao carregar
-atualizarRankingUI();
-
-console.log(`🚀 Rocket Lander - Jogador: ${NOME_JOGADOR}`);
-console.log(`📱 Controles touch ativados!`);
-console.log(`👆 Toque na tela ou clique em "PRÓXIMA FASE" para avançar`);
 </script>
 </body>
 </html>
