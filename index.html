@@ -1,1423 +1,1660 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Rocket Lander</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Rocket Lander</title>
 
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-body {
-    margin: 0;
-    background: #000;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    touch-action: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
-}
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
 
-#game-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #000;
-}
+        /* ===== TELA DE LOGIN ===== */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            transition: opacity 0.6s ease;
+        }
 
-canvas {
-    display: block;
-    background: linear-gradient(#000814, #001d3d);
-    border-radius: 8px;
-    /* O tamanho vai ser controlado pelo JavaScript */
-    width: auto;
-    height: auto;
-    max-width: 100vw;
-    max-height: 100vh;
-}
+        #loginScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
 
-#info {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: white;
-    font-size: 18px;
-    z-index: 10;
-    pointer-events: none;
-    text-shadow: 0 0 10px rgba(0,0,0,0.8);
-}
+        #loginScreen h1 {
+            color: #4fc3f7;
+            font-size: 48px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+        }
 
-#fase-info {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: white;
-    font-size: 18px;
-    z-index: 10;
-    pointer-events: none;
-    text-align: right;
-    text-shadow: 0 0 10px rgba(0,0,0,0.8);
-}
+        #loginScreen .subtitle {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
 
-#sound-toggle {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
-    transition: all 0.3s;
-}
+        #loginScreen .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 300px;
+        }
 
-#sound-toggle:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
+        #loginScreen input {
+            padding: 14px 20px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #4fc3f7;
+            background: #1a1a2e;
+            color: white;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            transition: 0.3s;
+        }
 
-#ranking-btn {
-    position: absolute;
-    bottom: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    background: rgba(255, 215, 0, 0.15);
-    color: #ffd700;
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    padding: 6px 16px;
-    border-radius: 16px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
-    transition: all 0.3s;
-    letter-spacing: 1px;
-}
+        #loginScreen input:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
 
-#ranking-btn:hover {
-    background: rgba(255, 215, 0, 0.25);
-}
+        #loginScreen input::placeholder {
+            color: #555;
+        }
 
-/* ===== TELA DE RANKING ===== */
-#rankingScreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.88);
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
-    font-family: Arial, sans-serif;
-    padding: 20px;
-}
+        #startBtn {
+            margin-top: 16px;
+            padding: 14px 20px;
+            font-size: 18px;
+            border-radius: 10px;
+            background: #4fc3f7;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            width: 100%;
+            letter-spacing: 1px;
+        }
 
-#rankingScreen.active {
-    display: flex;
-}
+        #startBtn:hover {
+            background: #ffd700;
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
 
-#rankingScreen h2 {
-    color: #ffd700;
-    font-size: 36px;
-    margin-bottom: 20px;
-    text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-}
+        #startBtn:active {
+            transform: scale(0.95);
+        }
 
-#rankingScreen .close-btn {
-    position: absolute;
-    top: 30px;
-    right: 40px;
-    color: #aaa;
-    font-size: 32px;
-    cursor: pointer;
-    transition: 0.3s;
-    background: none;
-    border: none;
-}
+        #rankingPreview {
+            margin-top: 25px;
+            color: #aaa;
+            font-size: 14px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            min-width: 200px;
+            line-height: 1.8;
+            width: 100%;
+            max-width: 300px;
+        }
 
-#rankingScreen .close-btn:hover {
-    color: white;
-    transform: scale(1.1);
-}
+        #rankingPreview .title {
+            color: #ffd700;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
 
-#rankingListFull {
-    color: white;
-    font-size: 22px;
-    text-align: center;
-    line-height: 2.2;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 30px 50px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    min-width: 280px;
-}
+        #rankingPreview .empty {
+            color: #666;
+            font-size: 13px;
+        }
 
-#rankingListFull .empty {
-    color: #666;
-    font-size: 18px;
-}
+        .credits {
+            position: absolute;
+            bottom: 20px;
+            color: #333;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
 
-#rankingScreen .sub {
-    color: #666;
-    font-size: 14px;
-    margin-top: 20px;
-}
+        /* ===== JOGO ===== */
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
 
-/* ===== BOTÃO PRÓXIMA FASE ===== */
-#next-btn {
-    position: absolute;
-    bottom: 160px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 30;
-    background: rgba(0, 255, 136, 0.2);
-    color: #00ff88;
-    border: 2px solid #00ff88;
-    padding: 14px 40px;
-    border-radius: 30px;
-    font-size: 22px;
-    font-weight: bold;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
-    transition: all 0.3s;
-    display: none;
-    letter-spacing: 2px;
-    text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-    box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
-    animation: pulse 1.5s infinite;
-}
+        canvas {
+            display: block;
+            background: linear-gradient(#000814, #001d3d);
+            border-radius: 8px;
+            width: auto;
+            height: auto;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
 
-#next-btn:hover {
-    background: rgba(0, 255, 136, 0.3);
-    transform: translateX(-50%) scale(1.05);
-    box-shadow: 0 0 50px rgba(0, 255, 136, 0.2);
-}
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            z-index: 10;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
 
-#next-btn:active {
-    transform: translateX(-50%) scale(0.95);
-}
+        #fase-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 18px;
+            z-index: 10;
+            pointer-events: none;
+            text-align: right;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
-    50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.3); }
-    100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
-}
+        #sound-toggle {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            transition: all 0.3s;
+        }
 
-/* ===== CONTROLES TOUCH ===== */
-#touch-controls {
-    position: absolute;
-    bottom: 80px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
-    z-index: 20;
-    pointer-events: none;
-}
+        #sound-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
 
-#touch-controls button {
-    pointer-events: auto;
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
-    font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    transition: all 0.1s;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-}
+        #ranking-btn {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(255, 215, 0, 0.15);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
 
-#touch-controls button:active {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(0.92);
-}
+        #ranking-btn:hover {
+            background: rgba(255, 215, 0, 0.25);
+        }
 
-#touch-controls .left-group {
-    display: flex;
-    gap: 15px;
-}
+        /* ===== TELA DE RANKING ===== */
+        #rankingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
 
-#touch-controls .right-group {
-    display: flex;
-    gap: 15px;
-}
+        #rankingScreen.active {
+            display: flex;
+        }
 
-#touch-controls .thrust-btn {
-    width: 80px;
-    height: 80px;
-    font-size: 32px;
-    background: rgba(255, 100, 0, 0.15);
-    border-color: rgba(255, 150, 0, 0.4);
-}
+        #rankingScreen h2 {
+            color: #ffd700;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
 
-#touch-controls .thrust-btn:active {
-    background: rgba(255, 150, 0, 0.35);
-}
+        #rankingScreen .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: #aaa;
+            font-size: 32px;
+            cursor: pointer;
+            transition: 0.3s;
+            background: none;
+            border: none;
+        }
 
-/* Esconde os botões em desktop (telas grandes) */
-@media (min-width: 768px) {
-    #touch-controls {
-        display: none;
-    }
-}
+        #rankingScreen .close-btn:hover {
+            color: white;
+            transform: scale(1.1);
+        }
 
-@media (max-width: 480px) {
-    #touch-controls button {
-        width: 55px;
-        height: 55px;
-        font-size: 20px;
-    }
-    #touch-controls .thrust-btn {
-        width: 65px;
-        height: 65px;
-        font-size: 24px;
-    }
-    #next-btn {
-        padding: 12px 30px;
-        font-size: 18px;
-        bottom: 150px;
-    }
-    #info {
-        font-size: 12px;
-        top: 5px;
-        left: 5px;
-    }
-    #fase-info {
-        font-size: 12px;
-        top: 5px;
-        right: 5px;
-    }
-    #sound-toggle {
-        font-size: 10px;
-        padding: 4px 12px;
-        bottom: 10px;
-    }
-    #ranking-btn {
-        font-size: 10px;
-        padding: 4px 12px;
-        bottom: 55px;
-    }
-}
-</style>
+        #rankingListFull {
+            color: white;
+            font-size: 22px;
+            text-align: center;
+            line-height: 2.2;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px 50px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            min-width: 280px;
+        }
+
+        #rankingListFull .empty {
+            color: #666;
+            font-size: 18px;
+        }
+
+        #rankingScreen .sub {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        /* ===== BOTÃO PRÓXIMA FASE ===== */
+        #next-btn {
+            position: absolute;
+            bottom: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border: 2px solid #00ff88;
+            padding: 14px 40px;
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            transition: all 0.3s;
+            display: none;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+            animation: pulse 1.5s infinite;
+        }
+
+        #next-btn:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.2);
+        }
+
+        #next-btn:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+            }
+        }
+
+        /* ===== CONTROLES TOUCH ===== */
+        #touch-controls {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        #touch-controls button {
+            pointer-events: auto;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            transition: all 0.1s;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #touch-controls button:active {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(0.92);
+        }
+
+        #touch-controls .left-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        #touch-controls .right-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        #touch-controls .thrust-btn {
+            width: 80px;
+            height: 80px;
+            font-size: 32px;
+            background: rgba(255, 100, 0, 0.15);
+            border-color: rgba(255, 150, 0, 0.4);
+        }
+
+        #touch-controls .thrust-btn:active {
+            background: rgba(255, 150, 0, 0.35);
+        }
+
+        @media (min-width: 768px) {
+            #touch-controls {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #touch-controls button {
+                width: 55px;
+                height: 55px;
+                font-size: 20px;
+            }
+            #touch-controls .thrust-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 24px;
+            }
+            #next-btn {
+                padding: 12px 30px;
+                font-size: 18px;
+                bottom: 150px;
+            }
+            #info {
+                font-size: 12px;
+                top: 5px;
+                left: 5px;
+            }
+            #fase-info {
+                font-size: 12px;
+                top: 5px;
+                right: 5px;
+            }
+            #sound-toggle {
+                font-size: 10px;
+                padding: 4px 12px;
+                bottom: 10px;
+            }
+            #ranking-btn {
+                font-size: 10px;
+                padding: 4px 12px;
+                bottom: 55px;
+            }
+            #loginScreen h1 {
+                font-size: 36px;
+            }
+            #loginScreen .subtitle {
+                font-size: 14px;
+            }
+            #loginScreen input {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+            #startBtn {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div id="game-wrapper">
-    <div id="info"></div>
-    <div id="fase-info"></div>
-    <canvas id="game"></canvas>
-    <button id="sound-toggle">🔊 Som: Ligado</button>
-    <button id="ranking-btn">🏆 VER RANKING</button>
+    <!-- ===== TELA DE LOGIN ===== -->
+    <div id="loginScreen">
+        <h1>🚀 ROCKET LANDER</h1>
+        <p class="subtitle">🌙 Pouse o foguete. Bata recordes.</p>
 
-    <!-- BOTÃO PRÓXIMA FASE -->
-    <button id="next-btn">▶ PRÓXIMA FASE</button>
-
-    <!-- CONTROLES TOUCH -->
-    <div id="touch-controls">
-        <div class="left-group">
-            <button id="btn-left">◀</button>
-            <button id="btn-right">▶</button>
+        <div class="input-group">
+            <input id="nameInput" type="text" maxlength="15" placeholder="Digite seu nome" autofocus>
+            <button id="startBtn">🚀 JOGAR</button>
         </div>
-        <div class="right-group">
-            <button id="btn-thrust" class="thrust-btn">🔥</button>
+
+        <div id="rankingPreview">
+            <div class="title">🏆 TOP 3</div>
+            <div id="rankingList" class="empty">Nenhum recorde ainda. Seja o primeiro!</div>
+        </div>
+
+        <span class="credits">⬆️ ↑ acelera &nbsp;|&nbsp; ← → inclina</span>
+    </div>
+
+    <!-- ===== JOGO ===== -->
+    <div id="game-wrapper">
+        <div id="info"></div>
+        <div id="fase-info"></div>
+        <canvas id="game"></canvas>
+        <button id="sound-toggle">🔊 Som: Ligado</button>
+        <button id="ranking-btn">🏆 VER RANKING</button>
+        <button id="next-btn">▶ PRÓXIMA FASE</button>
+
+        <div id="touch-controls">
+            <div class="left-group">
+                <button id="btn-left">◀</button>
+                <button id="btn-right">▶</button>
+            </div>
+            <div class="right-group">
+                <button id="btn-thrust" class="thrust-btn">🔥</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- RANKING -->
-<div id="rankingScreen">
-    <button class="close-btn" id="closeRanking">✕</button>
-    <h2>🏆 TOP 3</h2>
-    <div id="rankingListFull">Carregando...</div>
-    <div class="sub">Pressione R para reiniciar o jogo</div>
-</div>
+    <!-- ===== RANKING ===== -->
+    <div id="rankingScreen">
+        <button class="close-btn" id="closeRanking">✕</button>
+        <h2>🏆 TOP 3</h2>
+        <div id="rankingListFull">Carregando...</div>
+        <div class="sub">Pressione R para reiniciar o jogo</div>
+    </div>
 
-<script>
-// ====================================================
-// AJUSTE DE TAMANHO DO CANVAS
-// ====================================================
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-const wrapper = document.getElementById("game-wrapper");
+    <script>
+        // ====================================================
+        // AJUSTE DE TAMANHO DO CANVAS
+        // ====================================================
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        const wrapper = document.getElementById("game-wrapper");
 
-// Tamanho lógico do jogo (interno)
-const GAME_WIDTH = 1000;
-const GAME_HEIGHT = 700;
+        const GAME_WIDTH = 1000;
+        const GAME_HEIGHT = 700;
 
-function resizeCanvas() {
-    const wrapperWidth = wrapper.clientWidth;
-    const wrapperHeight = wrapper.clientHeight;
+        function resizeCanvas() {
+            const wrapperWidth = wrapper.clientWidth;
+            const wrapperHeight = wrapper.clientHeight;
+            const aspectRatio = GAME_WIDTH / GAME_HEIGHT;
+            let displayWidth = wrapperWidth;
+            let displayHeight = wrapperHeight;
 
-    // Calcula a proporção
-    const aspectRatio = GAME_WIDTH / GAME_HEIGHT;
-    let displayWidth = wrapperWidth;
-    let displayHeight = wrapperHeight;
-
-    // Ajusta para manter a proporção
-    if (displayWidth / displayHeight > aspectRatio) {
-        displayWidth = displayHeight * aspectRatio;
-    } else {
-        displayHeight = displayWidth / aspectRatio;
-    }
-
-    // Aplica o tamanho no canvas (CSS)
-    canvas.style.width = displayWidth + 'px';
-    canvas.style.height = displayHeight + 'px';
-
-    // Tamanho interno do canvas (resolução do jogo)
-    canvas.width = GAME_WIDTH;
-    canvas.height = GAME_HEIGHT;
-}
-
-// Chama no carregamento e no redimensionamento
-window.addEventListener('resize', resizeCanvas);
-window.addEventListener('load', function() {
-    resizeCanvas();
-    // Inicializa o jogo depois que o canvas estiver pronto
-    iniciarJogo();
-});
-
-// ====================================================
-// ⭐ NOME DO JOGADOR (troque aqui)
-// ====================================================
-const NOME_JOGADOR = "Lucas";
-// ====================================================
-
-// ====================================================
-// SISTEMA DE RANKING
-// ====================================================
-let ranking = JSON.parse(localStorage.getItem('rocketScores')) || [];
-
-function salvarRecorde(nome, pontuacao) {
-    if (!nome || pontuacao <= 0) return;
-
-    let encontrado = false;
-    for (let i = 0; i < ranking.length; i++) {
-        if (ranking[i].nome === nome) {
-            if (pontuacao > ranking[i].score) {
-                ranking[i].score = pontuacao;
+            if (displayWidth / displayHeight > aspectRatio) {
+                displayWidth = displayHeight * aspectRatio;
+            } else {
+                displayHeight = displayWidth / aspectRatio;
             }
-            encontrado = true;
-            break;
+
+            canvas.style.width = displayWidth + 'px';
+            canvas.style.height = displayHeight + 'px';
+            canvas.width = GAME_WIDTH;
+            canvas.height = GAME_HEIGHT;
         }
-    }
-    if (!encontrado) {
-        ranking.push({ nome: nome, score: pontuacao });
-    }
 
-    ranking.sort((a, b) => b.score - a.score);
-    if (ranking.length > 3) {
-        ranking = ranking.slice(0, 3);
-    }
+        window.addEventListener('resize', resizeCanvas);
 
-    localStorage.setItem('rocketScores', JSON.stringify(ranking));
-}
+        // ====================================================
+        // SISTEMA DE RANKING
+        // ====================================================
+        let ranking = JSON.parse(localStorage.getItem('rocketScores')) || [];
+        let currentPlayer = '';
 
-function atualizarRankingUI() {
-    const list = document.getElementById('rankingListFull');
-    if (!list) return;
+        function salvarRecorde(nome, pontuacao) {
+            if (!nome || pontuacao <= 0) return;
 
-    if (ranking.length === 0) {
-        list.innerHTML = '<div class="empty">Nenhum recorde ainda.<br>Seja o primeiro! 🚀</div>';
-        return;
-    }
-
-    const medalhas = ['🥇', '🥈', '🥉'];
-    let html = '';
-    ranking.forEach((item, index) => {
-        const medalha = medalhas[index] || '🏅';
-        html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
-    });
-    list.innerHTML = html;
-}
-
-// ====================================================
-// SISTEMA DE ÁUDIO
-// ====================================================
-class AudioManager {
-    constructor() {
-        this.enabled = true;
-        this.ctx = null;
-        this.masterGain = null;
-        this.engineOsc = null;
-        this.engineGain = null;
-        this.isEngineRunning = false;
-    }
-
-    init() {
-        if (!this.ctx) {
-            try {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                this.masterGain = this.ctx.createGain();
-                this.masterGain.gain.value = 0.3;
-                this.masterGain.connect(this.ctx.destination);
-            } catch(e) {
-                console.warn("Web Audio API não suportada");
-                this.enabled = false;
+            let encontrado = false;
+            for (let i = 0; i < ranking.length; i++) {
+                if (ranking[i].nome === nome) {
+                    if (pontuacao > ranking[i].score) {
+                        ranking[i].score = pontuacao;
+                    }
+                    encontrado = true;
+                    break;
+                }
             }
-        }
-        return this.ctx;
-    }
-
-    startEngine() {
-        if (!this.enabled || !this.ctx) return;
-        if (this.isEngineRunning) return;
-
-        try {
-            this.engineGain = this.ctx.createGain();
-            this.engineGain.gain.value = 0.15;
-            this.engineGain.connect(this.masterGain);
-
-            this.engineOsc = this.ctx.createOscillator();
-            this.engineOsc.type = 'sawtooth';
-            this.engineOsc.frequency.value = 80 + Math.random() * 20;
-            this.engineOsc.connect(this.engineGain);
-
-            const bufferSize = this.ctx.sampleRate * 0.05;
-            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
+            if (!encontrado) {
+                ranking.push({ nome: nome, score: pontuacao });
             }
-            const noise = this.ctx.createBufferSource();
-            noise.buffer = buffer;
-            noise.loop = true;
-            const noiseGain = this.ctx.createGain();
-            noiseGain.gain.value = 0.06;
-            noise.connect(noiseGain);
-            noiseGain.connect(this.engineGain);
 
-            this.engineOsc.start();
-            noise.start();
+            ranking.sort((a, b) => b.score - a.score);
+            if (ranking.length > 3) {
+                ranking = ranking.slice(0, 3);
+            }
 
-            this.isEngineRunning = true;
-            this.engineNoise = noise;
-            this.engineNoiseGain = noiseGain;
-        } catch(e) {
-            console.warn("Erro ao iniciar motor:", e);
+            localStorage.setItem('rocketScores', JSON.stringify(ranking));
         }
-    }
 
-    stopEngine() {
-        if (!this.enabled || !this.ctx) return;
-        if (!this.isEngineRunning) return;
+        function atualizarRankingPreview() {
+            const list = document.getElementById('rankingList');
+            if (!list) return;
 
-        try {
-            if (this.engineOsc) {
-                this.engineOsc.stop();
-                this.engineOsc.disconnect();
+            if (ranking.length === 0) {
+                list.innerHTML = 'Nenhum recorde ainda. Seja o primeiro! 🏆';
+                list.className = 'empty';
+                return;
+            }
+
+            list.className = '';
+            const medalhas = ['🥇', '🥈', '🥉'];
+            let html = '';
+            ranking.forEach((item, index) => {
+                const medalha = medalhas[index] || '🏅';
+                html += `${medalha} <strong>${item.nome}</strong> — ${item.score} pts<br>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function atualizarRankingFull() {
+            const list = document.getElementById('rankingListFull');
+            if (!list) return;
+
+            if (ranking.length === 0) {
+                list.innerHTML = '<div class="empty">Nenhum recorde ainda.<br>Seja o primeiro! 🚀</div>';
+                return;
+            }
+
+            const medalhas = ['🥇', '🥈', '🥉'];
+            let html = '';
+            ranking.forEach((item, index) => {
+                const medalha = medalhas[index] || '🏅';
+                html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        // ====================================================
+        // SISTEMA DE ÁUDIO
+        // ====================================================
+        class AudioManager {
+            constructor() {
+                this.enabled = true;
+                this.ctx = null;
+                this.masterGain = null;
                 this.engineOsc = null;
-            }
-            if (this.engineNoise) {
-                this.engineNoise.stop();
-                this.engineNoise.disconnect();
-                this.engineNoise = null;
-            }
-            if (this.engineGain) {
-                this.engineGain.disconnect();
                 this.engineGain = null;
+                this.isEngineRunning = false;
             }
-            if (this.engineNoiseGain) {
-                this.engineNoiseGain.disconnect();
-                this.engineNoiseGain = null;
-            }
-            this.isEngineRunning = false;
-        } catch(e) {
-            console.warn("Erro ao parar motor:", e);
-        }
-    }
 
-    playExplosion() {
-        if (!this.enabled || !this.ctx) return;
-        try {
-            const bufferSize = this.ctx.sampleRate * 0.8;
-            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                const envelope = Math.exp(-i / (this.ctx.sampleRate * 0.3));
-                data[i] = (Math.random() * 2 - 1) * envelope;
+            init() {
+                if (!this.ctx) {
+                    try {
+                        this.ctx = new(window.AudioContext || window.webkitAudioContext)();
+                        this.masterGain = this.ctx.createGain();
+                        this.masterGain.gain.value = 0.3;
+                        this.masterGain.connect(this.ctx.destination);
+                    } catch (e) {
+                        console.warn("Web Audio API não suportada");
+                        this.enabled = false;
+                    }
+                }
+                return this.ctx;
             }
-            const source = this.ctx.createBufferSource();
-            source.buffer = buffer;
-            const gain = this.ctx.createGain();
-            gain.gain.value = 0.5;
-            gain.connect(this.masterGain);
-            const filter = this.ctx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.value = 300 + Math.random() * 200;
-            filter.Q.value = 1;
-            source.connect(filter);
-            filter.connect(gain);
-            source.start();
-            source.onended = () => {
-                source.disconnect();
-                filter.disconnect();
-                gain.disconnect();
-            };
-        } catch(e) {
-            console.warn("Erro ao tocar explosão:", e);
-        }
-    }
 
-    playLanding() {
-        if (!this.enabled || !this.ctx) return;
-        try {
-            const notes = [523, 659, 784, 1047];
-            notes.forEach((freq, index) => {
-                setTimeout(() => {
-                    const osc = this.ctx.createOscillator();
+            startEngine() {
+                if (!this.enabled || !this.ctx) return;
+                if (this.isEngineRunning) return;
+
+                try {
+                    this.engineGain = this.ctx.createGain();
+                    this.engineGain.gain.value = 0.15;
+                    this.engineGain.connect(this.masterGain);
+
+                    this.engineOsc = this.ctx.createOscillator();
+                    this.engineOsc.type = 'sawtooth';
+                    this.engineOsc.frequency.value = 80 + Math.random() * 20;
+                    this.engineOsc.connect(this.engineGain);
+
+                    const bufferSize = this.ctx.sampleRate * 0.05;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    noise.loop = true;
+                    const noiseGain = this.ctx.createGain();
+                    noiseGain.gain.value = 0.06;
+                    noise.connect(noiseGain);
+                    noiseGain.connect(this.engineGain);
+
+                    this.engineOsc.start();
+                    noise.start();
+
+                    this.isEngineRunning = true;
+                    this.engineNoise = noise;
+                    this.engineNoiseGain = noiseGain;
+                } catch (e) {
+                    console.warn("Erro ao iniciar motor:", e);
+                }
+            }
+
+            stopEngine() {
+                if (!this.enabled || !this.ctx) return;
+                if (!this.isEngineRunning) return;
+
+                try {
+                    if (this.engineOsc) {
+                        this.engineOsc.stop();
+                        this.engineOsc.disconnect();
+                        this.engineOsc = null;
+                    }
+                    if (this.engineNoise) {
+                        this.engineNoise.stop();
+                        this.engineNoise.disconnect();
+                        this.engineNoise = null;
+                    }
+                    if (this.engineGain) {
+                        this.engineGain.disconnect();
+                        this.engineGain = null;
+                    }
+                    if (this.engineNoiseGain) {
+                        this.engineNoiseGain.disconnect();
+                        this.engineNoiseGain = null;
+                    }
+                    this.isEngineRunning = false;
+                } catch (e) {
+                    console.warn("Erro ao parar motor:", e);
+                }
+            }
+
+            playExplosion() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const bufferSize = this.ctx.sampleRate * 0.8;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        const envelope = Math.exp(-i / (this.ctx.sampleRate * 0.3));
+                        data[i] = (Math.random() * 2 - 1) * envelope;
+                    }
+                    const source = this.ctx.createBufferSource();
+                    source.buffer = buffer;
                     const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.value = freq;
-                    gain.gain.value = 0.15 * (1 - index * 0.1);
+                    gain.gain.value = 0.5;
                     gain.connect(this.masterGain);
-                    osc.connect(gain);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.3);
-                    osc.onended = () => {
-                        osc.disconnect();
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 300 + Math.random() * 200;
+                    filter.Q.value = 1;
+                    source.connect(filter);
+                    filter.connect(gain);
+                    source.start();
+                    source.onended = () => {
+                        source.disconnect();
+                        filter.disconnect();
                         gain.disconnect();
                     };
-                }, index * 80);
-            });
-        } catch(e) {
-            console.warn("Erro ao tocar pouso:", e);
+                } catch (e) {
+                    console.warn("Erro ao tocar explosão:", e);
+                }
+            }
+
+            playLanding() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const notes = [523, 659, 784, 1047];
+                    notes.forEach((freq, index) => {
+                        setTimeout(() => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            gain.gain.value = 0.15 * (1 - index * 0.1);
+                            gain.connect(this.masterGain);
+                            osc.connect(gain);
+                            osc.start();
+                            osc.stop(this.ctx.currentTime + 0.3);
+                            osc.onended = () => {
+                                osc.disconnect();
+                                gain.disconnect();
+                            };
+                        }, index * 80);
+                    });
+                } catch (e) {
+                    console.warn("Erro ao tocar pouso:", e);
+                }
+            }
+
+            playLevelComplete() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const melody = [523, 587, 659, 784, 880, 784, 880, 1047];
+                    melody.forEach((freq, index) => {
+                        setTimeout(() => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            gain.gain.value = 0.12;
+                            gain.connect(this.masterGain);
+                            osc.connect(gain);
+                            osc.start();
+                            osc.stop(this.ctx.currentTime + 0.15);
+                            osc.onended = () => {
+                                osc.disconnect();
+                                gain.disconnect();
+                            };
+                        }, index * 70);
+                    });
+                } catch (e) {
+                    console.warn("Erro ao tocar vitória:", e);
+                }
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (!this.enabled) {
+                    this.stopEngine();
+                }
+                return this.enabled;
+            }
         }
-    }
 
-    playLevelComplete() {
-        if (!this.enabled || !this.ctx) return;
-        try {
-            const melody = [523, 587, 659, 784, 880, 784, 880, 1047];
-            melody.forEach((freq, index) => {
-                setTimeout(() => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.value = freq;
-                    gain.gain.value = 0.12;
-                    gain.connect(this.masterGain);
-                    osc.connect(gain);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.15);
-                    osc.onended = () => {
-                        osc.disconnect();
-                        gain.disconnect();
-                    };
-                }, index * 70);
-            });
-        } catch(e) {
-            console.warn("Erro ao tocar vitória:", e);
-        }
-    }
+        const audio = new AudioManager();
 
-    toggle() {
-        this.enabled = !this.enabled;
-        if (!this.enabled) {
-            this.stopEngine();
-        }
-        return this.enabled;
-    }
-}
+        // ====================================================
+        // CONFIGURAÇÕES DO JOGO
+        // ====================================================
+        const info = document.getElementById("info");
+        const faseInfo = document.getElementById("fase-info");
+        const soundBtn = document.getElementById("sound-toggle");
+        const rankingBtn = document.getElementById("ranking-btn");
+        const rankingScreen = document.getElementById("rankingScreen");
+        const closeRanking = document.getElementById("closeRanking");
+        const nextBtn = document.getElementById("next-btn");
 
-// ====================================================
-// CONFIGURAÇÕES DO JOGO
-// ====================================================
-const info = document.getElementById("info");
-const faseInfo = document.getElementById("fase-info");
-const soundBtn = document.getElementById("sound-toggle");
-const rankingBtn = document.getElementById("ranking-btn");
-const rankingScreen = document.getElementById("rankingScreen");
-const closeRanking = document.getElementById("closeRanking");
-const nextBtn = document.getElementById("next-btn");
+        const loginScreen = document.getElementById('loginScreen');
+        const startBtn = document.getElementById('startBtn');
+        const nameInput = document.getElementById('nameInput');
 
-// ====================================================
-// CONTROLES TOUCH
-// ====================================================
-const btnLeft = document.getElementById('btn-left');
-const btnRight = document.getElementById('btn-right');
-const btnThrust = document.getElementById('btn-thrust');
+        // ====================================================
+        // CONTROLES TOUCH
+        // ====================================================
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnThrust = document.getElementById('btn-thrust');
 
-let touchKeys = {
-    left: false,
-    right: false,
-    thrust: false
-};
-
-function setupTouchButton(element, keyOn, keyOff) {
-    if (!element) return;
-
-    element.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        touchKeys[keyOn] = true;
-        if (keyOff) touchKeys[keyOff] = false;
-    }, { passive: false });
-
-    element.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        touchKeys[keyOn] = false;
-    }, { passive: false });
-
-    element.addEventListener('touchcancel', function(e) {
-        e.preventDefault();
-        touchKeys[keyOn] = false;
-    }, { passive: false });
-
-    element.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        touchKeys[keyOn] = true;
-        if (keyOff) touchKeys[keyOff] = false;
-    });
-
-    element.addEventListener('mouseup', function(e) {
-        e.preventDefault();
-        touchKeys[keyOn] = false;
-    });
-
-    element.addEventListener('mouseleave', function(e) {
-        touchKeys[keyOn] = false;
-    });
-}
-
-setupTouchButton(btnLeft, 'left', 'right');
-setupTouchButton(btnRight, 'right', 'left');
-setupTouchButton(btnThrust, 'thrust');
-
-// ====================================================
-// VARIÁVEIS DO JOGO
-// ====================================================
-let keys = {};
-let score = 0;
-let levelScore = 0;
-let highScore = parseInt(localStorage.getItem("rocketLanderHighScore")) || 0;
-let gameState = "playing";
-let currentLevel = 1;
-let maxLevel = 5;
-
-const audio = new AudioManager();
-
-let gravity = 0.01;
-let thrustPower = 0.12;
-let fuelConsumption = 0.7;
-let rotationSpeed = 0.04;
-
-let pad = {
-    x: 420,
-    y: 650,
-    width: 160,
-    height: 10
-};
-
-// ====================================================
-// CONFIGURAÇÕES DE CADA FASE
-// ====================================================
-function getLevelConfig(level){
-    const configs = {
-        1: { gravity: 0.01, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.0, label: "🌙 FASE 1" },
-        2: { gravity: 0.015, padWidth: 140, maxSpeedV: 1.8, maxSpeedH: 1.3, maxAngle: 10, fuelBonus: 1.5, label: "🪐 FASE 2" },
-        3: { gravity: 0.02, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0, label: "☄️ FASE 3" },
-        4: { gravity: 0.025, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.5, label: "🔥 FASE 4" },
-        5: { gravity: 0.03, padWidth: 80, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.0, label: "🚀 FASE 5" }
-    };
-    if(level > 5){
-        return {
-            gravity: 0.03 + (level - 5) * 0.002,
-            padWidth: Math.max(50, 80 - (level - 5) * 5),
-            maxSpeedV: Math.max(0.6, 1.0 - (level - 5) * 0.05),
-            maxSpeedH: Math.max(0.3, 0.6 - (level - 5) * 0.03),
-            maxAngle: Math.max(2, 4 - (level - 5) * 0.3),
-            fuelBonus: 3.0 + (level - 5) * 0.2,
-            label: `💫 FASE ${level}`
+        let touchKeys = {
+            left: false,
+            right: false,
+            thrust: false
         };
-    }
-    return configs[level] || configs[1];
-}
 
-// ====================================================
-// OBJETO FOGUETE
-// ====================================================
-let rocket;
+        function setupTouchButton(element, keyOn, keyOff) {
+            if (!element) return;
 
-function resetGame(){
-    score = 0;
-    levelScore = 0;
-    currentLevel = 1;
-    applyLevel(currentLevel);
-    resetRocket();
-    gameState = "playing";
-    audio.stopEngine();
-    nextBtn.style.display = 'none';
-}
+            element.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                touchKeys[keyOn] = true;
+                if (keyOff) touchKeys[keyOff] = false;
+            }, { passive: false });
 
-function resetRocket(){
-    rocket = {
-        x: 500,
-        y: 120,
-        vx: 0,
-        vy: 0,
-        angle: 0,
-        fuel: 30,
-        startFuel: 30
-    };
-}
+            element.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                touchKeys[keyOn] = false;
+            }, { passive: false });
 
-function applyLevel(level){
-    const config = getLevelConfig(level);
-    gravity = config.gravity;
-    pad.width = config.padWidth;
-    pad.x = (canvas.width - pad.width) / 2;
+            element.addEventListener('touchcancel', function(e) {
+                e.preventDefault();
+                touchKeys[keyOn] = false;
+            }, { passive: false });
 
-    faseInfo.innerHTML = `
-        <div style="background:rgba(0,0,0,0.75);padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;text-align:right;">
-            <div style="color:#4fc3f7;font-weight:bold;">${config.label}</div>
-            <div style="color:#aaa;font-size:12px;">🎯 Vel. Máx: ${config.maxSpeedV.toFixed(1)}</div>
-            <div style="color:#aaa;font-size:12px;">📏 Plataforma: ${pad.width}px</div>
-            <div style="color:#ffd700;font-size:12px;">⭐ Bônus: ${config.fuelBonus.toFixed(1)}x</div>
-        </div>
-    `;
-}
+            element.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                touchKeys[keyOn] = true;
+                if (keyOff) touchKeys[keyOff] = false;
+            });
 
-// ====================================================
-// PRÓXIMA FASE
-// ====================================================
-function avancarFase() {
-    if (gameState === "levelComplete") {
-        currentLevel++;
-        applyLevel(currentLevel);
-        resetRocket();
-        gameState = "playing";
-        audio.stopEngine();
-        engineWasOn = false;
-        nextBtn.style.display = 'none';
-    } else if (gameState === "gameComplete") {
-        resetGame();
-        audio.stopEngine();
-        engineWasOn = false;
-        nextBtn.style.display = 'none';
-    }
-}
+            element.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                touchKeys[keyOn] = false;
+            });
 
-nextBtn.addEventListener('click', avancarFase);
-nextBtn.addEventListener('touchend', function(e) {
-    e.preventDefault();
-    avancarFase();
-});
-
-canvas.addEventListener('click', function() {
-    if (gameState === "levelComplete" || gameState === "gameComplete") {
-        avancarFase();
-    }
-});
-
-canvas.addEventListener('touchstart', function(e) {
-    if (gameState === "levelComplete" || gameState === "gameComplete") {
-        e.preventDefault();
-        avancarFase();
-    }
-}, { passive: false });
-
-// ====================================================
-// EVENTOS DE TECLADO (Desktop)
-// ====================================================
-document.addEventListener("keydown", function(e){
-    keys[e.key] = true;
-    if(e.key === "r" || e.key === "R"){
-        resetGame();
-        audio.stopEngine();
-    }
-    if((e.key === "Enter" || e.key === " ") && (gameState === "levelComplete" || gameState === "gameComplete")){
-        avancarFase();
-    }
-    if(!audio.ctx) {
-        audio.init();
-    }
-});
-
-document.addEventListener("keyup", function(e){
-    keys[e.key] = false;
-    if(e.key === "ArrowUp") {
-        audio.stopEngine();
-    }
-});
-
-soundBtn.addEventListener("click", function(){
-    const enabled = audio.toggle();
-    soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
-    if(!audio.ctx) {
-        audio.init();
-    }
-});
-
-rankingBtn.addEventListener("click", function(){
-    atualizarRankingUI();
-    rankingScreen.classList.toggle("active");
-});
-
-closeRanking.addEventListener("click", function(){
-    rankingScreen.classList.remove("active");
-});
-
-document.addEventListener("keydown", function(e){
-    if(e.key === "Escape" && rankingScreen.classList.contains("active")){
-        rankingScreen.classList.remove("active");
-    }
-});
-
-// ====================================================
-// FUNÇÕES DE DESENHO
-// ====================================================
-
-function drawStars(){
-    for(let i=0; i<120; i++){
-        const x = (i * 97 + currentLevel * 13) % canvas.width;
-        const y = (i * 53 + currentLevel * 7) % canvas.height;
-        const size = 0.5 + (i % 3) * 0.5;
-        const brightness = 0.5 + (i % 5) / 5;
-        ctx.fillStyle = `rgba(255,255,255,${brightness})`;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-function drawGround(){
-    const grad = ctx.createLinearGradient(0, 660, 0, 700);
-    grad.addColorStop(0, "#1b4332");
-    grad.addColorStop(1, "#0d2818");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 660, canvas.width, 40);
-
-    ctx.fillStyle = "#2d6a4f";
-    ctx.fillRect(0, 655, canvas.width, 10);
-
-    ctx.fillStyle = "rgba(255,0,0,0.05)";
-    ctx.fillRect(0, 655, pad.x, 10);
-    ctx.fillRect(pad.x + pad.width, 655, canvas.width - pad.x - pad.width, 10);
-
-    const padGlow = ctx.createRadialGradient(pad.x + pad.width/2, pad.y, 10, pad.x + pad.width/2, pad.y, pad.width);
-    padGlow.addColorStop(0, "rgba(244,162,97,0.3)");
-    padGlow.addColorStop(1, "rgba(244,162,97,0)");
-    ctx.fillStyle = padGlow;
-    ctx.fillRect(pad.x - 40, pad.y - 20, pad.width + 80, 40);
-
-    ctx.fillStyle = "#e9c46a";
-    ctx.shadowColor = "#f4a261";
-    ctx.shadowBlur = 25;
-    ctx.beginPath();
-    ctx.roundRect(pad.x, pad.y, pad.width, pad.height, 3);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "rgba(255,200,100,0.3)";
-    for(let i = 0; i < pad.width; i += 20){
-        ctx.fillRect(pad.x + i, pad.y + 2, 10, 3);
-    }
-
-    ctx.fillStyle = "rgba(255,255,255,0.15)";
-    ctx.font = "bold 16px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(`FASE ${currentLevel}`, pad.x + pad.width/2, pad.y + 24);
-    ctx.textAlign = "left";
-}
-
-function drawRocket(){
-    ctx.save();
-    ctx.translate(rocket.x, rocket.y);
-    ctx.rotate(rocket.angle);
-
-    const seatY = 16;
-    const seatWidth = 22;
-    const seatHeight = 8;
-
-    ctx.fillStyle = "#b8860b";
-    ctx.shadowColor = "rgba(0,0,0,0.3)";
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.roundRect(-seatWidth/2, seatY, seatWidth, seatHeight, 4);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "#cd853f";
-    ctx.beginPath();
-    ctx.roundRect(-12, seatY - 10, 4, 14, 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.roundRect(8, seatY - 10, 4, 14, 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#4a7c59";
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.roundRect(-8, seatY - 18, 16, 18, 3);
-    ctx.fill();
-
-    ctx.fillStyle = "#f5f5dc";
-    ctx.shadowColor = "rgba(0,0,0,0.2)";
-    ctx.shadowBlur = 4;
-    ctx.beginPath();
-    ctx.arc(0, seatY - 22, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "#1a1a2e";
-    ctx.beginPath();
-    ctx.arc(1, seatY - 24, 5, 0, Math.PI);
-    ctx.fill();
-
-    ctx.strokeStyle = "#888";
-    ctx.lineWidth = 3;
-    ctx.shadowBlur = 0;
-
-    ctx.beginPath();
-    ctx.moveTo(-12, seatY + seatHeight);
-    ctx.lineTo(-20, seatY + seatHeight + 12);
-    ctx.stroke();
-
-    ctx.fillStyle = "#666";
-    ctx.beginPath();
-    ctx.roundRect(-24, seatY + seatHeight + 10, 8, 4, 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(12, seatY + seatHeight);
-    ctx.lineTo(20, seatY + seatHeight + 12);
-    ctx.stroke();
-
-    ctx.fillStyle = "#666";
-    ctx.beginPath();
-    ctx.roundRect(16, seatY + seatHeight + 10, 8, 4, 2);
-    ctx.fill();
-
-    const grad = ctx.createLinearGradient(-12, -25, 12, 25);
-    grad.addColorStop(0, "#e0e0e0");
-    grad.addColorStop(0.5, "#ffffff");
-    grad.addColorStop(1, "#aaaaaa");
-    ctx.fillStyle = grad;
-    ctx.shadowColor = "rgba(255,255,255,0.1)";
-    ctx.shadowBlur = 10;
-    ctx.beginPath();
-    ctx.roundRect(-12, -25, 24, 40, 3);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "#4fc3f7";
-    ctx.shadowColor = "#4fc3f7";
-    ctx.shadowBlur = 20;
-    ctx.beginPath();
-    ctx.arc(0, -10, 7, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    ctx.beginPath();
-    ctx.arc(-2, -12, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#ff6b6b";
-    ctx.fillRect(-10, -22, 20, 3);
-    ctx.fillRect(-8, 8, 16, 3);
-
-    ctx.fillStyle = "#ff6b6b";
-    ctx.shadowColor = "#ff6b6b";
-    ctx.shadowBlur = 10;
-    ctx.beginPath();
-    ctx.moveTo(-10, -25);
-    ctx.lineTo(0, -40);
-    ctx.lineTo(10, -25);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
-
-    if(isThrusting && gameState === "playing"){
-        const flameHeight = 30 + Math.random() * 25;
-        const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 + flameHeight/2, flameHeight);
-        gradFlame.addColorStop(0, "rgba(255,255,255,1)");
-        gradFlame.addColorStop(0.1, "rgba(255,255,200,1)");
-        gradFlame.addColorStop(0.3, "rgba(255,200,50,1)");
-        gradFlame.addColorStop(0.6, "rgba(255,100,0,0.8)");
-        gradFlame.addColorStop(1, "rgba(255,50,0,0)");
-        ctx.fillStyle = gradFlame;
-        ctx.beginPath();
-        ctx.moveTo(-10, seatY + seatHeight + 2);
-        ctx.quadraticCurveTo(-5, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 + flameHeight);
-        ctx.quadraticCurveTo(5, seatY + seatHeight + 2 + flameHeight * 0.6, 10, seatY + seatHeight + 2);
-        ctx.fill();
-
-        for(let i = 0; i < 5; i++){
-            const alpha = 0.2 + Math.random() * 0.6;
-            const size = 1 + Math.random() * 3;
-            const px = (Math.random() - 0.5) * 10;
-            const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
-            ctx.fillStyle = `rgba(255,200,50,${alpha})`;
-            ctx.beginPath();
-            ctx.arc(px, py, size, 0, Math.PI * 2);
-            ctx.fill();
+            element.addEventListener('mouseleave', function(e) {
+                touchKeys[keyOn] = false;
+            });
         }
-    }
 
-    ctx.restore();
-}
+        setupTouchButton(btnLeft, 'left', 'right');
+        setupTouchButton(btnRight, 'right', 'left');
+        setupTouchButton(btnThrust, 'thrust');
 
-function drawFuelBar(){
-    const barX = 20;
-    const barY = 70;
-    const barWidth = 200;
-    const barHeight = 22;
+        // ====================================================
+        // VARIÁVEIS DO JOGO
+        // ====================================================
+        let keys = {};
+        let score = 0;
+        let levelScore = 0;
+        let highScore = parseInt(localStorage.getItem("rocketLanderHighScore")) || 0;
+        let gameState = "playing";
+        let currentLevel = 1;
+        let maxLevel = 5;
 
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.shadowBlur = 10;
-    ctx.beginPath();
-    ctx.roundRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+        let gravity = 0.01;
+        let thrustPower = 0.12;
+        let fuelConsumption = 0.7;
+        let rotationSpeed = 0.04;
 
-    ctx.strokeStyle = "rgba(255,255,255,0.3)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(barX, barY, barWidth, barHeight, 3);
-    ctx.stroke();
+        let pad = {
+            x: 420,
+            y: 650,
+            width: 160,
+            height: 10
+        };
 
-    const fuelPercent = Math.max(0, rocket.fuel / 30);
-    let color = "#00ff88";
-    if(fuelPercent < 0.2) color = "#ff4444";
-    else if(fuelPercent < 0.5) color = "#ffaa00";
-
-    const grad = ctx.createLinearGradient(barX, barY, barX + barWidth * fuelPercent, barY);
-    grad.addColorStop(0, color);
-    grad.addColorStop(1, color + "88");
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.roundRect(barX + 2, barY + 2, Math.max(0, (barWidth - 4) * fuelPercent), barHeight - 4, 2);
-    ctx.fill();
-
-    ctx.fillStyle = "white";
-    ctx.font = "bold 14px Arial";
-    ctx.textAlign = "left";
-    ctx.fillText("🔥 " + rocket.fuel.toFixed(1) + "%", barX + 8, barY + 17);
-
-    ctx.fillStyle = "rgba(255,255,255,0.6)";
-    ctx.font = "12px Arial";
-    ctx.fillText("COMBUSTÍVEL", barX, barY - 6);
-}
-
-// ====================================================
-// ATUALIZAÇÃO DO JOGO
-// ====================================================
-let engineWasOn = false;
-
-function update(){
-    if(gameState === "levelComplete" || gameState === "gameComplete") {
-        if (gameState === "levelComplete" || gameState === "gameComplete") {
-            nextBtn.style.display = 'block';
-            if (gameState === "gameComplete") {
-                nextBtn.textContent = '🔄 REINICIAR';
-            } else {
-                nextBtn.textContent = `▶ PRÓXIMA FASE (${currentLevel + 1})`;
+        // ====================================================
+        // CONFIGURAÇÕES DE CADA FASE
+        // ====================================================
+        function getLevelConfig(level) {
+            const configs = {
+                1: { gravity: 0.01, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.0,
+                    label: "🌙 FASE 1" },
+                2: { gravity: 0.015, padWidth: 140, maxSpeedV: 1.8, maxSpeedH: 1.3, maxAngle: 10, fuelBonus: 1.5,
+                    label: "🪐 FASE 2" },
+                3: { gravity: 0.02, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
+                    label: "☄️ FASE 3" },
+                4: { gravity: 0.025, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.5,
+                    label: "🔥 FASE 4" },
+                5: { gravity: 0.03, padWidth: 80, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.0,
+                    label: "🚀 FASE 5" }
+            };
+            if (level > 5) {
+                return {
+                    gravity: 0.03 + (level - 5) * 0.002,
+                    padWidth: Math.max(50, 80 - (level - 5) * 5),
+                    maxSpeedV: Math.max(0.6, 1.0 - (level - 5) * 0.05),
+                    maxSpeedH: Math.max(0.3, 0.6 - (level - 5) * 0.03),
+                    maxAngle: Math.max(2, 4 - (level - 5) * 0.3),
+                    fuelBonus: 3.0 + (level - 5) * 0.2,
+                    label: `💫 FASE ${level}`
+                };
             }
+            return configs[level] || configs[1];
         }
-        audio.stopEngine();
-        return;
-    }
-    if(gameState !== "playing") return;
 
-    if(keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
-    if(keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
+        // ====================================================
+        // OBJETO FOGUETE
+        // ====================================================
+        let rocket;
 
-    const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
-
-    if(isThrusting){
-        const thrustX = Math.sin(rocket.angle) * thrustPower;
-        const thrustY = -Math.cos(rocket.angle) * thrustPower;
-        rocket.vx += thrustX;
-        rocket.vy += thrustY;
-        rocket.fuel -= fuelConsumption;
-        if(rocket.fuel < 0) rocket.fuel = 0;
-
-        if(!engineWasOn) {
-            audio.init();
-            audio.startEngine();
-            engineWasOn = true;
-        }
-    } else {
-        if(engineWasOn) {
+        function resetGame() {
+            score = 0;
+            levelScore = 0;
+            currentLevel = 1;
+            applyLevel(currentLevel);
+            resetRocket();
+            gameState = "playing";
             audio.stopEngine();
-            engineWasOn = false;
-        }
-    }
-
-    rocket.vy += gravity;
-    rocket.x += rocket.vx;
-    rocket.y += rocket.vy;
-
-    if(rocket.x < -30) rocket.x = canvas.width + 30;
-    if(rocket.x > canvas.width + 30) rocket.x = -30;
-
-    if(rocket.y > 750){
-        gameState = "crashed";
-        audio.playExplosion();
-        audio.stopEngine();
-        engineWasOn = false;
-        nextBtn.style.display = 'none';
-        return;
-    }
-
-    const bottom = rocket.y + 25;
-    const insidePadX = rocket.x > pad.x && rocket.x < pad.x + pad.width;
-    const config = getLevelConfig(currentLevel);
-    const speedV = Math.abs(rocket.vy);
-    const speedH = Math.abs(rocket.vx);
-    const angleDeg = Math.abs(rocket.angle * 180 / Math.PI);
-
-    if(bottom >= pad.y && insidePadX){
-        if(speedV < config.maxSpeedV && speedH < config.maxSpeedH && angleDeg < config.maxAngle){
-            audio.stopEngine();
-            engineWasOn = false;
-            audio.playLanding();
-
-            const fuelBonus = config.fuelBonus || 1;
-            const baseScore = 1000 + Math.floor(rocket.fuel * 20) + Math.floor((config.maxSpeedV - speedV) * 300);
-            levelScore = Math.floor(baseScore * fuelBonus);
-            score += levelScore;
-
-            if(score > highScore){
-                highScore = score;
-                localStorage.setItem("rocketLanderHighScore", highScore.toString());
-                salvarRecorde(NOME_JOGADOR, score);
-            }
-
-            if(currentLevel >= maxLevel){
-                gameState = "gameComplete";
-                setTimeout(() => audio.playLevelComplete(), 300);
-            } else {
-                gameState = "levelComplete";
-                setTimeout(() => audio.playLevelComplete(), 300);
-            }
-        } else {
-            gameState = "crashed";
-            audio.playExplosion();
-            audio.stopEngine();
-            engineWasOn = false;
             nextBtn.style.display = 'none';
         }
-        return;
-    }
 
-    if(bottom >= 660 && !insidePadX){
-        gameState = "crashed";
-        audio.playExplosion();
-        audio.stopEngine();
-        engineWasOn = false;
-        nextBtn.style.display = 'none';
-    }
-}
-
-// ====================================================
-// HUD E MENSAGENS
-// ====================================================
-function drawHUD(){
-    const config = getLevelConfig(currentLevel);
-    info.innerHTML = `
-        <div style="background:rgba(0,0,0,0.75);padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;">
-            <div>⬆️ Vel. Vertical: <span style="color:#4fc3f7;">${Math.abs(rocket.vy).toFixed(2)}</span> / ${config.maxSpeedV.toFixed(1)}</div>
-            <div>➡️ Vel. Horizontal: <span style="color:#4fc3f7;">${Math.abs(rocket.vx).toFixed(2)}</span> / ${config.maxSpeedH.toFixed(1)}</div>
-            <div style="color:#ffd700;">⭐ Pontuação: ${score}</div>
-            <div style="color:#ff6b6b;">🏆 Recorde: ${highScore}</div>
-            <div style="color:#4fc3f7;font-size:12px;">👤 ${NOME_JOGADOR}</div>
-            <div style="color:#aaa;font-size:12px;">📊 Fase ${currentLevel} - ${pad.width}px</div>
-        </div>
-    `;
-}
-
-function drawMessage(){
-    if(gameState === "levelComplete"){
-        ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.textAlign = "center";
-
-        ctx.fillStyle = "#00ff88";
-        ctx.font = "bold 44px Arial";
-        ctx.shadowColor = "#00ff88";
-        ctx.shadowBlur = 30;
-        ctx.fillText("✅ FASE COMPLETA!", canvas.width/2, 180);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = "white";
-        ctx.font = "28px Arial";
-        ctx.fillText(`⭐ Pontuação da Fase: ${levelScore}`, canvas.width/2, 240);
-
-        ctx.fillStyle = "#ffd700";
-        ctx.font = "24px Arial";
-        ctx.fillText(`Total: ${score}`, canvas.width/2, 290);
-
-        ctx.fillStyle = "#4fc3f7";
-        ctx.font = "22px Arial";
-        ctx.fillText(`Próxima: ${getLevelConfig(currentLevel + 1).label}`, canvas.width/2, 340);
-
-        ctx.fillStyle = "#aaa";
-        ctx.font = "18px Arial";
-        ctx.fillText("Toque na tela ou clique no botão para continuar", canvas.width/2, 400);
-        ctx.textAlign = "left";
-    }
-
-    if(gameState === "gameComplete"){
-        ctx.fillStyle = "rgba(0,0,0,0.7)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.textAlign = "center";
-
-        ctx.fillStyle = "rgba(255,215,0,0.1)";
-        ctx.beginPath();
-        ctx.arc(canvas.width/2, 250, 200, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#ffd700";
-        ctx.font = "bold 56px Arial";
-        ctx.shadowColor = "#ffd700";
-        ctx.shadowBlur = 40;
-        ctx.fillText("🏆 VITÓRIA!", canvas.width/2, 200);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
-        ctx.fillText(`⭐ Pontuação Final: ${score}`, canvas.width/2, 270);
-
-        if(score >= highScore && score > 0){
-            ctx.fillStyle = "#ffd700";
-            ctx.font = "bold 26px Arial";
-            ctx.shadowColor = "#ffd700";
-            ctx.shadowBlur = 20;
-            ctx.fillText(`🏆 NOVO RECORDE, ${NOME_JOGADOR}!`, canvas.width/2, 320);
-            ctx.shadowBlur = 0;
+        function resetRocket() {
+            rocket = {
+                x: 500,
+                y: 120,
+                vx: 0,
+                vy: 0,
+                angle: 0,
+                fuel: 30,
+                startFuel: 30
+            };
         }
 
-        ctx.fillStyle = "#4fc3f7";
-        ctx.font = "20px Arial";
-        ctx.fillText(`Você completou todas as ${maxLevel} fases!`, canvas.width/2, 370);
+        function applyLevel(level) {
+            const config = getLevelConfig(level);
+            gravity = config.gravity;
+            pad.width = config.padWidth;
+            pad.x = (canvas.width - pad.width) / 2;
 
-        ctx.fillStyle = "#aaa";
-        ctx.font = "18px Arial";
-        ctx.fillText("Toque na tela ou clique no botão para reiniciar", canvas.width/2, 420);
-        ctx.textAlign = "left";
-    }
+            faseInfo.innerHTML = `
+                <div style="background:rgba(0,0,0,0.75);padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;text-align:right;">
+                    <div style="color:#4fc3f7;font-weight:bold;">${config.label}</div>
+                    <div style="color:#aaa;font-size:12px;">🎯 Vel. Máx: ${config.maxSpeedV.toFixed(1)}</div>
+                    <div style="color:#aaa;font-size:12px;">📏 Plataforma: ${pad.width}px</div>
+                    <div style="color:#ffd700;font-size:12px;">⭐ Bônus: ${config.fuelBonus.toFixed(1)}x</div>
+                </div>
+            `;
+        }
 
-    if(gameState === "crashed"){
-        for(let i = 0; i < 25; i++){
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 20 + Math.random() * 80;
-            const size = 2 + Math.random() * 20;
-            const alpha = 0.2 + Math.random() * 0.6;
-            const colors = ["#ff4444", "#ff8800", "#ffcc00", "#ff6600", "#ff2200"];
-            ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+        // ====================================================
+        // PRÓXIMA FASE
+        // ====================================================
+        function avancarFase() {
+            if (gameState === "levelComplete") {
+                currentLevel++;
+                applyLevel(currentLevel);
+                resetRocket();
+                gameState = "playing";
+                audio.stopEngine();
+                engineWasOn = false;
+                nextBtn.style.display = 'none';
+            } else if (gameState === "gameComplete") {
+                resetGame();
+                audio.stopEngine();
+                engineWasOn = false;
+                nextBtn.style.display = 'none';
+            }
+        }
+
+        nextBtn.addEventListener('click', avancarFase);
+        nextBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            avancarFase();
+        });
+
+        canvas.addEventListener('click', function() {
+            if (gameState === "levelComplete" || gameState === "gameComplete") {
+                avancarFase();
+            }
+        });
+
+        canvas.addEventListener('touchstart', function(e) {
+            if (gameState === "levelComplete" || gameState === "gameComplete") {
+                e.preventDefault();
+                avancarFase();
+            }
+        }, { passive: false });
+
+        // ====================================================
+        // EVENTOS DE TECLADO (Desktop)
+        // ====================================================
+        document.addEventListener("keydown", function(e) {
+            keys[e.key] = true;
+            if (e.key === "r" || e.key === "R") {
+                resetGame();
+                audio.stopEngine();
+            }
+            if ((e.key === "Enter" || e.key === " ") && (gameState === "levelComplete" || gameState === "gameComplete")) {
+                avancarFase();
+            }
+            if (!audio.ctx) {
+                audio.init();
+            }
+        });
+
+        document.addEventListener("keyup", function(e) {
+            keys[e.key] = false;
+            if (e.key === "ArrowUp") {
+                audio.stopEngine();
+            }
+        });
+
+        soundBtn.addEventListener("click", function() {
+            const enabled = audio.toggle();
+            soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
+            if (!audio.ctx) {
+                audio.init();
+            }
+        });
+
+        rankingBtn.addEventListener("click", function() {
+            atualizarRankingFull();
+            rankingScreen.classList.toggle("active");
+        });
+
+        closeRanking.addEventListener("click", function() {
+            rankingScreen.classList.remove("active");
+        });
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape" && rankingScreen.classList.contains("active")) {
+                rankingScreen.classList.remove("active");
+            }
+        });
+
+        // ====================================================
+        // FUNÇÕES DE DESENHO
+        // ====================================================
+
+        function drawStars() {
+            for (let i = 0; i < 120; i++) {
+                const x = (i * 97 + currentLevel * 13) % canvas.width;
+                const y = (i * 53 + currentLevel * 7) % canvas.height;
+                const size = 0.5 + (i % 3) * 0.5;
+                const brightness = 0.5 + (i % 5) / 5;
+                ctx.fillStyle = `rgba(255,255,255,${brightness})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawGround() {
+            const grad = ctx.createLinearGradient(0, 660, 0, 700);
+            grad.addColorStop(0, "#1b4332");
+            grad.addColorStop(1, "#0d2818");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 660, canvas.width, 40);
+
+            ctx.fillStyle = "#2d6a4f";
+            ctx.fillRect(0, 655, canvas.width, 10);
+
+            ctx.fillStyle = "rgba(255,0,0,0.05)";
+            ctx.fillRect(0, 655, pad.x, 10);
+            ctx.fillRect(pad.x + pad.width, 655, canvas.width - pad.x - pad.width, 10);
+
+            const padGlow = ctx.createRadialGradient(pad.x + pad.width / 2, pad.y, 10, pad.x + pad.width / 2, pad.y, pad
+                .width);
+            padGlow.addColorStop(0, "rgba(244,162,97,0.3)");
+            padGlow.addColorStop(1, "rgba(244,162,97,0)");
+            ctx.fillStyle = padGlow;
+            ctx.fillRect(pad.x - 40, pad.y - 20, pad.width + 80, 40);
+
+            ctx.fillStyle = "#e9c46a";
+            ctx.shadowColor = "#f4a261";
+            ctx.shadowBlur = 25;
             ctx.beginPath();
-            ctx.arc(rocket.x + Math.cos(angle) * distance, rocket.y + Math.sin(angle) * distance, size, 0, Math.PI * 2);
+            ctx.roundRect(pad.x, pad.y, pad.width, pad.height, 3);
             ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "rgba(255,200,100,0.3)";
+            for (let i = 0; i < pad.width; i += 20) {
+                ctx.fillRect(pad.x + i, pad.y + 2, 10, 3);
+            }
+
+            ctx.fillStyle = "rgba(255,255,255,0.15)";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`FASE ${currentLevel}`, pad.x + pad.width / 2, pad.y + 24);
+            ctx.textAlign = "left";
         }
 
-        ctx.fillStyle = "rgba(0,0,0,0.6)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.textAlign = "center";
+        function drawRocket() {
+            ctx.save();
+            ctx.translate(rocket.x, rocket.y);
+            ctx.rotate(rocket.angle);
 
-        ctx.fillStyle = "#ff4444";
-        ctx.font = "bold 52px Arial";
-        ctx.shadowColor = "#ff4444";
-        ctx.shadowBlur = 30;
-        ctx.fillText("💥 EXPLODIU!", canvas.width/2, 200);
-        ctx.shadowBlur = 0;
+            const seatY = 16;
+            const seatWidth = 22;
+            const seatHeight = 8;
 
-        ctx.fillStyle = "white";
-        ctx.font = "24px Arial";
-        ctx.fillText(`Fase ${currentLevel} - Tente novamente, ${NOME_JOGADOR}`, canvas.width/2, 260);
+            ctx.fillStyle = "#b8860b";
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.roundRect(-seatWidth / 2, seatY, seatWidth, seatHeight, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
 
-        ctx.fillStyle = "#aaa";
-        ctx.font = "20px Arial";
-        ctx.fillText("Pressione R para recomeçar a fase", canvas.width/2, 320);
-        ctx.textAlign = "left";
-    }
-}
+            ctx.fillStyle = "#cd853f";
+            ctx.beginPath();
+            ctx.roundRect(-12, seatY - 10, 4, 14, 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.roundRect(8, seatY - 10, 4, 14, 2);
+            ctx.fill();
 
-// ====================================================
-// RENDERIZAÇÃO
-// ====================================================
-function render(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawStars();
-    drawGround();
-    drawRocket();
-    drawFuelBar();
-    drawMessage();
-    drawHUD();
-}
+            ctx.fillStyle = "#4a7c59";
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.roundRect(-8, seatY - 18, 16, 18, 3);
+            ctx.fill();
 
-// ====================================================
-// POLYFILL
-// ====================================================
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
-        const r = typeof radii === 'number' ? radii : (radii || 0);
-        this.moveTo(x + r, y);
-        this.arcTo(x + w, y, x + w, y + h, r);
-        this.arcTo(x + w, y + h, x, y + h, r);
-        this.arcTo(x, y + h, x, y, r);
-        this.arcTo(x, y, x + w, y, r);
-        return this;
-    };
-}
+            ctx.fillStyle = "#f5f5dc";
+            ctx.shadowColor = "rgba(0,0,0,0.2)";
+            ctx.shadowBlur = 4;
+            ctx.beginPath();
+            ctx.arc(0, seatY - 22, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
 
-// ====================================================
-// INICIALIZAÇÃO
-// ====================================================
-function iniciarJogo() {
-    applyLevel(1);
-    resetRocket();
-    gameLoop();
-    atualizarRankingUI();
-    console.log(`🚀 Rocket Lander - Jogador: ${NOME_JOGADOR}`);
-    console.log(`📱 Controles touch ativados!`);
-    console.log(`👆 Toque na tela ou clique em "PRÓXIMA FASE" para avançar`);
-}
+            ctx.fillStyle = "#1a1a2e";
+            ctx.beginPath();
+            ctx.arc(1, seatY - 24, 5, 0, Math.PI);
+            ctx.fill();
 
-// ====================================================
-// LOOP
-// ====================================================
-function gameLoop(){
-    update();
-    render();
-    requestAnimationFrame(gameLoop);
-}
+            ctx.strokeStyle = "#888";
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 0;
 
-// Inicializa áudio no primeiro clique
-document.addEventListener('click', function initAudio() {
-    audio.init();
-    document.removeEventListener('click', initAudio);
-}, { once: true });
-</script>
+            ctx.beginPath();
+            ctx.moveTo(-12, seatY + seatHeight);
+            ctx.lineTo(-20, seatY + seatHeight + 12);
+            ctx.stroke();
+
+            ctx.fillStyle = "#666";
+            ctx.beginPath();
+            ctx.roundRect(-24, seatY + seatHeight + 10, 8, 4, 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(12, seatY + seatHeight);
+            ctx.lineTo(20, seatY + seatHeight + 12);
+            ctx.stroke();
+
+            ctx.fillStyle = "#666";
+            ctx.beginPath();
+            ctx.roundRect(16, seatY + seatHeight + 10, 8, 4, 2);
+            ctx.fill();
+
+            const grad = ctx.createLinearGradient(-12, -25, 12, 25);
+            grad.addColorStop(0, "#e0e0e0");
+            grad.addColorStop(0.5, "#ffffff");
+            grad.addColorStop(1, "#aaaaaa");
+            ctx.fillStyle = grad;
+            ctx.shadowColor = "rgba(255,255,255,0.1)";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(-12, -25, 24, 40, 3);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#4fc3f7";
+            ctx.shadowColor = "#4fc3f7";
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(0, -10, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.beginPath();
+            ctx.arc(-2, -12, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#ff6b6b";
+            ctx.fillRect(-10, -22, 20, 3);
+            ctx.fillRect(-8, 8, 16, 3);
+
+            ctx.fillStyle = "#ff6b6b";
+            ctx.shadowColor = "#ff6b6b";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(-10, -25);
+            ctx.lineTo(0, -40);
+            ctx.lineTo(10, -25);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
+
+            if (isThrusting && gameState === "playing") {
+                const flameHeight = 30 + Math.random() * 25;
+                const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 +
+                    flameHeight / 2, flameHeight);
+                gradFlame.addColorStop(0, "rgba(255,255,255,1)");
+                gradFlame.addColorStop(0.1, "rgba(255,255,200,1)");
+                gradFlame.addColorStop(0.3, "rgba(255,200,50,1)");
+                gradFlame.addColorStop(0.6, "rgba(255,100,0,0.8)");
+                gradFlame.addColorStop(1, "rgba(255,50,0,0)");
+                ctx.fillStyle = gradFlame;
+                ctx.beginPath();
+                ctx.moveTo(-10, seatY + seatHeight + 2);
+                ctx.quadraticCurveTo(-5, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 +
+                flameHeight);
+                ctx.quadraticCurveTo(5, seatY + seatHeight + 2 + flameHeight * 0.6, 10, seatY + seatHeight + 2);
+                ctx.fill();
+
+                for (let i = 0; i < 5; i++) {
+                    const alpha = 0.2 + Math.random() * 0.6;
+                    const size = 1 + Math.random() * 3;
+                    const px = (Math.random() - 0.5) * 10;
+                    const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
+                    ctx.fillStyle = `rgba(255,200,50,${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function drawFuelBar() {
+            const barX = 20;
+            const barY = 70;
+            const barWidth = 200;
+            const barHeight = 22;
+
+            ctx.fillStyle = "rgba(0,0,0,0.7)";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth, barHeight, 3);
+            ctx.stroke();
+
+            const fuelPercent = Math.max(0, rocket.fuel / 30);
+            let color = "#00ff88";
+            if (fuelPercent < 0.2) color = "#ff4444";
+            else if (fuelPercent < 0.5) color = "#ffaa00";
+
+            const grad = ctx.createLinearGradient(barX, barY, barX + barWidth * fuelPercent, barY);
+            grad.addColorStop(0, color);
+            grad.addColorStop(1, color + "88");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(barX + 2, barY + 2, Math.max(0, (barWidth - 4) * fuelPercent), barHeight - 4, 2);
+            ctx.fill();
+
+            ctx.fillStyle = "white";
+            ctx.font = "bold 14px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText("🔥 " + rocket.fuel.toFixed(1) + "%", barX + 8, barY + 17);
+
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.font = "12px Arial";
+            ctx.fillText("COMBUSTÍVEL", barX, barY - 6);
+        }
+
+        // ====================================================
+        // ATUALIZAÇÃO DO JOGO
+        // ====================================================
+        let engineWasOn = false;
+
+        function update() {
+            if (gameState === "levelComplete" || gameState === "gameComplete") {
+                if (gameState === "levelComplete" || gameState === "gameComplete") {
+                    nextBtn.style.display = 'block';
+                    if (gameState === "gameComplete") {
+                        nextBtn.textContent = '🔄 REINICIAR';
+                    } else {
+                        nextBtn.textContent = `▶ PRÓXIMA FASE (${currentLevel + 1})`;
+                    }
+                }
+                audio.stopEngine();
+                return;
+            }
+            if (gameState !== "playing") return;
+
+            if (keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
+            if (keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
+
+            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
+
+            if (isThrusting) {
+                const thrustX = Math.sin(rocket.angle) * thrustPower;
+                const thrustY = -Math.cos(rocket.angle) * thrustPower;
+                rocket.vx += thrustX;
+                rocket.vy += thrustY;
+                rocket.fuel -= fuelConsumption;
+                if (rocket.fuel < 0) rocket.fuel = 0;
+
+                if (!engineWasOn) {
+                    audio.init();
+                    audio.startEngine();
+                    engineWasOn = true;
+                }
+            } else {
+                if (engineWasOn) {
+                    audio.stopEngine();
+                    engineWasOn = false;
+                }
+            }
+
+            rocket.vy += gravity;
+            rocket.x += rocket.vx;
+            rocket.y += rocket.vy;
+
+            if (rocket.x < -30) rocket.x = canvas.width + 30;
+            if (rocket.x > canvas.width + 30) rocket.x = -30;
+
+            if (rocket.y > 750) {
+                gameState = "crashed";
+                audio.playExplosion();
+                audio.stopEngine();
+                engineWasOn = false;
+                nextBtn.style.display = 'none';
+                return;
+            }
+
+            const bottom = rocket.y + 25;
+            const insidePadX = rocket.x > pad.x && rocket.x < pad.x + pad.width;
+            const config = getLevelConfig(currentLevel);
+            const speedV = Math.abs(rocket.vy);
+            const speedH = Math.abs(rocket.vx);
+            const angleDeg = Math.abs(rocket.angle * 180 / Math.PI);
+
+            if (bottom >= pad.y && insidePadX) {
+                if (speedV < config.maxSpeedV && speedH < config.maxSpeedH && angleDeg < config.maxAngle) {
+                    audio.stopEngine();
+                    engineWasOn = false;
+                    audio.playLanding();
+
+                    const fuelBonus = config.fuelBonus || 1;
+                    const baseScore = 1000 + Math.floor(rocket.fuel * 20) + Math.floor((config.maxSpeedV - speedV) * 300);
+                    levelScore = Math.floor(baseScore * fuelBonus);
+                    score += levelScore;
+
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem("rocketLanderHighScore", highScore.toString());
+                        if (currentPlayer) {
+                            salvarRecorde(currentPlayer, score);
+                            atualizarRankingPreview();
+                        }
+                    }
+
+                    if (currentLevel >= maxLevel) {
+                        gameState = "gameComplete";
+                        setTimeout(() => audio.playLevelComplete(), 300);
+                    } else {
+                        gameState = "levelComplete";
+                        setTimeout(() => audio.playLevelComplete(), 300);
+                    }
+                } else {
+                    gameState = "crashed";
+                    audio.playExplosion();
+                    audio.stopEngine();
+                    engineWasOn = false;
+                    nextBtn.style.display = 'none';
+                }
+                return;
+            }
+
+            if (bottom >= 660 && !insidePadX) {
+                gameState = "crashed";
+                audio.playExplosion();
+                audio.stopEngine();
+                engineWasOn = false;
+                nextBtn.style.display = 'none';
+            }
+        }
+
+        // ====================================================
+        // HUD E MENSAGENS
+        // ====================================================
+        function drawHUD() {
+            const config = getLevelConfig(currentLevel);
+            info.innerHTML = `
+                <div style="background:rgba(0,0,0,0.75);padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;">
+                    <div>⬆️ Vel. Vertical: <span style="color:#4fc3f7;">${Math.abs(rocket.vy).toFixed(2)}</span> / ${config.maxSpeedV.toFixed(1)}</div>
+                    <div>➡️ Vel. Horizontal: <span style="color:#4fc3f7;">${Math.abs(rocket.vx).toFixed(2)}</span> / ${config.maxSpeedH.toFixed(1)}</div>
+                    <div style="color:#ffd700;">⭐ Pontuação: ${score}</div>
+                    <div style="color:#ff6b6b;">🏆 Recorde: ${highScore}</div>
+                    <div style="color:#4fc3f7;font-size:12px;">👤 ${currentPlayer || "Anônimo"}</div>
+                    <div style="color:#aaa;font-size:12px;">📊 Fase ${currentLevel} - ${pad.width}px</div>
+                </div>
+            `;
+        }
+
+        function drawMessage() {
+            if (gameState === "levelComplete") {
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.textAlign = "center";
+
+                ctx.fillStyle = "#00ff88";
+                ctx.font = "bold 44px Arial";
+                ctx.shadowColor = "#00ff88";
+                ctx.shadowBlur = 30;
+                ctx.fillText("✅ FASE COMPLETA!", canvas.width / 2, 180);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "white";
+                ctx.font = "28px Arial";
+                ctx.fillText(`⭐ Pontuação da Fase: ${levelScore}`, canvas.width / 2, 240);
+
+                ctx.fillStyle = "#ffd700";
+                ctx.font = "24px Arial";
+                ctx.fillText(`Total: ${score}`, canvas.width / 2, 290);
+
+                ctx.fillStyle = "#4fc3f7";
+                ctx.font = "22px Arial";
+                ctx.fillText(`Próxima: ${getLevelConfig(currentLevel + 1).label}`, canvas.width / 2, 340);
+
+                ctx.fillStyle = "#aaa";
+                ctx.font = "18px Arial";
+                ctx.fillText("Toque na tela ou clique no botão para continuar", canvas.width / 2, 400);
+                ctx.textAlign = "left";
+            }
+
+            if (gameState === "gameComplete") {
+                ctx.fillStyle = "rgba(0,0,0,0.7)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.textAlign = "center";
+
+                ctx.fillStyle = "rgba(255,215,0,0.1)";
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, 250, 200, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = "#ffd700";
+                ctx.font = "bold 56px Arial";
+                ctx.shadowColor = "#ffd700";
+                ctx.shadowBlur = 40;
+                ctx.fillText("🏆 VITÓRIA!", canvas.width / 2, 200);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText(`⭐ Pontuação Final: ${score}`, canvas.width / 2, 270);
+
+                if (score >= highScore && score > 0) {
+                    ctx.fillStyle = "#ffd700";
+                    ctx.font = "bold 26px Arial";
+                    ctx.shadowColor = "#ffd700";
+                    ctx.shadowBlur = 20;
+                    ctx.fillText(`🏆 NOVO RECORDE, ${currentPlayer}!`, canvas.width / 2, 320);
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.fillStyle = "#4fc3f7";
+                ctx.font = "20px Arial";
+                ctx.fillText(`Você completou todas as ${maxLevel} fases!`, canvas.width / 2, 370);
+
+                ctx.fillStyle = "#aaa";
+                ctx.font = "18px Arial";
+                ctx.fillText("Toque na tela ou clique no botão para reiniciar", canvas.width / 2, 420);
+                ctx.textAlign = "left";
+            }
+
+            if (gameState === "crashed") {
+                for (let i = 0; i < 25; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 20 + Math.random() * 80;
+                    const size = 2 + Math.random() * 20;
+                    const alpha = 0.2 + Math.random() * 0.6;
+                    const colors = ["#ff4444", "#ff8800", "#ffcc00", "#ff6600", "#ff2200"];
+                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)] + Math.floor(alpha * 255)
+                        .toString(16).padStart(2, '0');
+                    ctx.beginPath();
+                    ctx.arc(rocket.x + Math.cos(angle) * distance, rocket.y + Math.sin(angle) * distance, size, 0, Math.PI *
+                        2);
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.textAlign = "center";
+
+                ctx.fillStyle = "#ff4444";
+                ctx.font = "bold 52px Arial";
+                ctx.shadowColor = "#ff4444";
+                ctx.shadowBlur = 30;
+                ctx.fillText("💥 EXPLODIU!", canvas.width / 2, 200);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "white";
+                ctx.font = "24px Arial";
+                ctx.fillText(`Fase ${currentLevel} - Tente novamente, ${currentPlayer}`, canvas.width / 2, 260);
+
+                ctx.fillStyle = "#aaa";
+                ctx.font = "20px Arial";
+                ctx.fillText("Pressione R para recomeçar a fase", canvas.width / 2, 320);
+                ctx.textAlign = "left";
+            }
+        }
+
+        // ====================================================
+        // RENDERIZAÇÃO
+        // ====================================================
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawStars();
+            drawGround();
+            drawRocket();
+            drawFuelBar();
+            drawMessage();
+            drawHUD();
+        }
+
+        // ====================================================
+        // POLYFILL
+        // ====================================================
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+                const r = typeof radii === 'number' ? radii : (radii || 0);
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                return this;
+            };
+        }
+
+        // ====================================================
+        // INICIAR JOGO
+        // ====================================================
+        function iniciarJogo(nome) {
+            currentPlayer = nome.trim() || "Anônimo";
+
+            // Esconde a tela de login
+            loginScreen.classList.add('hidden');
+
+            // Ajusta o tamanho do canvas
+            resizeCanvas();
+
+            // Inicializa o jogo
+            resetGame();
+            applyLevel(currentLevel);
+            resetRocket();
+            gameState = "playing";
+            audio.stopEngine();
+            engineWasOn = false;
+
+            // Atualiza ranking
+            atualizarRankingPreview();
+
+            // Inicia o loop
+            if (typeof gameLoopStarted === 'undefined') {
+                gameLoop();
+                gameLoopStarted = true;
+            }
+
+            console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
+        }
+
+        // ====================================================
+        // LOOP
+        // ====================================================
+        let gameLoopStarted = false;
+
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ====================================================
+        // EVENTOS DA TELA DE LOGIN
+        // ====================================================
+        document.addEventListener("DOMContentLoaded", function() {
+            // Atualiza ranking
+            atualizarRankingPreview();
+
+            // Carrega nome salvo
+            const nomeSalvo = localStorage.getItem('rocketPlayerName');
+            if (nomeSalvo) {
+                nameInput.value = nomeSalvo;
+            }
+
+            // Botão JOGAR
+            startBtn.addEventListener("click", function() {
+                const nome = nameInput.value.trim() || "Anônimo";
+                localStorage.setItem('rocketPlayerName', nome);
+                iniciarJogo(nome);
+            });
+
+            // Enter no campo
+            nameInput.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    startBtn.click();
+                }
+            });
+
+            // Foco no campo
+            nameInput.focus();
+        });
+
+        // Inicializa áudio no primeiro clique
+        document.addEventListener('click', function initAudio() {
+            audio.init();
+            document.removeEventListener('click', initAudio);
+        }, { once: true });
+
+        console.log("🚀 ROCKET LANDER - COM LOGIN E RANKING");
+        console.log("👤 Digite seu nome e clique em JOGAR");
+        console.log("🏆 Top 3 salvo no navegador.");
+    </script>
+
 </body>
 </html>
