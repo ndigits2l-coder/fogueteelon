@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Rocket Lander</title>
     <style>
-        /* ===== ESTILOS ===== */
+        /* ===== ESTILOS GERAIS ===== */
         * {
             margin: 0;
             padding: 0;
@@ -488,6 +488,26 @@
             text-align: right;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
         }
+
+        /* ===== BOTÕES OCULTOS DURANTE O JOGO ===== */
+        #sound-toggle,
+        #ranking-btn,
+        #skin-toggle,
+        #skin-selector {
+            display: none !important;
+        }
+
+        /* Mostra apenas quando estiver no menu ou em pausa */
+        #sound-toggle.show-buttons,
+        #ranking-btn.show-buttons,
+        #skin-toggle.show-buttons,
+        #skin-selector.show-buttons {
+            display: block !important;
+        }
+        #skin-selector.show-buttons {
+            display: flex !important;
+        }
+
         #sound-toggle {
             position: absolute;
             bottom: 20px;
@@ -503,11 +523,11 @@
             cursor: pointer;
             font-family: Arial, sans-serif;
             transition: all 0.3s;
-            display: none;
         }
         #sound-toggle:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+
         #ranking-btn {
             position: absolute;
             bottom: 70px;
@@ -524,11 +544,11 @@
             font-family: Arial, sans-serif;
             transition: all 0.3s;
             letter-spacing: 1px;
-            display: none;
         }
         #ranking-btn:hover {
             background: rgba(255, 215, 0, 0.25);
         }
+
         #next-btn {
             position: absolute;
             bottom: 160px;
@@ -564,6 +584,7 @@
             50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.3); }
             100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
         }
+
         #touch-controls {
             position: absolute;
             bottom: 80px;
@@ -616,7 +637,6 @@
             background: rgba(255, 150, 0, 0.35);
         }
 
-        /* ===== SKIN SELECTOR (in-game) ===== */
         #skin-selector {
             position: absolute;
             bottom: 130px;
@@ -656,6 +676,7 @@
             display: block;
             margin-top: -4px;
         }
+
         #skin-toggle {
             position: absolute;
             bottom: 120px;
@@ -671,7 +692,6 @@
             cursor: pointer;
             font-family: Arial, sans-serif;
             transition: all 0.3s;
-            display: none;
             letter-spacing: 1px;
         }
         #skin-toggle:hover {
@@ -2467,6 +2487,27 @@
         }
 
         // =========================================
+        // FUNÇÃO PARA MOSTRAR/OCULTAR BOTÕES
+        // =========================================
+        function toggleButtons(show) {
+            const btns = [
+                document.getElementById('sound-toggle'),
+                document.getElementById('ranking-btn'),
+                document.getElementById('skin-toggle'),
+                document.getElementById('skin-selector')
+            ];
+            btns.forEach(btn => {
+                if (btn) {
+                    if (show) {
+                        btn.classList.add('show-buttons');
+                    } else {
+                        btn.classList.remove('show-buttons');
+                    }
+                }
+            });
+        }
+
+        // =========================================
         // LOOP DO JOGO
         // =========================================
         function gameLoop() {
@@ -2497,10 +2538,14 @@
             atualizarRankingPreview();
             atualizarUI_Skins();
 
-            skinToggle.style.display = 'block';
-            skinToggle.textContent = '🎨 SKINS';
-            soundBtn.style.display = 'block';
-            rankingBtn.style.display = 'block';
+            // Oculta os botões durante o jogo
+            toggleButtons(false);
+
+            // Mostra apenas o necessário
+            soundBtn.style.display = 'none';
+            rankingBtn.style.display = 'none';
+            skinToggle.style.display = 'none';
+            skinSelector.style.display = 'none';
 
             if (!gameLoopStarted) {
                 gameLoop();
@@ -2509,6 +2554,17 @@
 
             render();
             console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
+        }
+
+        // =========================================
+        // VOLTAR AO MENU
+        // =========================================
+        function voltarMenu() {
+            menuScreen.classList.remove('hidden');
+            loginScreen.classList.add('hidden');
+            
+            // Mostra os botões novamente (mas só no menu)
+            toggleButtons(true);
         }
 
         // =========================================
@@ -2559,7 +2615,7 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - COM MENU PRINCIPAL E RANKING FUNCIONANDO");
+        console.log("🚀 ROCKET LANDER - BOTÕES OCULTOS DURANTE O JOGO");
         console.log("🎮 Aproveite!");
     </script>
 </body>
