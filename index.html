@@ -71,6 +71,16 @@ canvas{
 
 <script>
 // ====================================================
+// PEGA O NOME DA URL
+// ====================================================
+function getNomeDaURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('nome') || 'Anônimo';
+}
+
+const nomeJogador = getNomeDaURL();
+
+// ====================================================
 // SISTEMA DE ÁUDIO
 // ====================================================
 class AudioManager {
@@ -763,6 +773,7 @@ function drawHUD(){
             <div>➡️ Vel. Horizontal: <span style="color:#4fc3f7;">${Math.abs(rocket.vx).toFixed(2)}</span> / ${config.maxSpeedH.toFixed(1)}</div>
             <div style="color:#ffd700;">⭐ Pontuação: ${score}</div>
             <div style="color:#ff6b6b;">🏆 Recorde: ${highScore}</div>
+            <div style="color:#4fc3f7;font-size:12px;">👤 ${nomeJogador}</div>
             <div style="color:#aaa;font-size:12px;">📊 Fase ${currentLevel} - ${pad.width}px</div>
         </div>
     `;
@@ -825,7 +836,7 @@ function drawMessage(){
             ctx.font = "bold 26px Arial";
             ctx.shadowColor = "#ffd700";
             ctx.shadowBlur = 20;
-            ctx.fillText("🏆 NOVO RECORDE!", canvas.width/2, 320);
+            ctx.fillText(`🏆 NOVO RECORDE, ${nomeJogador}!`, canvas.width/2, 320);
             ctx.shadowBlur = 0;
         }
 
@@ -865,7 +876,7 @@ function drawMessage(){
 
         ctx.fillStyle = "white";
         ctx.font = "24px Arial";
-        ctx.fillText(`Fase ${currentLevel} - Tente novamente`, canvas.width/2, 260);
+        ctx.fillText(`Fase ${currentLevel} - Tente novamente, ${nomeJogador}`, canvas.width/2, 260);
 
         ctx.fillStyle = "#aaa";
         ctx.font = "20px Arial";
