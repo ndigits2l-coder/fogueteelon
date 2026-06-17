@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Rocket Lander</title>
-
     <style>
         /* ===== ESTILOS ===== */
         * {
@@ -961,7 +960,6 @@
             pad.width = fog.padWidth;
             pad.x = (canvas.width - pad.width) / 2;
 
-            // Atualiza o foguete
             if (rocket) {
                 rocket.fuel = fog.fuel;
                 rocket.startFuel = fog.fuel;
@@ -979,7 +977,121 @@
         }
 
         // =========================================
-        // DESENHO DO FOGUETE PERSONALIZADO
+        // VELOCÍMETRO (estilo carro)
+        // =========================================
+        function drawSpeedometer() {
+            const cx = 100;
+            const cy = canvas.height - 80;
+            const raio = 55;
+
+            // Velocidade total
+            const speed = Math.sqrt(rocket.vx * rocket.vx + rocket.vy * rocket.vy);
+            const speedKmh = speed * 250;
+            const maxSpeed = 8;
+            const percent = Math.min(speed / maxSpeed, 1);
+
+            ctx.save();
+
+            // Fundo
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.shadowBlur = 15;
+
+            const grad = ctx.createRadialGradient(cx, cy, 5, cx, cy, raio);
+            grad.addColorStop(0, "rgba(20, 30, 50, 0.85)");
+            grad.addColorStop(0.7, "rgba(10, 15, 30, 0.9)");
+            grad.addColorStop(1, "rgba(0, 0, 0, 0.95)");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, raio, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, raio, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = "rgba(255,255,255,0.05)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(cx, cy, raio - 4, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Arco de velocidade
+            const startAngle = 0.75 * Math.PI;
+            const endAngle = 2.25 * Math.PI;
+            const arcLength = endAngle - startAngle;
+
+            for (let i = 0; i < 100; i++) {
+                const t = i / 100;
+                const angle = startAngle + t * arcLength;
+                const innerRadius = raio - 12;
+                const outerRadius = raio - 6;
+
+                let color;
+                if (t < 0.4) color = `rgba(0, 255, 136, ${0.6 + t * 0.4})`;
+                else if (t < 0.7) color = `rgba(255, 215, 0, ${0.8 + (t - 0.4) * 0.2})`;
+                else color = `rgba(255, 68, 68, ${0.8 + (t - 0.7) * 0.2})`;
+
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(cx, cy, outerRadius, angle, angle + 0.025);
+                ctx.arc(cx, cy, innerRadius, angle + 0.025, angle, true);
+                ctx.fill();
+            }
+
+            // Ponteiro
+            const pointerAngle = startAngle + percent * arcLength;
+            const pointerLength = raio - 10;
+
+            ctx.shadowColor = "rgba(255,255,255,0.2)";
+            ctx.shadowBlur = 8;
+            ctx.strokeStyle = "#ff6b6b";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(
+                cx + Math.cos(pointerAngle) * pointerLength,
+                cy + Math.sin(pointerAngle) * pointerLength
+            );
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Círculo central
+            ctx.fillStyle = "#ff6b6b";
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Número digital
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(Math.floor(speedKmh), cx, cy + raio - 18);
+
+            ctx.fillStyle = "rgba(255,255,255,0.5)";
+            ctx.font = "10px Arial";
+            ctx.textBaseline = "top";
+            ctx.fillText("km/h", cx, cy + raio - 16);
+
+            // Label
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.font = "8px Arial";
+            ctx.textBaseline = "bottom";
+            ctx.fillText("VEL.", cx, cy - raio + 10);
+
+            ctx.restore();
+        }
+
+        // =========================================
+        // DESENHO DO FOGUETE
         // =========================================
         function drawRocket() {
             ctx.save();
@@ -992,13 +1104,12 @@
             const corDetalhe = fog.corDetalhe || "#4fc3f7";
             const corChama = fog.corChama || "#4fc3f7";
 
-            // Ajusta tamanho do foguete
             const scale = tamanho;
             const seatY = 16 * scale;
             const seatWidth = 22 * scale;
             const seatHeight = 8 * scale;
 
-            // ===== ASSENTO =====
+            // Assento
             ctx.fillStyle = "#b8860b";
             ctx.shadowColor = "rgba(0,0,0,0.3)";
             ctx.shadowBlur = 6;
@@ -1007,7 +1118,7 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // ===== ENCOSTO =====
+            // Encosto
             ctx.fillStyle = "#cd853f";
             ctx.beginPath();
             ctx.roundRect(-12 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
@@ -1016,7 +1127,7 @@
             ctx.roundRect(8 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
             ctx.fill();
 
-            // ===== PILOTO =====
+            // Piloto
             ctx.fillStyle = "#4a7c59";
             ctx.shadowBlur = 0;
             ctx.beginPath();
@@ -1036,7 +1147,7 @@
             ctx.arc(1 * scale, seatY - 24 * scale, 5 * scale, 0, Math.PI);
             ctx.fill();
 
-            // ===== PERNAS =====
+            // Pernas
             ctx.strokeStyle = "#888";
             ctx.lineWidth = 3 * scale;
             ctx.shadowBlur = 0;
@@ -1061,7 +1172,7 @@
             ctx.roundRect(16 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
             ctx.fill();
 
-            // ===== CORPO DO FOGUETE =====
+            // Corpo
             const grad = ctx.createLinearGradient(-12 * scale, -25 * scale, 12 * scale, 25 * scale);
             grad.addColorStop(0, cor);
             grad.addColorStop(0.5, cor);
@@ -1074,7 +1185,7 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // ===== JANELA =====
+            // Janela
             ctx.fillStyle = "#4fc3f7";
             ctx.shadowColor = "#4fc3f7";
             ctx.shadowBlur = 20;
@@ -1088,12 +1199,12 @@
             ctx.arc(-2 * scale, -12 * scale, 2.5 * scale, 0, Math.PI * 2);
             ctx.fill();
 
-            // ===== DETALHES =====
+            // Detalhes
             ctx.fillStyle = corDetalhe;
             ctx.fillRect(-10 * scale, -22 * scale, 20 * scale, 3 * scale);
             ctx.fillRect(-8 * scale, 8 * scale, 16 * scale, 3 * scale);
 
-            // ===== PONTEIRO =====
+            // Ponteiro
             ctx.fillStyle = corDetalhe;
             ctx.shadowColor = corDetalhe;
             ctx.shadowBlur = 10;
@@ -1104,7 +1215,7 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // ===== CHAMA =====
+            // Chama
             const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
             if (isThrusting && gameState === "playing") {
                 const flameHeight = (25 + Math.random() * 20) * scale;
@@ -1139,7 +1250,7 @@
         }
 
         // =========================================
-        // FUNÇÕES DE DESENHO (mantidas iguais)
+        // FUNÇÕES DE DESENHO
         // =========================================
         function drawStars() {
             for (let i = 0; i < 120; i++) {
@@ -1547,6 +1658,7 @@
             drawGround();
             drawRocket();
             drawFuelBar();
+            drawSpeedometer(); // <--- VELOCÍMETRO ADICIONADO
             drawMessage();
             drawHUD();
         }
@@ -1644,9 +1756,10 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - COM FOGUETES DIFERENTES");
+        console.log("🚀 ROCKET LANDER - COM VELOCÍMETRO");
         console.log("👤 Digite seu nome e clique em JOGAR");
         console.log("🏆 Top 3 salvo no navegador.");
+        console.log("📊 Velocímetro no canto inferior esquerdo!");
     </script>
 </body>
 </html>
