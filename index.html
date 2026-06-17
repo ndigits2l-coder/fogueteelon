@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rocket Lander</title>
+<title>Rocket Lander - Ranking</title>
 
 <style>
 body{
@@ -60,6 +60,101 @@ canvas{
 #sound-toggle:hover{
     background:rgba(255,255,255,0.2);
 }
+
+#ranking-btn{
+    position:absolute;
+    bottom:70px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:10;
+    background:rgba(255,215,0,0.15);
+    color:#ffd700;
+    border:1px solid rgba(255,215,0,0.3);
+    padding:6px 16px;
+    border-radius:16px;
+    font-size:12px;
+    cursor:pointer;
+    font-family:Arial,sans-serif;
+    transition:all 0.3s;
+    letter-spacing:1px;
+}
+
+#ranking-btn:hover{
+    background:rgba(255,215,0,0.25);
+}
+
+/* ===== TELA DE RANKING (popup) ===== */
+#rankingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.88);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+#rankingScreen.active {
+    display: flex;
+}
+
+#rankingScreen h2 {
+    color: #ffd700;
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+#rankingScreen .close-btn {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    color: #aaa;
+    font-size: 32px;
+    cursor: pointer;
+    transition: 0.3s;
+    background: none;
+    border: none;
+}
+
+#rankingScreen .close-btn:hover {
+    color: white;
+    transform: scale(1.1);
+}
+
+#rankingListFull {
+    color: white;
+    font-size: 22px;
+    text-align: center;
+    line-height: 2.2;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 30px 50px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-width: 280px;
+}
+
+#rankingListFull .medalha {
+    font-size: 28px;
+    margin-right: 8px;
+}
+
+#rankingListFull .empty {
+    color: #666;
+    font-size: 18px;
+}
+
+#rankingScreen .sub {
+    color: #666;
+    font-size: 14px;
+    margin-top: 20px;
+}
 </style>
 </head>
 <body>
@@ -68,6 +163,15 @@ canvas{
 <div id="fase-info"></div>
 <canvas id="game"></canvas>
 <button id="sound-toggle">🔊 Som: Ligado</button>
+<button id="ranking-btn">🏆 VER RANKING</button>
+
+<!-- TELA DE RANKING -->
+<div id="rankingScreen">
+    <button class="close-btn" id="closeRanking">✕</button>
+    <h2>🏆 TOP 3</h2>
+    <div id="rankingListFull">Carregando...</div>
+    <div class="sub">Pressione R para reiniciar o jogo</div>
+</div>
 
 <script>
 // ====================================================
@@ -79,6 +183,55 @@ function getNomeDaURL() {
 }
 
 const nomeJogador = getNomeDaURL();
+
+// ====================================================
+// SISTEMA DE RANKING
+// ====================================================
+let ranking = JSON.parse(localStorage.getItem('rocketScores')) || [];
+
+function salvarRecorde(nome, pontuacao) {
+    if (!nome || pontuacao <= 0) return;
+
+    let encontrado = false;
+    for (let i = 0; i < ranking.length; i++) {
+        if (ranking[i].nome === nome) {
+            if (pontuacao > ranking[i].score) {
+                ranking[i].score = pontuacao;
+            }
+            encontrado = true;
+            break;
+        }
+    }
+    if (!encontrado) {
+        ranking.push({ nome: nome, score: pontuacao });
+    }
+
+    // Ordena e mantém só os 3 melhores
+    ranking.sort((a, b) => b.score - a.score);
+    if (ranking.length > 3) {
+        ranking = ranking.slice(0, 3);
+    }
+
+    localStorage.setItem('rocketScores', JSON.stringify(ranking));
+}
+
+function atualizarRankingUI() {
+    const list = document.getElementById('rankingListFull');
+    if (!list) return;
+
+    if (ranking.length === 0) {
+        list.innerHTML = '<div class="empty">Nenhum recorde ainda.<br>Seja o primeiro! 🚀</div>';
+        return;
+    }
+
+    const medalhas = ['🥇', '🥈', '🥉'];
+    let html = '';
+    ranking.forEach((item, index) => {
+        const medalha = medalhas[index] || '🏅';
+        html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
+    });
+    list.innerHTML = html;
+}
 
 // ====================================================
 // SISTEMA DE ÁUDIO
@@ -281,6 +434,9 @@ canvas.height = 700;
 const info = document.getElementById("info");
 const faseInfo = document.getElementById("fase-info");
 const soundBtn = document.getElementById("sound-toggle");
+const rankingBtn = document.getElementById("ranking-btn");
+const rankingScreen = document.getElementById("rankingScreen");
+const closeRanking = document.getElementById("closeRanking");
 
 let keys = {};
 let score = 0;
@@ -401,6 +557,25 @@ soundBtn.addEventListener("click", function(){
     soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
     if(!audio.ctx) {
         audio.init();
+    }
+});
+
+// ====================================================
+// RANKING - EVENTOS
+// ====================================================
+rankingBtn.addEventListener("click", function(){
+    atualizarRankingUI();
+    rankingScreen.classList.toggle("active");
+});
+
+closeRanking.addEventListener("click", function(){
+    rankingScreen.classList.remove("active");
+});
+
+// Fecha ranking com ESC
+document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && rankingScreen.classList.contains("active")){
+        rankingScreen.classList.remove("active");
     }
 });
 
@@ -718,6 +893,9 @@ function update(){
             if(score > highScore){
                 highScore = score;
                 localStorage.setItem("rocketLanderHighScore", highScore.toString());
+                // SALVA NO RANKING COM NOME
+                salvarRecorde(nomeJogador, score);
+                atualizarRankingUI();
             }
 
             if(currentLevel >= maxLevel){
@@ -931,6 +1109,13 @@ document.addEventListener('click', function initAudio() {
     document.removeEventListener('click', initAudio);
 }, { once: true });
 
+// Atualiza ranking ao carregar
+atualizarRankingUI();
+
+console.log("🚀 Rocket Lander com Ranking!");
+console.log(`👤 Jogador: ${nomeJogador}`);
+console.log("🏆 Top 3 salvo no navegador.");
+console.log("📊 Clique em 'VER RANKING' para ver os melhores.");
 </script>
 </body>
 </html>
