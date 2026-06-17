@@ -26,6 +26,98 @@
             height: 100vh;
             width: 100vw;
         }
+
+        /* ===== MENU PRINCIPAL ===== */
+        #menuScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            transition: opacity 0.5s ease;
+        }
+        #menuScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #menuScreen h1 {
+            color: #4fc3f7;
+            font-size: 56px;
+            text-shadow: 0 0 40px rgba(79, 195, 247, 0.3);
+            margin-bottom: 4px;
+        }
+        #menuScreen .subtitle {
+            color: #888;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        #menuScreen .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 280px;
+        }
+        #menuScreen .menu-btn {
+            padding: 14px 20px;
+            font-size: 18px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-align: center;
+            letter-spacing: 1px;
+            font-family: Arial, sans-serif;
+        }
+        #menuScreen .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+        #menuScreen .menu-btn.primary {
+            background: #4fc3f7;
+            color: #000;
+            border-color: #4fc3f7;
+        }
+        #menuScreen .menu-btn.primary:hover {
+            background: #ffd700;
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+        #menuScreen .menu-btn.ranking {
+            border-color: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+        }
+        #menuScreen .menu-btn.skin {
+            border-color: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+        }
+        #menuScreen .menu-btn.sound {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+        }
+        #menuScreen .menu-btn.help {
+            border-color: rgba(79, 195, 247, 0.2);
+            color: #4fc3f7;
+        }
+        #menuScreen .version {
+            color: #333;
+            font-size: 12px;
+            margin-top: 25px;
+            letter-spacing: 2px;
+        }
+
+        /* ===== TELA DE LOGIN ===== */
         #loginScreen {
             position: fixed;
             top: 0;
@@ -135,6 +227,142 @@
             font-size: 11px;
             letter-spacing: 2px;
         }
+
+        /* ===== TELA DE COMO JOGAR ===== */
+        #helpScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #helpScreen.active {
+            display: flex;
+        }
+        #helpScreen h2 {
+            color: #4fc3f7;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        #helpScreen .help-content {
+            color: #ccc;
+            font-size: 18px;
+            text-align: center;
+            line-height: 2.2;
+            max-width: 400px;
+        }
+        #helpScreen .help-content kbd {
+            background: #333;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 6px;
+            border: 1px solid #555;
+            font-size: 16px;
+        }
+        #helpScreen .close-help {
+            margin-top: 30px;
+            padding: 12px 40px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            background: #4fc3f7;
+            color: #000;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        #helpScreen .close-help:hover {
+            background: #ffd700;
+        }
+
+        /* ===== TELA DE SKINS (menu) ===== */
+        #skinsMenuScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #skinsMenuScreen.active {
+            display: flex;
+        }
+        #skinsMenuScreen h2 {
+            color: #ffd700;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        #skinsMenuScreen .skins-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+        #skinsMenuScreen .skin-item {
+            width: 70px;
+            height: 80px;
+            border-radius: 12px;
+            border: 3px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #aaa;
+            transition: 0.3s;
+            background: rgba(255,255,255,0.02);
+        }
+        #skinsMenuScreen .skin-item.unlocked {
+            border-color: rgba(255,215,0,0.4);
+        }
+        #skinsMenuScreen .skin-item.locked {
+            opacity: 0.4;
+        }
+        #skinsMenuScreen .skin-item .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-bottom: 4px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        #skinsMenuScreen .skin-item .skin-name {
+            font-size: 9px;
+            text-align: center;
+            line-height: 1.2;
+        }
+        #skinsMenuScreen .close-skins {
+            padding: 12px 40px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            background: #ffd700;
+            color: #000;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        #skinsMenuScreen .close-skins:hover {
+            background: #4fc3f7;
+        }
+
+        /* ===== JOGO ===== */
         #game-wrapper {
             position: relative;
             width: 100%;
@@ -189,6 +417,7 @@
             cursor: pointer;
             font-family: Arial, sans-serif;
             transition: all 0.3s;
+            display: none;
         }
         #sound-toggle:hover {
             background: rgba(255, 255, 255, 0.2);
@@ -209,6 +438,7 @@
             font-family: Arial, sans-serif;
             transition: all 0.3s;
             letter-spacing: 1px;
+            display: none;
         }
         #ranking-btn:hover {
             background: rgba(255, 215, 0, 0.25);
@@ -358,64 +588,8 @@
         #touch-controls .thrust-btn:active {
             background: rgba(255, 150, 0, 0.35);
         }
-        @media (min-width: 768px) {
-            #touch-controls {
-                display: none;
-            }
-        }
-        @media (max-width: 480px) {
-            #touch-controls button {
-                width: 55px;
-                height: 55px;
-                font-size: 20px;
-            }
-            #touch-controls .thrust-btn {
-                width: 65px;
-                height: 65px;
-                font-size: 24px;
-            }
-            #next-btn {
-                padding: 12px 30px;
-                font-size: 18px;
-                bottom: 150px;
-            }
-            #info {
-                font-size: 12px;
-                top: 5px;
-                left: 5px;
-            }
-            #fase-info {
-                font-size: 12px;
-                top: 5px;
-                right: 5px;
-            }
-            #sound-toggle {
-                font-size: 10px;
-                padding: 4px 12px;
-                bottom: 10px;
-            }
-            #ranking-btn {
-                font-size: 10px;
-                padding: 4px 12px;
-                bottom: 55px;
-            }
-            #loginScreen h1 {
-                font-size: 36px;
-            }
-            #loginScreen .subtitle {
-                font-size: 14px;
-            }
-            #loginScreen input {
-                font-size: 16px;
-                padding: 12px 16px;
-            }
-            #startBtn {
-                font-size: 16px;
-                padding: 12px 16px;
-            }
-        }
 
-        /* ===== SELETOR DE SKINS ===== */
+        /* ===== SKIN SELECTOR (in-game) ===== */
         #skin-selector {
             position: absolute;
             bottom: 130px;
@@ -476,7 +650,80 @@
         #skin-toggle:hover {
             background: rgba(255,215,0,0.25);
         }
+
+        /* ===== RESPONSIVIDADE ===== */
+        @media (min-width: 768px) {
+            #touch-controls {
+                display: none;
+            }
+        }
         @media (max-width: 480px) {
+            #touch-controls button {
+                width: 55px;
+                height: 55px;
+                font-size: 20px;
+            }
+            #touch-controls .thrust-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 24px;
+            }
+            #next-btn {
+                padding: 12px 30px;
+                font-size: 18px;
+                bottom: 150px;
+            }
+            #info {
+                font-size: 12px;
+                top: 5px;
+                left: 5px;
+            }
+            #fase-info {
+                font-size: 12px;
+                top: 5px;
+                right: 5px;
+            }
+            #sound-toggle {
+                font-size: 10px;
+                padding: 4px 12px;
+                bottom: 10px;
+            }
+            #ranking-btn {
+                font-size: 10px;
+                padding: 4px 12px;
+                bottom: 55px;
+            }
+            #loginScreen h1 {
+                font-size: 36px;
+            }
+            #loginScreen .subtitle {
+                font-size: 14px;
+            }
+            #loginScreen input {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+            #startBtn {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+            #menuScreen h1 {
+                font-size: 36px;
+            }
+            #menuScreen .subtitle {
+                font-size: 14px;
+            }
+            #menuScreen .menu-btn {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+            #helpScreen .help-content {
+                font-size: 15px;
+            }
+            #skinsMenuScreen .skin-item {
+                width: 60px;
+                height: 70px;
+            }
             #skin-selector button {
                 width: 24px;
                 height: 24px;
@@ -495,7 +742,21 @@
 </head>
 <body>
 
-    <!-- TELA DE LOGIN -->
+    <!-- ===== MENU PRINCIPAL ===== -->
+    <div id="menuScreen">
+        <h1>🚀 ROCKET LANDER</h1>
+        <p class="subtitle">🌙 Pouse o foguete. Bata recordes.</p>
+        <div class="menu-buttons">
+            <button class="menu-btn primary" id="menuJogar">▶ JOGAR</button>
+            <button class="menu-btn ranking" id="menuRanking">🏆 RANKING</button>
+            <button class="menu-btn skin" id="menuSkins">🎨 SKINS</button>
+            <button class="menu-btn help" id="menuHelp">❓ COMO JOGAR</button>
+            <button class="menu-btn sound" id="menuSound">🔊 SOM</button>
+        </div>
+        <div class="version">v2.0 - Com Skins</div>
+    </div>
+
+    <!-- ===== TELA DE LOGIN ===== -->
     <div id="loginScreen">
         <h1>🚀 ROCKET LANDER</h1>
         <p class="subtitle">🌙 Pouse o foguete. Bata recordes.</p>
@@ -510,7 +771,29 @@
         <span class="credits">⬆️ ↑ acelera &nbsp;|&nbsp; ← → inclina</span>
     </div>
 
-    <!-- JOGO -->
+    <!-- ===== TELA DE COMO JOGAR ===== -->
+    <div id="helpScreen">
+        <h2>❓ COMO JOGAR</h2>
+        <div class="help-content">
+            <p>🎮 <kbd>←</kbd> <kbd>→</kbd> Inclinar o foguete</p>
+            <p>🔥 <kbd>↑</kbd> Acelerar (segure)</p>
+            <p>🔄 <kbd>R</kbd> Reiniciar a fase</p>
+            <p>📱 Celular: use os botões na tela</p>
+            <p>🎯 Pouse na plataforma com <strong>velocidade baixa</strong></p>
+            <p>⭐ Quanto mais combustível sobrar, <strong>maior a pontuação</strong></p>
+            <p>🎨 Complete fases para <strong>desbloquear skins</strong></p>
+        </div>
+        <button class="close-help" id="closeHelp">FECHAR</button>
+    </div>
+
+    <!-- ===== TELA DE SKINS (menu) ===== -->
+    <div id="skinsMenuScreen">
+        <h2>🎨 SKINS</h2>
+        <div class="skins-grid" id="skinsGridMenu"></div>
+        <button class="close-skins" id="closeSkinsMenu">FECHAR</button>
+    </div>
+
+    <!-- ===== JOGO ===== -->
     <div id="game-wrapper">
         <div id="info"></div>
         <div id="fase-info"></div>
@@ -531,7 +814,7 @@
         </div>
     </div>
 
-    <!-- RANKING -->
+    <!-- ===== RANKING ===== -->
     <div id="rankingScreen">
         <button class="close-btn" id="closeRanking">✕</button>
         <h2>🏆 TOP 3</h2>
@@ -619,14 +902,11 @@
         let skinsDisponiveis = JSON.parse(localStorage.getItem('rocketSkins')) || [];
         let skinAtual = localStorage.getItem('rocketSkinAtual') || 'classic';
 
-        // Atualiza skins disponíveis
         function atualizarSkinsDisponiveis() {
             if (skinsDisponiveis.length === 0) {
-                // Primeira vez: só a clássica
                 skinsDisponiveis = ['classic'];
                 localStorage.setItem('rocketSkins', JSON.stringify(skinsDisponiveis));
             }
-            // Verifica se a skin atual está disponível
             if (!skinsDisponiveis.includes(skinAtual)) {
                 skinAtual = 'classic';
                 localStorage.setItem('rocketSkinAtual', skinAtual);
@@ -646,7 +926,6 @@
                 skinAtual = id;
                 localStorage.setItem('rocketSkinAtual', skinAtual);
                 atualizarUI_Skins();
-                // Atualiza a cor do foguete
                 const skin = SKINS.find(s => s.id === skinAtual);
                 if (skin) {
                     fogueteAtual.cor = skin.cor;
@@ -664,9 +943,6 @@
             const container = document.getElementById('skin-selector');
             if (!container) return;
 
-            // Verifica desbloqueios (baseado no progresso)
-            // Fase 3 desbloqueia Ruby e Esmeralda
-            // Fase 5 desbloqueia todas as outras
             if (currentLevel >= 3) {
                 desbloquearSkin('ruby');
                 desbloquearSkin('emerald');
@@ -679,6 +955,23 @@
                 desbloquearSkin('ice');
             }
 
+            // Atualiza grid do menu de skins
+            const grid = document.getElementById('skinsGridMenu');
+            if (grid) {
+                grid.innerHTML = '';
+                SKINS.forEach(skin => {
+                    const disponivel = skinsDisponiveis.includes(skin.id);
+                    const div = document.createElement('div');
+                    div.className = `skin-item ${disponivel ? 'unlocked' : 'locked'}`;
+                    div.innerHTML = `
+                        <div class="color-preview" style="background:${skin.cor}"></div>
+                        <div class="skin-name">${skin.nome}${!disponivel && skin.id !== 'classic' ? ' 🔒' : ''}</div>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+
+            // Atualiza seletor in-game
             let html = '';
             SKINS.forEach(skin => {
                 const disponivel = skinsDisponiveis.includes(skin.id);
@@ -696,7 +989,6 @@
             });
             container.innerHTML = html;
 
-            // Eventos dos botões
             container.querySelectorAll('button:not(.locked)').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.dataset.id;
@@ -926,6 +1218,11 @@
         const skinToggle = document.getElementById('skin-toggle');
         const skinSelector = document.getElementById('skin-selector');
 
+        // Menu elements
+        const menuScreen = document.getElementById('menuScreen');
+        const helpScreen = document.getElementById('helpScreen');
+        const skinsMenuScreen = document.getElementById('skinsMenuScreen');
+
         // Controles Touch
         const btnLeft = document.getElementById('btn-left');
         const btnRight = document.getElementById('btn-right');
@@ -973,10 +1270,9 @@
         let currentLevel = 1;
         let maxLevel = 5;
         let engineWasOn = false;
+        let gameLoopStarted = false;
 
-        // =========================================
-        // METEOROS
-        // =========================================
+        // Meteoros
         let meteoros = [];
 
         function criarMeteoro() {
@@ -990,32 +1286,24 @@
         }
 
         function atualizarMeteoros() {
-            // Cria novos meteoros
             if (Math.random() < 0.02) {
                 criarMeteoro();
             }
-
             meteoros.forEach(m => {
-                // Salva posição anterior para o rastro
                 m.rastro.push({ x: m.x, y: m.y });
                 if (m.rastro.length > 10) m.rastro.shift();
-
                 m.x += Math.cos(m.angle) * m.speed;
                 m.y += Math.sin(m.angle) * m.speed;
                 m.life -= 0.001;
-
-                // Se saiu da tela ou morreu, remove
                 if (m.y > canvas.height + 50 || m.x > canvas.width + 50 || m.x < -50 || m.life <= 0) {
                     m.dead = true;
                 }
             });
-
             meteoros = meteoros.filter(m => !m.dead);
         }
 
         function desenharMeteoros() {
             meteoros.forEach(m => {
-                // Rastro
                 m.rastro.forEach((pos, i) => {
                     const alpha = (i / m.rastro.length) * 0.5;
                     const size = m.size * (0.3 + 0.7 * (i / m.rastro.length));
@@ -1024,8 +1312,6 @@
                     ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
                     ctx.fill();
                 });
-
-                // Corpo do meteoro
                 const grad = ctx.createRadialGradient(
                     m.x - m.size * 0.3, m.y - m.size * 0.3, 0,
                     m.x, m.y, m.size
@@ -1038,8 +1324,6 @@
                 ctx.beginPath();
                 ctx.arc(m.x, m.y, m.size * 2, 0, Math.PI * 2);
                 ctx.fill();
-
-                // Núcleo
                 ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
                 ctx.beginPath();
                 ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
@@ -1068,7 +1352,7 @@
                     maxAngle: 12,
                     fuelBonus: 1.0,
                     label: "🌙 FASE 1",
-                    consumoMultiplicador: 1.0 // Consumo normal
+                    consumoMultiplicador: 1.0
                 },
                 2: {
                     nome: "🛸 Foguete Médio",
@@ -1086,7 +1370,7 @@
                     maxAngle: 10,
                     fuelBonus: 1.5,
                     label: "🪐 FASE 2",
-                    consumoMultiplicador: 1.2 // Consome 20% mais
+                    consumoMultiplicador: 1.2
                 },
                 3: {
                     nome: "🚀 Foguete Grande",
@@ -1104,7 +1388,7 @@
                     maxAngle: 8,
                     fuelBonus: 2.0,
                     label: "☄️ FASE 3",
-                    consumoMultiplicador: 1.5 // Consome 50% mais
+                    consumoMultiplicador: 1.5
                 },
                 4: {
                     nome: "🛰️ Foguete de Carga",
@@ -1122,7 +1406,7 @@
                     maxAngle: 6,
                     fuelBonus: 2.5,
                     label: "🔥 FASE 4",
-                    consumoMultiplicador: 1.8 // Consome 80% mais
+                    consumoMultiplicador: 1.8
                 },
                 5: {
                     nome: "🔥 Foguete Turbo",
@@ -1140,7 +1424,7 @@
                     maxAngle: 4,
                     fuelBonus: 3.0,
                     label: "🚀 FASE 5",
-                    consumoMultiplicador: 2.0 // Consome 2x mais
+                    consumoMultiplicador: 2.0
                 }
             };
             if (level > 5) {
@@ -1166,26 +1450,22 @@
             return configs[level] || configs[1];
         }
 
-        // Variáveis de física
         let gravity = 0.01;
         let thrustPower = 0.12;
         let fuelConsumption = 0.7;
         let rotationSpeed = 0.04;
-        let consumoMultiplicador = 1.0; // Novo: multiplicador de consumo
+        let consumoMultiplicador = 1.0;
 
         let pad = { x: 420, y: 650, width: 160, height: 10 };
         let rocket;
         let fogueteAtual = {};
 
-        // =========================================
-        // RASTRO DO FOGUETE
-        // =========================================
+        // Rastro do foguete
         let rastro = [];
 
         function atualizarRastro() {
             rastro.push({ x: rocket.x, y: rocket.y, life: 1 });
             if (rastro.length > 50) rastro.shift();
-
             rastro.forEach(p => p.life -= 0.02);
             rastro = rastro.filter(p => p.life > 0);
         }
@@ -1201,9 +1481,6 @@
             });
         }
 
-        // =========================================
-        // CONFIGURAÇÃO DA FASE
-        // =========================================
         function getLevelConfig(level) {
             const fog = getFogueteConfig(level);
             return {
@@ -1250,7 +1527,6 @@
             const fog = getFogueteConfig(level);
             fogueteAtual = { ...fog };
 
-            // Aplica skin
             const skin = getSkinAtual();
             fogueteAtual.cor = skin.cor;
             fogueteAtual.corDetalhe = skin.corDetalhe;
@@ -1268,7 +1544,6 @@
                 rocket.startFuel = fog.fuel;
             }
 
-            // Atualiza skins (desbloqueios por fase)
             atualizarUI_Skins();
 
             faseInfo.innerHTML = `
@@ -1391,17 +1666,15 @@
         }
 
         // =========================================
-        // INDICADOR DE ALVO NO CHÃO
+        // INDICADOR DE ALVO
         // =========================================
         function drawTarget() {
             const groundY = 655;
             const x = rocket.x;
 
-            // Sombra circular
             const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 300);
             const radius = 20 * pulse;
 
-            // Sombra difusa
             const grad = ctx.createRadialGradient(x, groundY, 0, x, groundY, radius + 15);
             grad.addColorStop(0, 'rgba(255, 200, 100, 0.25)');
             grad.addColorStop(0.5, 'rgba(255, 200, 100, 0.1)');
@@ -1411,7 +1684,6 @@
             ctx.arc(x, groundY, radius + 15, 0, Math.PI * 2);
             ctx.fill();
 
-            // Círculo principal
             ctx.strokeStyle = `rgba(255, 200, 100, ${0.3 + 0.3 * pulse})`;
             ctx.lineWidth = 2;
             ctx.setLineDash([4, 6]);
@@ -1420,7 +1692,6 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Cruz
             ctx.strokeStyle = `rgba(255, 200, 100, ${0.2 + 0.2 * pulse})`;
             ctx.lineWidth = 1.5;
             const crossSize = 6;
@@ -1433,7 +1704,6 @@
             ctx.lineTo(x, groundY + crossSize);
             ctx.stroke();
 
-            // Centro
             ctx.fillStyle = `rgba(255, 200, 100, ${0.3 + 0.3 * pulse})`;
             ctx.beginPath();
             ctx.arc(x, groundY, 2, 0, Math.PI * 2);
@@ -1459,7 +1729,6 @@
             const seatWidth = 22 * scale;
             const seatHeight = 8 * scale;
 
-            // Assento
             ctx.fillStyle = "#b8860b";
             ctx.shadowColor = "rgba(0,0,0,0.3)";
             ctx.shadowBlur = 6;
@@ -1468,7 +1737,6 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Encosto
             ctx.fillStyle = "#cd853f";
             ctx.beginPath();
             ctx.roundRect(-12 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
@@ -1477,7 +1745,6 @@
             ctx.roundRect(8 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
             ctx.fill();
 
-            // Piloto
             ctx.fillStyle = "#4a7c59";
             ctx.shadowBlur = 0;
             ctx.beginPath();
@@ -1497,7 +1764,6 @@
             ctx.arc(1 * scale, seatY - 24 * scale, 5 * scale, 0, Math.PI);
             ctx.fill();
 
-            // Pernas
             ctx.strokeStyle = "#888";
             ctx.lineWidth = 3 * scale;
             ctx.shadowBlur = 0;
@@ -1522,7 +1788,6 @@
             ctx.roundRect(16 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
             ctx.fill();
 
-            // Corpo
             const grad = ctx.createLinearGradient(-12 * scale, -25 * scale, 12 * scale, 25 * scale);
             grad.addColorStop(0, cor);
             grad.addColorStop(0.5, cor);
@@ -1535,7 +1800,6 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Janela
             ctx.fillStyle = "#4fc3f7";
             ctx.shadowColor = "#4fc3f7";
             ctx.shadowBlur = 20;
@@ -1549,12 +1813,10 @@
             ctx.arc(-2 * scale, -12 * scale, 2.5 * scale, 0, Math.PI * 2);
             ctx.fill();
 
-            // Detalhes
             ctx.fillStyle = corDetalhe;
             ctx.fillRect(-10 * scale, -22 * scale, 20 * scale, 3 * scale);
             ctx.fillRect(-8 * scale, 8 * scale, 16 * scale, 3 * scale);
 
-            // Ponteiro
             ctx.fillStyle = corDetalhe;
             ctx.shadowColor = corDetalhe;
             ctx.shadowBlur = 10;
@@ -1565,7 +1827,6 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Chama (com consumo visual)
             const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
             if (isThrusting && gameState === "playing") {
                 const flameHeight = (25 + Math.random() * 20) * scale * (1 + (consumoMultiplicador - 1) * 0.3);
@@ -1693,7 +1954,6 @@
             ctx.textAlign = "left";
             ctx.fillText("🔥 " + rocket.fuel.toFixed(1) + "%", barX + 8, barY + 17);
 
-            // Indicador de consumo acelerado
             if (consumoMultiplicador > 1.0) {
                 ctx.fillStyle = "rgba(255,100,100,0.6)";
                 ctx.font = "10px Arial";
@@ -1733,7 +1993,6 @@
                 const thrustY = -Math.cos(rocket.angle) * thrustPower;
                 rocket.vx += thrustX;
                 rocket.vy += thrustY;
-                // CONSUMO ACELERADO: multiplica pelo consumoMultiplicador
                 rocket.fuel -= fuelConsumption * consumoMultiplicador;
                 if (rocket.fuel < 0) rocket.fuel = 0;
 
@@ -1756,10 +2015,7 @@
             if (rocket.x < -30) rocket.x = canvas.width + 30;
             if (rocket.x > canvas.width + 30) rocket.x = -30;
 
-            // Atualiza rastro
             atualizarRastro();
-
-            // Atualiza meteoros
             atualizarMeteoros();
 
             if (rocket.y > 750) {
@@ -1798,7 +2054,6 @@
                         }
                     }
 
-                    // Desbloqueia skins com base no progresso
                     if (currentLevel >= 3) {
                         desbloquearSkin('ruby');
                         desbloquearSkin('emerald');
@@ -1898,9 +2153,8 @@
         soundBtn.addEventListener("click", function() {
             const enabled = audio.toggle();
             soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
-            if (!audio.ctx) {
-                audio.init();
-            }
+            const menuSound = document.getElementById('menuSound');
+            if (menuSound) menuSound.textContent = enabled ? '🔊 SOM' : '🔇 SOM';
         });
 
         rankingBtn.addEventListener("click", function() {
@@ -1911,8 +2165,19 @@
             rankingScreen.classList.remove("active");
         });
         document.addEventListener("keydown", function(e) {
-            if (e.key === "Escape" && rankingScreen.classList.contains("active")) {
-                rankingScreen.classList.remove("active");
+            if (e.key === "Escape") {
+                if (helpScreen.classList.contains('active')) {
+                    helpScreen.classList.remove('active');
+                }
+                if (skinsMenuScreen.classList.contains('active')) {
+                    skinsMenuScreen.classList.remove('active');
+                }
+                if (rankingScreen.classList.contains('active')) {
+                    rankingScreen.classList.remove('active');
+                }
+                if (skinSelector.style.display === 'flex') {
+                    skinSelector.style.display = 'none';
+                }
             }
         });
 
@@ -1928,13 +2193,50 @@
             }
         });
 
-        // Fecha o seletor de skins se clicar fora
         document.addEventListener('click', function(e) {
             if (skinSelector.style.display === 'flex') {
                 if (!skinSelector.contains(e.target) && e.target !== skinToggle) {
                     skinSelector.style.display = 'none';
                 }
             }
+        });
+
+        // =========================================
+        // MENU PRINCIPAL
+        // =========================================
+        document.getElementById('menuJogar').addEventListener('click', function() {
+            menuScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            nameInput.focus();
+        });
+
+        document.getElementById('menuRanking').addEventListener('click', function() {
+            atualizarRankingFull();
+            rankingScreen.classList.add('active');
+        });
+
+        document.getElementById('menuSkins').addEventListener('click', function() {
+            atualizarUI_Skins();
+            skinsMenuScreen.classList.add('active');
+        });
+
+        document.getElementById('closeSkinsMenu').addEventListener('click', function() {
+            skinsMenuScreen.classList.remove('active');
+        });
+
+        document.getElementById('menuHelp').addEventListener('click', function() {
+            helpScreen.classList.add('active');
+        });
+
+        document.getElementById('closeHelp').addEventListener('click', function() {
+            helpScreen.classList.remove('active');
+        });
+
+        document.getElementById('menuSound').addEventListener('click', function() {
+            const enabled = audio.toggle();
+            const btn = document.getElementById('menuSound');
+            btn.textContent = enabled ? '🔊 SOM' : '🔇 SOM';
+            soundBtn.textContent = enabled ? '🔊 Som: Ligado' : '🔇 Som: Desligado';
         });
 
         // =========================================
@@ -1978,7 +2280,6 @@
                 ctx.font = "22px Arial";
                 const nextFog = getFogueteConfig(currentLevel + 1);
                 ctx.fillText(`Próxima: ${nextFog.label} - ${nextFog.nome}`, canvas.width / 2, 340);
-                // Mostra skins desbloqueadas
                 const novasSkins = SKINS.filter(s => s.id !== 'classic' && skinsDisponiveis.includes(s.id));
                 if (novasSkins.length > 0) {
                     ctx.fillStyle = "#ffd700";
@@ -2016,7 +2317,6 @@
                     ctx.fillText(`🏆 NOVO RECORDE, ${currentPlayer}!`, canvas.width / 2, 320);
                     ctx.shadowBlur = 0;
                 }
-                // Mostra skins desbloqueadas
                 const todasSkins = SKINS.filter(s => s.id !== 'classic' && skinsDisponiveis.includes(s.id));
                 if (todasSkins.length > 0) {
                     ctx.fillStyle = "#ffd700";
@@ -2077,8 +2377,8 @@
             drawStars();
             desenharMeteoros();
             drawGround();
-            drawTarget(); // Indicador de alvo
-            desenharRastro(); // Rastro do foguete
+            drawTarget();
+            desenharRastro();
             drawRocket();
             drawFuelBar();
             drawSpeedometer();
@@ -2104,8 +2404,6 @@
         // =========================================
         // LOOP DO JOGO
         // =========================================
-        let gameLoopStarted = false;
-
         function gameLoop() {
             update();
             render();
@@ -2119,11 +2417,10 @@
             currentPlayer = nome.trim() || "Anônimo";
             localStorage.setItem('rocketPlayerName', currentPlayer);
 
+            menuScreen.classList.add('hidden');
             loginScreen.classList.add('hidden');
-            resizeCanvas();
 
-            // Inicializa skins
-            atualizarSkinsDisponiveis();
+            resizeCanvas();
 
             resetGame();
             applyLevel(currentLevel);
@@ -2135,11 +2432,12 @@
             atualizarRankingPreview();
             atualizarUI_Skins();
 
-            // Mostra o botão de skins
             skinToggle.style.display = 'block';
+            skinToggle.textContent = '🎨 SKINS';
+            soundBtn.style.display = 'block';
+            rankingBtn.style.display = 'block';
 
             if (!gameLoopStarted) {
-                console.log('🚀 Iniciando gameLoop...');
                 gameLoop();
                 gameLoopStarted = true;
             }
@@ -2159,8 +2457,10 @@
                 nameInput.value = nomeSalvo;
             }
 
-            // Inicializa skins
             atualizarSkinsDisponiveis();
+
+            menuScreen.classList.remove('hidden');
+            loginScreen.classList.add('hidden');
 
             startBtn.addEventListener("click", function() {
                 const nome = nameInput.value.trim() || "Anônimo";
@@ -2173,27 +2473,29 @@
                 }
             });
 
-            nameInput.focus();
+            // Sincroniza som
+            const menuSoundBtn = document.getElementById('menuSound');
+            if (!audio.enabled) {
+                menuSoundBtn.textContent = '🔇 SOM';
+                soundBtn.textContent = '🔇 Som: Desligado';
+            }
 
             document.addEventListener('click', function initAudio() {
                 audio.init();
                 document.removeEventListener('click', initAudio);
             }, { once: true });
 
-            console.log("🚀 Rocket Lander carregado. Aguardando login...");
+            console.log("🚀 Rocket Lander - Menu Principal carregado!");
         });
 
-        // Inicializa o áudio no primeiro clique (fallback)
+        // Fallback para áudio
         document.addEventListener('click', function initAudio() {
             audio.init();
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - COM TODAS AS ADIÇÕES");
-        console.log("🌟 Meteoros, Rastro, Alvo, Consumo Acelerado e Skins!");
-        console.log("👤 Digite seu nome e clique em JOGAR");
-        console.log("🏆 Top 3 salvo no navegador.");
-        console.log("🎨 Clique em 'SKINS' para trocar a cor do foguete!");
+        console.log("🚀 ROCKET LANDER - COM MENU PRINCIPAL");
+        console.log("🎮 Aproveite!");
     </script>
 </body>
 </html>
