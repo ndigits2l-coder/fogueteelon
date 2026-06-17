@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Rocket Lander</title>
+
     <style>
-        /* ===== ESTILOS (mantenha os mesmos que você já tem) ===== */
+        /* ===== ESTILOS ===== */
         * {
             margin: 0;
             padding: 0;
@@ -303,15 +304,9 @@
             transform: translateX(-50%) scale(0.95);
         }
         @keyframes pulse {
-            0% {
-                box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(0, 255, 136, 0.3);
-            }
-            100% {
-                box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
-            }
+            0% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.3); }
+            100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
         }
         #touch-controls {
             position: absolute;
@@ -792,30 +787,108 @@
         let gameState = "playing";
         let currentLevel = 1;
         let maxLevel = 5;
-        let gravity = 0.01;
-        let thrustPower = 0.12;
-        let fuelConsumption = 0.7;
-        let rotationSpeed = 0.04;
-        let pad = { x: 420, y: 650, width: 160, height: 10 };
-        let rocket;
         let engineWasOn = false;
 
-        function getLevelConfig(level) {
+        // Configurações do foguete por fase
+        function getFogueteConfig(level) {
             const configs = {
-                1: { gravity: 0.01, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.0,
-                    label: "🌙 FASE 1" },
-                2: { gravity: 0.015, padWidth: 140, maxSpeedV: 1.8, maxSpeedH: 1.3, maxAngle: 10, fuelBonus: 1.5,
-                    label: "🪐 FASE 2" },
-                3: { gravity: 0.02, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
-                    label: "☄️ FASE 3" },
-                4: { gravity: 0.025, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.5,
-                    label: "🔥 FASE 4" },
-                5: { gravity: 0.03, padWidth: 80, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.0,
-                    label: "🚀 FASE 5" }
+                1: {
+                    nome: "🚀 Foguete Pequeno",
+                    cor: "#e0e0e0",
+                    corDetalhe: "#4fc3f7",
+                    corChama: "#4fc3f7",
+                    tamanho: 0.7,
+                    gravity: 0.01,
+                    thrustPower: 0.12,
+                    fuelConsumption: 0.7,
+                    fuel: 30,
+                    padWidth: 160,
+                    maxSpeedV: 2.0,
+                    maxSpeedH: 1.5,
+                    maxAngle: 12,
+                    fuelBonus: 1.0,
+                    label: "🌙 FASE 1"
+                },
+                2: {
+                    nome: "🛸 Foguete Médio",
+                    cor: "#4a7c59",
+                    corDetalhe: "#00bcd4",
+                    corChama: "#00bcd4",
+                    tamanho: 0.85,
+                    gravity: 0.015,
+                    thrustPower: 0.10,
+                    fuelConsumption: 0.8,
+                    fuel: 35,
+                    padWidth: 140,
+                    maxSpeedV: 1.8,
+                    maxSpeedH: 1.3,
+                    maxAngle: 10,
+                    fuelBonus: 1.5,
+                    label: "🪐 FASE 2"
+                },
+                3: {
+                    nome: "🚀 Foguete Grande",
+                    cor: "#e63946",
+                    corDetalhe: "#ffd700",
+                    corChama: "#ff8800",
+                    tamanho: 1.0,
+                    gravity: 0.02,
+                    thrustPower: 0.08,
+                    fuelConsumption: 0.9,
+                    fuel: 40,
+                    padWidth: 120,
+                    maxSpeedV: 1.5,
+                    maxSpeedH: 1.0,
+                    maxAngle: 8,
+                    fuelBonus: 2.0,
+                    label: "☄️ FASE 3"
+                },
+                4: {
+                    nome: "🛰️ Foguete de Carga",
+                    cor: "#ff6b35",
+                    corDetalhe: "#ffd700",
+                    corChama: "#ff4400",
+                    tamanho: 1.1,
+                    gravity: 0.025,
+                    thrustPower: 0.06,
+                    fuelConsumption: 1.0,
+                    fuel: 45,
+                    padWidth: 100,
+                    maxSpeedV: 1.2,
+                    maxSpeedH: 0.8,
+                    maxAngle: 6,
+                    fuelBonus: 2.5,
+                    label: "🔥 FASE 4"
+                },
+                5: {
+                    nome: "🔥 Foguete Turbo",
+                    cor: "#ffd700",
+                    corDetalhe: "#ff6b6b",
+                    corChama: "#ffd700",
+                    tamanho: 0.9,
+                    gravity: 0.03,
+                    thrustPower: 0.15,
+                    fuelConsumption: 1.2,
+                    fuel: 25,
+                    padWidth: 80,
+                    maxSpeedV: 1.0,
+                    maxSpeedH: 0.6,
+                    maxAngle: 4,
+                    fuelBonus: 3.0,
+                    label: "🚀 FASE 5"
+                }
             };
             if (level > 5) {
                 return {
+                    nome: `💫 FOGUETE ${level}`,
+                    cor: "#9c27b0",
+                    corDetalhe: "#ffd700",
+                    corChama: "#9c27b0",
+                    tamanho: 0.8 + (level - 5) * 0.05,
                     gravity: 0.03 + (level - 5) * 0.002,
+                    thrustPower: Math.max(0.05, 0.15 - (level - 5) * 0.01),
+                    fuelConsumption: 1.2 + (level - 5) * 0.05,
+                    fuel: Math.min(50, 25 + (level - 5) * 2),
                     padWidth: Math.max(50, 80 - (level - 5) * 5),
                     maxSpeedV: Math.max(0.6, 1.0 - (level - 5) * 0.05),
                     maxSpeedH: Math.max(0.3, 0.6 - (level - 5) * 0.03),
@@ -825,6 +898,33 @@
                 };
             }
             return configs[level] || configs[1];
+        }
+
+        // Variáveis de física (atualizadas por fase)
+        let gravity = 0.01;
+        let thrustPower = 0.12;
+        let fuelConsumption = 0.7;
+        let rotationSpeed = 0.04;
+
+        let pad = { x: 420, y: 650, width: 160, height: 10 };
+        let rocket;
+        let fogueteAtual = {};
+
+        // =========================================
+        // CONFIGURAÇÃO DA FASE
+        // =========================================
+        function getLevelConfig(level) {
+            const fog = getFogueteConfig(level);
+            return {
+                gravity: fog.gravity,
+                padWidth: fog.padWidth,
+                maxSpeedV: fog.maxSpeedV,
+                maxSpeedH: fog.maxSpeedH,
+                maxAngle: fog.maxAngle,
+                fuelBonus: fog.fuelBonus,
+                label: fog.label,
+                foguete: fog
+            };
         }
 
         function resetGame() {
@@ -839,109 +939,207 @@
         }
 
         function resetRocket() {
+            const fog = getFogueteConfig(currentLevel);
             rocket = {
                 x: 500,
                 y: 120,
                 vx: 0,
                 vy: 0,
                 angle: 0,
-                fuel: 30,
-                startFuel: 30
+                fuel: fog.fuel,
+                startFuel: fog.fuel
             };
         }
 
         function applyLevel(level) {
-            const config = getLevelConfig(level);
-            gravity = config.gravity;
-            pad.width = config.padWidth;
+            const fog = getFogueteConfig(level);
+            fogueteAtual = fog;
+
+            gravity = fog.gravity;
+            thrustPower = fog.thrustPower;
+            fuelConsumption = fog.fuelConsumption;
+            pad.width = fog.padWidth;
             pad.x = (canvas.width - pad.width) / 2;
+
+            // Atualiza o foguete
+            if (rocket) {
+                rocket.fuel = fog.fuel;
+                rocket.startFuel = fog.fuel;
+            }
+
             faseInfo.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;text-align:right;">
-                    <div style="color:#4fc3f7;font-weight:bold;">${config.label}</div>
-                    <div style="color:#aaa;font-size:12px;">🎯 Vel. Máx: ${config.maxSpeedV.toFixed(1)}</div>
+                    <div style="color:#4fc3f7;font-weight:bold;">${fog.label}</div>
+                    <div style="color:#ffd700;font-size:13px;font-weight:bold;">${fog.nome}</div>
+                    <div style="color:#aaa;font-size:12px;">🎯 Vel. Máx: ${fog.maxSpeedV.toFixed(1)}</div>
                     <div style="color:#aaa;font-size:12px;">📏 Plataforma: ${pad.width}px</div>
-                    <div style="color:#ffd700;font-size:12px;">⭐ Bônus: ${config.fuelBonus.toFixed(1)}x</div>
+                    <div style="color:#ffd700;font-size:12px;">⭐ Bônus: ${fog.fuelBonus.toFixed(1)}x</div>
                 </div>
             `;
         }
 
-        function avancarFase() {
-            if (gameState === "levelComplete") {
-                currentLevel++;
-                applyLevel(currentLevel);
-                resetRocket();
-                gameState = "playing";
-                audio.stopEngine();
-                engineWasOn = false;
-                nextBtn.style.display = 'none';
-            } else if (gameState === "gameComplete") {
-                resetGame();
-                audio.stopEngine();
-                engineWasOn = false;
-                nextBtn.style.display = 'none';
+        // =========================================
+        // DESENHO DO FOGUETE PERSONALIZADO
+        // =========================================
+        function drawRocket() {
+            ctx.save();
+            ctx.translate(rocket.x, rocket.y);
+            ctx.rotate(rocket.angle);
+
+            const fog = fogueteAtual;
+            const tamanho = fog.tamanho || 0.8;
+            const cor = fog.cor || "#e0e0e0";
+            const corDetalhe = fog.corDetalhe || "#4fc3f7";
+            const corChama = fog.corChama || "#4fc3f7";
+
+            // Ajusta tamanho do foguete
+            const scale = tamanho;
+            const seatY = 16 * scale;
+            const seatWidth = 22 * scale;
+            const seatHeight = 8 * scale;
+
+            // ===== ASSENTO =====
+            ctx.fillStyle = "#b8860b";
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.roundRect(-seatWidth / 2, seatY, seatWidth, seatHeight, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // ===== ENCOSTO =====
+            ctx.fillStyle = "#cd853f";
+            ctx.beginPath();
+            ctx.roundRect(-12 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.roundRect(8 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
+            ctx.fill();
+
+            // ===== PILOTO =====
+            ctx.fillStyle = "#4a7c59";
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.roundRect(-8 * scale, seatY - 18 * scale, 16 * scale, 18 * scale, 3);
+            ctx.fill();
+
+            ctx.fillStyle = "#f5f5dc";
+            ctx.shadowColor = "rgba(0,0,0,0.2)";
+            ctx.shadowBlur = 4;
+            ctx.beginPath();
+            ctx.arc(0, seatY - 22 * scale, 8 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#1a1a2e";
+            ctx.beginPath();
+            ctx.arc(1 * scale, seatY - 24 * scale, 5 * scale, 0, Math.PI);
+            ctx.fill();
+
+            // ===== PERNAS =====
+            ctx.strokeStyle = "#888";
+            ctx.lineWidth = 3 * scale;
+            ctx.shadowBlur = 0;
+
+            ctx.beginPath();
+            ctx.moveTo(-12 * scale, seatY + seatHeight);
+            ctx.lineTo(-20 * scale, seatY + seatHeight + 12 * scale);
+            ctx.stroke();
+
+            ctx.fillStyle = "#666";
+            ctx.beginPath();
+            ctx.roundRect(-24 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(12 * scale, seatY + seatHeight);
+            ctx.lineTo(20 * scale, seatY + seatHeight + 12 * scale);
+            ctx.stroke();
+
+            ctx.fillStyle = "#666";
+            ctx.beginPath();
+            ctx.roundRect(16 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
+            ctx.fill();
+
+            // ===== CORPO DO FOGUETE =====
+            const grad = ctx.createLinearGradient(-12 * scale, -25 * scale, 12 * scale, 25 * scale);
+            grad.addColorStop(0, cor);
+            grad.addColorStop(0.5, cor);
+            grad.addColorStop(1, cor);
+            ctx.fillStyle = grad;
+            ctx.shadowColor = "rgba(255,255,255,0.1)";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(-12 * scale, -25 * scale, 24 * scale, 40 * scale, 3);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // ===== JANELA =====
+            ctx.fillStyle = "#4fc3f7";
+            ctx.shadowColor = "#4fc3f7";
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(0, -10 * scale, 7 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.beginPath();
+            ctx.arc(-2 * scale, -12 * scale, 2.5 * scale, 0, Math.PI * 2);
+            ctx.fill();
+
+            // ===== DETALHES =====
+            ctx.fillStyle = corDetalhe;
+            ctx.fillRect(-10 * scale, -22 * scale, 20 * scale, 3 * scale);
+            ctx.fillRect(-8 * scale, 8 * scale, 16 * scale, 3 * scale);
+
+            // ===== PONTEIRO =====
+            ctx.fillStyle = corDetalhe;
+            ctx.shadowColor = corDetalhe;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(-10 * scale, -25 * scale);
+            ctx.lineTo(0, -40 * scale);
+            ctx.lineTo(10 * scale, -25 * scale);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // ===== CHAMA =====
+            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
+            if (isThrusting && gameState === "playing") {
+                const flameHeight = (25 + Math.random() * 20) * scale;
+                const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 + flameHeight /
+                    2, flameHeight);
+                gradFlame.addColorStop(0, "rgba(255,255,255,1)");
+                gradFlame.addColorStop(0.1, corChama + "cc");
+                gradFlame.addColorStop(0.3, corChama + "99");
+                gradFlame.addColorStop(0.6, corChama + "66");
+                gradFlame.addColorStop(1, corChama + "00");
+                ctx.fillStyle = gradFlame;
+                ctx.beginPath();
+                ctx.moveTo(-10 * scale, seatY + seatHeight + 2);
+                ctx.quadraticCurveTo(-5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 +
+                    flameHeight);
+                ctx.quadraticCurveTo(5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 10 * scale, seatY + seatHeight + 2);
+                ctx.fill();
+
+                for (let i = 0; i < 5; i++) {
+                    const alpha = 0.2 + Math.random() * 0.6;
+                    const size = (1 + Math.random() * 3) * scale;
+                    const px = (Math.random() - 0.5) * 10 * scale;
+                    const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
+                    ctx.fillStyle = `rgba(255,200,50,${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
+
+            ctx.restore();
         }
 
-        nextBtn.addEventListener('click', avancarFase);
-        nextBtn.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            avancarFase();
-        });
-        canvas.addEventListener('click', function() {
-            if (gameState === "levelComplete" || gameState === "gameComplete") {
-                avancarFase();
-            }
-        });
-        canvas.addEventListener('touchstart', function(e) {
-            if (gameState === "levelComplete" || gameState === "gameComplete") {
-                e.preventDefault();
-                avancarFase();
-            }
-        }, { passive: false });
-
-        document.addEventListener("keydown", function(e) {
-            keys[e.key] = true;
-            if (e.key === "r" || e.key === "R") {
-                resetGame();
-                audio.stopEngine();
-            }
-            if ((e.key === "Enter" || e.key === " ") && (gameState === "levelComplete" || gameState === "gameComplete")) {
-                avancarFase();
-            }
-            if (!audio.ctx) {
-                audio.init();
-            }
-        });
-        document.addEventListener("keyup", function(e) {
-            keys[e.key] = false;
-            if (e.key === "ArrowUp") {
-                audio.stopEngine();
-            }
-        });
-
-        soundBtn.addEventListener("click", function() {
-            const enabled = audio.toggle();
-            soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
-            if (!audio.ctx) {
-                audio.init();
-            }
-        });
-
-        rankingBtn.addEventListener("click", function() {
-            atualizarRankingFull();
-            rankingScreen.classList.toggle("active");
-        });
-        closeRanking.addEventListener("click", function() {
-            rankingScreen.classList.remove("active");
-        });
-        document.addEventListener("keydown", function(e) {
-            if (e.key === "Escape" && rankingScreen.classList.contains("active")) {
-                rankingScreen.classList.remove("active");
-            }
-        });
-
         // =========================================
-        // DESENHO
+        // FUNÇÕES DE DESENHO (mantidas iguais)
         // =========================================
         function drawStars() {
             for (let i = 0; i < 120; i++) {
@@ -962,17 +1160,21 @@
             grad.addColorStop(1, "#0d2818");
             ctx.fillStyle = grad;
             ctx.fillRect(0, 660, canvas.width, 40);
+
             ctx.fillStyle = "#2d6a4f";
             ctx.fillRect(0, 655, canvas.width, 10);
+
             ctx.fillStyle = "rgba(255,0,0,0.05)";
             ctx.fillRect(0, 655, pad.x, 10);
             ctx.fillRect(pad.x + pad.width, 655, canvas.width - pad.x - pad.width, 10);
+
             const padGlow = ctx.createRadialGradient(pad.x + pad.width / 2, pad.y, 10, pad.x + pad.width / 2, pad.y, pad
                 .width);
             padGlow.addColorStop(0, "rgba(244,162,97,0.3)");
             padGlow.addColorStop(1, "rgba(244,162,97,0)");
             ctx.fillStyle = padGlow;
             ctx.fillRect(pad.x - 40, pad.y - 20, pad.width + 80, 40);
+
             ctx.fillStyle = "#e9c46a";
             ctx.shadowColor = "#f4a261";
             ctx.shadowBlur = 25;
@@ -980,10 +1182,12 @@
             ctx.roundRect(pad.x, pad.y, pad.width, pad.height, 3);
             ctx.fill();
             ctx.shadowBlur = 0;
+
             ctx.fillStyle = "rgba(255,200,100,0.3)";
             for (let i = 0; i < pad.width; i += 20) {
                 ctx.fillRect(pad.x + i, pad.y + 2, 10, 3);
             }
+
             ctx.fillStyle = "rgba(255,255,255,0.15)";
             ctx.font = "bold 16px Arial";
             ctx.textAlign = "center";
@@ -991,147 +1195,30 @@
             ctx.textAlign = "left";
         }
 
-        function drawRocket() {
-            ctx.save();
-            ctx.translate(rocket.x, rocket.y);
-            ctx.rotate(rocket.angle);
-            const seatY = 16;
-            const seatWidth = 22;
-            const seatHeight = 8;
-            ctx.fillStyle = "#b8860b";
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowBlur = 6;
-            ctx.beginPath();
-            ctx.roundRect(-seatWidth / 2, seatY, seatWidth, seatHeight, 4);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = "#cd853f";
-            ctx.beginPath();
-            ctx.roundRect(-12, seatY - 10, 4, 14, 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.roundRect(8, seatY - 10, 4, 14, 2);
-            ctx.fill();
-            ctx.fillStyle = "#4a7c59";
-            ctx.shadowBlur = 0;
-            ctx.beginPath();
-            ctx.roundRect(-8, seatY - 18, 16, 18, 3);
-            ctx.fill();
-            ctx.fillStyle = "#f5f5dc";
-            ctx.shadowColor = "rgba(0,0,0,0.2)";
-            ctx.shadowBlur = 4;
-            ctx.beginPath();
-            ctx.arc(0, seatY - 22, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = "#1a1a2e";
-            ctx.beginPath();
-            ctx.arc(1, seatY - 24, 5, 0, Math.PI);
-            ctx.fill();
-            ctx.strokeStyle = "#888";
-            ctx.lineWidth = 3;
-            ctx.shadowBlur = 0;
-            ctx.beginPath();
-            ctx.moveTo(-12, seatY + seatHeight);
-            ctx.lineTo(-20, seatY + seatHeight + 12);
-            ctx.stroke();
-            ctx.fillStyle = "#666";
-            ctx.beginPath();
-            ctx.roundRect(-24, seatY + seatHeight + 10, 8, 4, 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(12, seatY + seatHeight);
-            ctx.lineTo(20, seatY + seatHeight + 12);
-            ctx.stroke();
-            ctx.fillStyle = "#666";
-            ctx.beginPath();
-            ctx.roundRect(16, seatY + seatHeight + 10, 8, 4, 2);
-            ctx.fill();
-            const grad = ctx.createLinearGradient(-12, -25, 12, 25);
-            grad.addColorStop(0, "#e0e0e0");
-            grad.addColorStop(0.5, "#ffffff");
-            grad.addColorStop(1, "#aaaaaa");
-            ctx.fillStyle = grad;
-            ctx.shadowColor = "rgba(255,255,255,0.1)";
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.roundRect(-12, -25, 24, 40, 3);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = "#4fc3f7";
-            ctx.shadowColor = "#4fc3f7";
-            ctx.shadowBlur = 20;
-            ctx.beginPath();
-            ctx.arc(0, -10, 7, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = "rgba(255,255,255,0.3)";
-            ctx.beginPath();
-            ctx.arc(-2, -12, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "#ff6b6b";
-            ctx.fillRect(-10, -22, 20, 3);
-            ctx.fillRect(-8, 8, 16, 3);
-            ctx.fillStyle = "#ff6b6b";
-            ctx.shadowColor = "#ff6b6b";
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.moveTo(-10, -25);
-            ctx.lineTo(0, -40);
-            ctx.lineTo(10, -25);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
-            if (isThrusting && gameState === "playing") {
-                const flameHeight = 30 + Math.random() * 25;
-                const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 +
-                    flameHeight / 2, flameHeight);
-                gradFlame.addColorStop(0, "rgba(255,255,255,1)");
-                gradFlame.addColorStop(0.1, "rgba(255,255,200,1)");
-                gradFlame.addColorStop(0.3, "rgba(255,200,50,1)");
-                gradFlame.addColorStop(0.6, "rgba(255,100,0,0.8)");
-                gradFlame.addColorStop(1, "rgba(255,50,0,0)");
-                ctx.fillStyle = gradFlame;
-                ctx.beginPath();
-                ctx.moveTo(-10, seatY + seatHeight + 2);
-                ctx.quadraticCurveTo(-5, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 +
-                flameHeight);
-                ctx.quadraticCurveTo(5, seatY + seatHeight + 2 + flameHeight * 0.6, 10, seatY + seatHeight + 2);
-                ctx.fill();
-                for (let i = 0; i < 5; i++) {
-                    const alpha = 0.2 + Math.random() * 0.6;
-                    const size = 1 + Math.random() * 3;
-                    const px = (Math.random() - 0.5) * 10;
-                    const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
-                    ctx.fillStyle = `rgba(255,200,50,${alpha})`;
-                    ctx.beginPath();
-                    ctx.arc(px, py, size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-            ctx.restore();
-        }
-
         function drawFuelBar() {
             const barX = 20;
             const barY = 70;
             const barWidth = 200;
             const barHeight = 22;
+
             ctx.fillStyle = "rgba(0,0,0,0.7)";
             ctx.shadowBlur = 10;
             ctx.beginPath();
             ctx.roundRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
             ctx.fill();
             ctx.shadowBlur = 0;
+
             ctx.strokeStyle = "rgba(255,255,255,0.3)";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.roundRect(barX, barY, barWidth, barHeight, 3);
             ctx.stroke();
+
             const fuelPercent = Math.max(0, rocket.fuel / 30);
             let color = "#00ff88";
             if (fuelPercent < 0.2) color = "#ff4444";
             else if (fuelPercent < 0.5) color = "#ffaa00";
+
             const grad = ctx.createLinearGradient(barX, barY, barX + barWidth * fuelPercent, barY);
             grad.addColorStop(0, color);
             grad.addColorStop(1, color + "88");
@@ -1139,10 +1226,12 @@
             ctx.beginPath();
             ctx.roundRect(barX + 2, barY + 2, Math.max(0, (barWidth - 4) * fuelPercent), barHeight - 4, 2);
             ctx.fill();
+
             ctx.fillStyle = "white";
             ctx.font = "bold 14px Arial";
             ctx.textAlign = "left";
             ctx.fillText("🔥 " + rocket.fuel.toFixed(1) + "%", barX + 8, barY + 17);
+
             ctx.fillStyle = "rgba(255,255,255,0.6)";
             ctx.font = "12px Arial";
             ctx.fillText("COMBUSTÍVEL", barX, barY - 6);
@@ -1261,10 +1350,89 @@
         }
 
         // =========================================
+        // PRÓXIMA FASE
+        // =========================================
+        function avancarFase() {
+            if (gameState === "levelComplete") {
+                currentLevel++;
+                applyLevel(currentLevel);
+                resetRocket();
+                gameState = "playing";
+                audio.stopEngine();
+                engineWasOn = false;
+                nextBtn.style.display = 'none';
+            } else if (gameState === "gameComplete") {
+                resetGame();
+                audio.stopEngine();
+                engineWasOn = false;
+                nextBtn.style.display = 'none';
+            }
+        }
+
+        nextBtn.addEventListener('click', avancarFase);
+        nextBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            avancarFase();
+        });
+        canvas.addEventListener('click', function() {
+            if (gameState === "levelComplete" || gameState === "gameComplete") {
+                avancarFase();
+            }
+        });
+        canvas.addEventListener('touchstart', function(e) {
+            if (gameState === "levelComplete" || gameState === "gameComplete") {
+                e.preventDefault();
+                avancarFase();
+            }
+        }, { passive: false });
+
+        document.addEventListener("keydown", function(e) {
+            keys[e.key] = true;
+            if (e.key === "r" || e.key === "R") {
+                resetGame();
+                audio.stopEngine();
+            }
+            if ((e.key === "Enter" || e.key === " ") && (gameState === "levelComplete" || gameState === "gameComplete")) {
+                avancarFase();
+            }
+            if (!audio.ctx) {
+                audio.init();
+            }
+        });
+        document.addEventListener("keyup", function(e) {
+            keys[e.key] = false;
+            if (e.key === "ArrowUp") {
+                audio.stopEngine();
+            }
+        });
+
+        soundBtn.addEventListener("click", function() {
+            const enabled = audio.toggle();
+            soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
+            if (!audio.ctx) {
+                audio.init();
+            }
+        });
+
+        rankingBtn.addEventListener("click", function() {
+            atualizarRankingFull();
+            rankingScreen.classList.toggle("active");
+        });
+        closeRanking.addEventListener("click", function() {
+            rankingScreen.classList.remove("active");
+        });
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape" && rankingScreen.classList.contains("active")) {
+                rankingScreen.classList.remove("active");
+            }
+        });
+
+        // =========================================
         // HUD E MENSAGENS
         // =========================================
         function drawHUD() {
             const config = getLevelConfig(currentLevel);
+            const fog = fogueteAtual;
             info.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;">
                     <div>⬆️ Vel. Vertical: <span style="color:#4fc3f7;">${Math.abs(rocket.vy).toFixed(2)}</span> / ${config.maxSpeedV.toFixed(1)}</div>
@@ -1272,6 +1440,7 @@
                     <div style="color:#ffd700;">⭐ Pontuação: ${score}</div>
                     <div style="color:#ff6b6b;">🏆 Recorde: ${highScore}</div>
                     <div style="color:#4fc3f7;font-size:12px;">👤 ${currentPlayer || "Anônimo"}</div>
+                    <div style="color:#ffd700;font-size:11px;">${fog.nome}</div>
                     <div style="color:#aaa;font-size:12px;">📊 Fase ${currentLevel} - ${pad.width}px</div>
                 </div>
             `;
@@ -1296,7 +1465,8 @@
                 ctx.fillText(`Total: ${score}`, canvas.width / 2, 290);
                 ctx.fillStyle = "#4fc3f7";
                 ctx.font = "22px Arial";
-                ctx.fillText(`Próxima: ${getLevelConfig(currentLevel + 1).label}`, canvas.width / 2, 340);
+                const nextFog = getFogueteConfig(currentLevel + 1);
+                ctx.fillText(`Próxima: ${nextFog.label} - ${nextFog.nome}`, canvas.width / 2, 340);
                 ctx.fillStyle = "#aaa";
                 ctx.font = "18px Arial";
                 ctx.fillText("Toque na tela ou clique no botão para continuar", canvas.width / 2, 400);
@@ -1362,7 +1532,8 @@
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = "white";
                 ctx.font = "24px Arial";
-                ctx.fillText(`Fase ${currentLevel} - Tente novamente, ${currentPlayer}`, canvas.width / 2, 260);
+                const fog = fogueteAtual;
+                ctx.fillText(`Fase ${currentLevel} - ${fog.nome} - Tente novamente, ${currentPlayer}`, canvas.width / 2, 260);
                 ctx.fillStyle = "#aaa";
                 ctx.font = "20px Arial";
                 ctx.fillText("Pressione R para recomeçar a fase", canvas.width / 2, 320);
@@ -1413,13 +1584,9 @@
             currentPlayer = nome.trim() || "Anônimo";
             localStorage.setItem('rocketPlayerName', currentPlayer);
 
-            // Esconde a tela de login
             loginScreen.classList.add('hidden');
-
-            // Ajusta o canvas
             resizeCanvas();
 
-            // Inicializa o jogo
             resetGame();
             applyLevel(currentLevel);
             resetRocket();
@@ -1427,53 +1594,42 @@
             audio.stopEngine();
             engineWasOn = false;
 
-            // Atualiza ranking
             atualizarRankingPreview();
 
-            // Inicia o loop do jogo (se não tiver iniciado ainda)
             if (!gameLoopStarted) {
                 console.log('🚀 Iniciando gameLoop...');
                 gameLoop();
                 gameLoopStarted = true;
             }
 
-            // Força uma atualização da tela
             render();
-
             console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
-            console.log('🎮 Jogo iniciado com sucesso!');
         }
 
         // =========================================
         // EVENTOS DA TELA DE LOGIN
         // =========================================
         document.addEventListener("DOMContentLoaded", function() {
-            // Atualiza ranking
             atualizarRankingPreview();
 
-            // Carrega nome salvo
             const nomeSalvo = localStorage.getItem('rocketPlayerName');
             if (nomeSalvo) {
                 nameInput.value = nomeSalvo;
             }
 
-            // Botão JOGAR
             startBtn.addEventListener("click", function() {
                 const nome = nameInput.value.trim() || "Anônimo";
                 iniciarJogo(nome);
             });
 
-            // Enter no campo
             nameInput.addEventListener("keydown", function(e) {
                 if (e.key === "Enter") {
                     startBtn.click();
                 }
             });
 
-            // Foco no campo
             nameInput.focus();
 
-            // Inicializa áudio no primeiro clique
             document.addEventListener('click', function initAudio() {
                 audio.init();
                 document.removeEventListener('click', initAudio);
@@ -1488,7 +1644,7 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - COM LOGIN E RANKING");
+        console.log("🚀 ROCKET LANDER - COM FOGUETES DIFERENTES");
         console.log("👤 Digite seu nome e clique em JOGAR");
         console.log("🏆 Top 3 salvo no navegador.");
     </script>
