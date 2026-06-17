@@ -2,85 +2,97 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
 <title>Rocket Lander</title>
 
 <style>
-body{
-    margin:0;
-    background:#000;
-    overflow:hidden;
-    font-family:Arial,sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-canvas{
-    display:block;
-    margin:auto;
-    background:linear-gradient(#000814,#001d3d);
+body {
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    touch-action: none;
 }
 
-#info{
-    position:absolute;
-    top:10px;
-    left:10px;
-    color:white;
-    font-size:18px;
-    z-index:10;
-    pointer-events:none;
+canvas {
+    display: block;
+    margin: auto;
+    background: linear-gradient(#000814, #001d3d);
+    width: 100%;
+    height: 100vh;
 }
 
-#fase-info{
-    position:absolute;
-    top:10px;
-    right:10px;
-    color:white;
-    font-size:18px;
-    z-index:10;
-    pointer-events:none;
-    text-align:right;
+#info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-size: 18px;
+    z-index: 10;
+    pointer-events: none;
 }
 
-#sound-toggle{
-    position:absolute;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:10;
-    background:rgba(255,255,255,0.1);
-    color:white;
-    border:1px solid rgba(255,255,255,0.3);
-    padding:8px 20px;
-    border-radius:20px;
-    font-size:14px;
-    cursor:pointer;
-    font-family:Arial,sans-serif;
-    transition:all 0.3s;
+#fase-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 18px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: right;
 }
 
-#sound-toggle:hover{
-    background:rgba(255,255,255,0.2);
+#sound-toggle {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: all 0.3s;
 }
 
-#ranking-btn{
-    position:absolute;
-    bottom:70px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:10;
-    background:rgba(255,215,0,0.15);
-    color:#ffd700;
-    border:1px solid rgba(255,215,0,0.3);
-    padding:6px 16px;
-    border-radius:16px;
-    font-size:12px;
-    cursor:pointer;
-    font-family:Arial,sans-serif;
-    transition:all 0.3s;
-    letter-spacing:1px;
+#sound-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-#ranking-btn:hover{
-    background:rgba(255,215,0,0.25);
+#ranking-btn {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(255, 215, 0, 0.15);
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+}
+
+#ranking-btn:hover {
+    background: rgba(255, 215, 0, 0.25);
 }
 
 /* ===== TELA DE RANKING ===== */
@@ -150,6 +162,72 @@ canvas{
     font-size: 14px;
     margin-top: 20px;
 }
+
+/* ===== CONTROLES TOUCH ===== */
+#touch-controls {
+    position: fixed;
+    bottom: 80px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 20;
+    pointer-events: none;
+}
+
+#touch-controls button {
+    pointer-events: auto;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    transition: all 0.1s;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#touch-controls button:active {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(0.92);
+}
+
+#touch-controls .left-group {
+    display: flex;
+    gap: 15px;
+}
+
+#touch-controls .right-group {
+    display: flex;
+    gap: 15px;
+}
+
+#touch-controls .thrust-btn {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+    background: rgba(255, 100, 0, 0.15);
+    border-color: rgba(255, 150, 0, 0.4);
+}
+
+#touch-controls .thrust-btn:active {
+    background: rgba(255, 150, 0, 0.35);
+}
+
+/* Esconde os botões em desktop (telas grandes) */
+@media (min-width: 768px) {
+    #touch-controls {
+        display: none;
+    }
+}
 </style>
 </head>
 <body>
@@ -159,6 +237,17 @@ canvas{
 <canvas id="game"></canvas>
 <button id="sound-toggle">🔊 Som: Ligado</button>
 <button id="ranking-btn">🏆 VER RANKING</button>
+
+<!-- CONTROLES TOUCH -->
+<div id="touch-controls">
+    <div class="left-group">
+        <button id="btn-left">◀</button>
+        <button id="btn-right">▶</button>
+    </div>
+    <div class="right-group">
+        <button id="btn-thrust" class="thrust-btn">🔥</button>
+    </div>
+</div>
 
 <!-- RANKING -->
 <div id="rankingScreen">
@@ -170,9 +259,9 @@ canvas{
 
 <script>
 // ====================================================
-// ⭐ MUDE O NOME AQUI ⭐
+// ⭐ NOME DO JOGADOR (troque aqui)
 // ====================================================
-const NOME_JOGADOR = "Lucas";  // <--- Troque pelo nome que quiser
+const NOME_JOGADOR = "Lucas";
 // ====================================================
 
 // ====================================================
@@ -428,6 +517,64 @@ const rankingBtn = document.getElementById("ranking-btn");
 const rankingScreen = document.getElementById("rankingScreen");
 const closeRanking = document.getElementById("closeRanking");
 
+// ====================================================
+// CONTROLES TOUCH
+// ====================================================
+const btnLeft = document.getElementById('btn-left');
+const btnRight = document.getElementById('btn-right');
+const btnThrust = document.getElementById('btn-thrust');
+
+let touchKeys = {
+    left: false,
+    right: false,
+    thrust: false
+};
+
+// Funções auxiliares para touch
+function setupTouchButton(element, keyOn, keyOff) {
+    if (!element) return;
+
+    // Toque
+    element.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        touchKeys[keyOn] = true;
+        if (keyOff) touchKeys[keyOff] = false;
+    }, { passive: false });
+
+    element.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        touchKeys[keyOn] = false;
+    }, { passive: false });
+
+    element.addEventListener('touchcancel', function(e) {
+        e.preventDefault();
+        touchKeys[keyOn] = false;
+    }, { passive: false });
+
+    // Mouse (para testes em desktop)
+    element.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        touchKeys[keyOn] = true;
+        if (keyOff) touchKeys[keyOff] = false;
+    });
+
+    element.addEventListener('mouseup', function(e) {
+        e.preventDefault();
+        touchKeys[keyOn] = false;
+    });
+
+    element.addEventListener('mouseleave', function(e) {
+        touchKeys[keyOn] = false;
+    });
+}
+
+setupTouchButton(btnLeft, 'left', 'right');
+setupTouchButton(btnRight, 'right', 'left');
+setupTouchButton(btnThrust, 'thrust');
+
+// ====================================================
+// VARIÁVEIS DO JOGO
+// ====================================================
 let keys = {};
 let score = 0;
 let levelScore = 0;
@@ -519,7 +666,7 @@ function applyLevel(level){
 }
 
 // ====================================================
-// EVENTOS DE TECLADO
+// EVENTOS DE TECLADO (Desktop)
 // ====================================================
 document.addEventListener("keydown", function(e){
     keys[e.key] = true;
@@ -729,7 +876,10 @@ function drawRocket(){
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    if(keys["ArrowUp"] && rocket.fuel > 0 && gameState === "playing"){
+    // Verifica se o motor está ligado (teclado OU touch)
+    const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
+
+    if(isThrusting && gameState === "playing"){
         const flameHeight = 30 + Math.random() * 25;
         const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 + flameHeight/2, flameHeight);
         gradFlame.addColorStop(0, "rgba(255,255,255,1)");
@@ -813,10 +963,13 @@ function update(){
     }
     if(gameState !== "playing") return;
 
-    if(keys["ArrowLeft"]) rocket.angle -= rotationSpeed;
-    if(keys["ArrowRight"]) rocket.angle += rotationSpeed;
+    // Rotação (teclado OU touch)
+    if(keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
+    if(keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
 
-    const isThrusting = keys["ArrowUp"] && rocket.fuel > 0;
+    // Empuxo (teclado OU touch)
+    const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
+
     if(isThrusting){
         const thrustX = Math.sin(rocket.angle) * thrustPower;
         const thrustY = -Math.cos(rocket.angle) * thrustPower;
@@ -1091,6 +1244,7 @@ document.addEventListener('click', function initAudio() {
 atualizarRankingUI();
 
 console.log(`🚀 Rocket Lander - Jogador: ${NOME_JOGADOR}`);
+console.log(`📱 Controles touch ativados!`);
 </script>
 </body>
 </html>
