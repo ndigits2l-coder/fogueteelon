@@ -414,6 +414,83 @@
                 padding: 12px 16px;
             }
         }
+
+        /* ===== SELETOR DE SKINS ===== */
+        #skin-selector {
+            position: absolute;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            display: none;
+            gap: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #skin-selector button {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0;
+        }
+        #skin-selector button:hover {
+            transform: scale(1.15);
+        }
+        #skin-selector button.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.4);
+        }
+        #skin-selector button.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        #skin-selector button.locked::after {
+            content: "🔒";
+            font-size: 12px;
+            display: block;
+            margin-top: -4px;
+        }
+        #skin-toggle {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            background: rgba(255,215,0,0.15);
+            color: #ffd700;
+            border: 1px solid rgba(255,215,0,0.3);
+            padding: 4px 14px;
+            border-radius: 14px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            transition: all 0.3s;
+            display: none;
+            letter-spacing: 1px;
+        }
+        #skin-toggle:hover {
+            background: rgba(255,215,0,0.25);
+        }
+        @media (max-width: 480px) {
+            #skin-selector button {
+                width: 24px;
+                height: 24px;
+            }
+            #skin-selector {
+                padding: 6px 12px;
+                bottom: 120px;
+            }
+            #skin-toggle {
+                font-size: 9px;
+                padding: 3px 10px;
+                bottom: 110px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -441,6 +518,8 @@
         <button id="sound-toggle">🔊 Som: Ligado</button>
         <button id="ranking-btn">🏆 VER RANKING</button>
         <button id="next-btn">▶ PRÓXIMA FASE</button>
+        <button id="skin-toggle">🎨 SKINS</button>
+        <div id="skin-selector"></div>
         <div id="touch-controls">
             <div class="left-group">
                 <button id="btn-left">◀</button>
@@ -521,6 +600,111 @@
                 html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
             });
             list.innerHTML = html;
+        }
+
+        // =========================================
+        // SISTEMA DE SKINS
+        // =========================================
+        const SKINS = [
+            { id: 'classic', nome: 'Clássico', cor: '#e0e0e0', corDetalhe: '#4fc3f7', corChama: '#4fc3f7', desbloqueada: true },
+            { id: 'ruby', nome: 'Rubi', cor: '#e63946', corDetalhe: '#ffd700', corChama: '#ff6b6b', desbloqueada: false },
+            { id: 'emerald', nome: 'Esmeralda', cor: '#2d6a4f', corDetalhe: '#00ff88', corChama: '#00ff88', desbloqueada: false },
+            { id: 'sapphire', nome: 'Safira', cor: '#1a3a5c', corDetalhe: '#4fc3f7', corChama: '#4fc3f7', desbloqueada: false },
+            { id: 'gold', nome: 'Ouro', cor: '#ffd700', corDetalhe: '#ff6b6b', corChama: '#ffd700', desbloqueada: false },
+            { id: 'neon', nome: 'Neon', cor: '#9c27b0', corDetalhe: '#ff6b6b', corChama: '#ff44ff', desbloqueada: false },
+            { id: 'carbon', nome: 'Carbono', cor: '#333', corDetalhe: '#ff6b6b', corChama: '#ff6600', desbloqueada: false },
+            { id: 'ice', nome: 'Gelo', cor: '#b3e5fc', corDetalhe: '#e0f7fa', corChama: '#81d4fa', desbloqueada: false }
+        ];
+
+        let skinsDisponiveis = JSON.parse(localStorage.getItem('rocketSkins')) || [];
+        let skinAtual = localStorage.getItem('rocketSkinAtual') || 'classic';
+
+        // Atualiza skins disponíveis
+        function atualizarSkinsDisponiveis() {
+            if (skinsDisponiveis.length === 0) {
+                // Primeira vez: só a clássica
+                skinsDisponiveis = ['classic'];
+                localStorage.setItem('rocketSkins', JSON.stringify(skinsDisponiveis));
+            }
+            // Verifica se a skin atual está disponível
+            if (!skinsDisponiveis.includes(skinAtual)) {
+                skinAtual = 'classic';
+                localStorage.setItem('rocketSkinAtual', skinAtual);
+            }
+        }
+
+        function desbloquearSkin(id) {
+            if (!skinsDisponiveis.includes(id) && id !== 'classic') {
+                skinsDisponiveis.push(id);
+                localStorage.setItem('rocketSkins', JSON.stringify(skinsDisponiveis));
+                atualizarUI_Skins();
+            }
+        }
+
+        function selecionarSkin(id) {
+            if (skinsDisponiveis.includes(id) || id === 'classic') {
+                skinAtual = id;
+                localStorage.setItem('rocketSkinAtual', skinAtual);
+                atualizarUI_Skins();
+                // Atualiza a cor do foguete
+                const skin = SKINS.find(s => s.id === skinAtual);
+                if (skin) {
+                    fogueteAtual.cor = skin.cor;
+                    fogueteAtual.corDetalhe = skin.corDetalhe;
+                    fogueteAtual.corChama = skin.corChama;
+                }
+            }
+        }
+
+        function getSkinAtual() {
+            return SKINS.find(s => s.id === skinAtual) || SKINS[0];
+        }
+
+        function atualizarUI_Skins() {
+            const container = document.getElementById('skin-selector');
+            if (!container) return;
+
+            // Verifica desbloqueios (baseado no progresso)
+            // Fase 3 desbloqueia Ruby e Esmeralda
+            // Fase 5 desbloqueia todas as outras
+            if (currentLevel >= 3) {
+                desbloquearSkin('ruby');
+                desbloquearSkin('emerald');
+            }
+            if (currentLevel >= 5) {
+                desbloquearSkin('sapphire');
+                desbloquearSkin('gold');
+                desbloquearSkin('neon');
+                desbloquearSkin('carbon');
+                desbloquearSkin('ice');
+            }
+
+            let html = '';
+            SKINS.forEach(skin => {
+                const disponivel = skinsDisponiveis.includes(skin.id);
+                const ativa = skinAtual === skin.id;
+                const locked = !disponivel && skin.id !== 'classic';
+                html += `
+                    <button 
+                        class="${ativa ? 'active' : ''} ${locked ? 'locked' : ''}"
+                        style="background:${skin.cor};${locked ? 'opacity:0.4;' : ''}"
+                        data-id="${skin.id}"
+                        ${locked ? 'disabled' : ''}
+                        title="${skin.nome}${locked ? ' (🔒 Bloqueado)' : ''}"
+                    ></button>
+                `;
+            });
+            container.innerHTML = html;
+
+            // Eventos dos botões
+            container.querySelectorAll('button:not(.locked)').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    if (skinsDisponiveis.includes(id) || id === 'classic') {
+                        selecionarSkin(id);
+                    }
+                });
+            });
         }
 
         // =========================================
@@ -739,6 +923,8 @@
         const loginScreen = document.getElementById('loginScreen');
         const startBtn = document.getElementById('startBtn');
         const nameInput = document.getElementById('nameInput');
+        const skinToggle = document.getElementById('skin-toggle');
+        const skinSelector = document.getElementById('skin-selector');
 
         // Controles Touch
         const btnLeft = document.getElementById('btn-left');
@@ -788,7 +974,82 @@
         let maxLevel = 5;
         let engineWasOn = false;
 
-        // Configurações do foguete por fase
+        // =========================================
+        // METEOROS
+        // =========================================
+        let meteoros = [];
+
+        function criarMeteoro() {
+            const x = Math.random() * canvas.width;
+            const y = -20 - Math.random() * 100;
+            const speed = 1 + Math.random() * 3;
+            const size = 2 + Math.random() * 4;
+            const angle = 0.1 + Math.random() * 0.3;
+            const rastro = [];
+            meteoros.push({ x, y, speed, size, angle, rastro, life: 1 });
+        }
+
+        function atualizarMeteoros() {
+            // Cria novos meteoros
+            if (Math.random() < 0.02) {
+                criarMeteoro();
+            }
+
+            meteoros.forEach(m => {
+                // Salva posição anterior para o rastro
+                m.rastro.push({ x: m.x, y: m.y });
+                if (m.rastro.length > 10) m.rastro.shift();
+
+                m.x += Math.cos(m.angle) * m.speed;
+                m.y += Math.sin(m.angle) * m.speed;
+                m.life -= 0.001;
+
+                // Se saiu da tela ou morreu, remove
+                if (m.y > canvas.height + 50 || m.x > canvas.width + 50 || m.x < -50 || m.life <= 0) {
+                    m.dead = true;
+                }
+            });
+
+            meteoros = meteoros.filter(m => !m.dead);
+        }
+
+        function desenharMeteoros() {
+            meteoros.forEach(m => {
+                // Rastro
+                m.rastro.forEach((pos, i) => {
+                    const alpha = (i / m.rastro.length) * 0.5;
+                    const size = m.size * (0.3 + 0.7 * (i / m.rastro.length));
+                    ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Corpo do meteoro
+                const grad = ctx.createRadialGradient(
+                    m.x - m.size * 0.3, m.y - m.size * 0.3, 0,
+                    m.x, m.y, m.size
+                );
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+                grad.addColorStop(0.3, 'rgba(255, 200, 100, 0.8)');
+                grad.addColorStop(0.7, 'rgba(255, 150, 50, 0.6)');
+                grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, m.size * 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Núcleo
+                ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // =========================================
+        // CONFIGURAÇÕES DO FOGUETE POR FASE
+        // =========================================
         function getFogueteConfig(level) {
             const configs = {
                 1: {
@@ -806,7 +1067,8 @@
                     maxSpeedH: 1.5,
                     maxAngle: 12,
                     fuelBonus: 1.0,
-                    label: "🌙 FASE 1"
+                    label: "🌙 FASE 1",
+                    consumoMultiplicador: 1.0 // Consumo normal
                 },
                 2: {
                     nome: "🛸 Foguete Médio",
@@ -823,7 +1085,8 @@
                     maxSpeedH: 1.3,
                     maxAngle: 10,
                     fuelBonus: 1.5,
-                    label: "🪐 FASE 2"
+                    label: "🪐 FASE 2",
+                    consumoMultiplicador: 1.2 // Consome 20% mais
                 },
                 3: {
                     nome: "🚀 Foguete Grande",
@@ -840,7 +1103,8 @@
                     maxSpeedH: 1.0,
                     maxAngle: 8,
                     fuelBonus: 2.0,
-                    label: "☄️ FASE 3"
+                    label: "☄️ FASE 3",
+                    consumoMultiplicador: 1.5 // Consome 50% mais
                 },
                 4: {
                     nome: "🛰️ Foguete de Carga",
@@ -857,7 +1121,8 @@
                     maxSpeedH: 0.8,
                     maxAngle: 6,
                     fuelBonus: 2.5,
-                    label: "🔥 FASE 4"
+                    label: "🔥 FASE 4",
+                    consumoMultiplicador: 1.8 // Consome 80% mais
                 },
                 5: {
                     nome: "🔥 Foguete Turbo",
@@ -874,7 +1139,8 @@
                     maxSpeedH: 0.6,
                     maxAngle: 4,
                     fuelBonus: 3.0,
-                    label: "🚀 FASE 5"
+                    label: "🚀 FASE 5",
+                    consumoMultiplicador: 2.0 // Consome 2x mais
                 }
             };
             if (level > 5) {
@@ -893,21 +1159,47 @@
                     maxSpeedH: Math.max(0.3, 0.6 - (level - 5) * 0.03),
                     maxAngle: Math.max(2, 4 - (level - 5) * 0.3),
                     fuelBonus: 3.0 + (level - 5) * 0.2,
-                    label: `💫 FASE ${level}`
+                    label: `💫 FASE ${level}`,
+                    consumoMultiplicador: Math.min(3.0, 2.0 + (level - 5) * 0.2)
                 };
             }
             return configs[level] || configs[1];
         }
 
-        // Variáveis de física (atualizadas por fase)
+        // Variáveis de física
         let gravity = 0.01;
         let thrustPower = 0.12;
         let fuelConsumption = 0.7;
         let rotationSpeed = 0.04;
+        let consumoMultiplicador = 1.0; // Novo: multiplicador de consumo
 
         let pad = { x: 420, y: 650, width: 160, height: 10 };
         let rocket;
         let fogueteAtual = {};
+
+        // =========================================
+        // RASTRO DO FOGUETE
+        // =========================================
+        let rastro = [];
+
+        function atualizarRastro() {
+            rastro.push({ x: rocket.x, y: rocket.y, life: 1 });
+            if (rastro.length > 50) rastro.shift();
+
+            rastro.forEach(p => p.life -= 0.02);
+            rastro = rastro.filter(p => p.life > 0);
+        }
+
+        function desenharRastro() {
+            rastro.forEach((p, i) => {
+                const alpha = p.life * 0.3;
+                const size = 2 + p.life * 4;
+                ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
 
         // =========================================
         // CONFIGURAÇÃO DA FASE
@@ -922,7 +1214,8 @@
                 maxAngle: fog.maxAngle,
                 fuelBonus: fog.fuelBonus,
                 label: fog.label,
-                foguete: fog
+                foguete: fog,
+                consumoMultiplicador: fog.consumoMultiplicador || 1.0
             };
         }
 
@@ -935,6 +1228,9 @@
             gameState = "playing";
             audio.stopEngine();
             nextBtn.style.display = 'none';
+            rastro = [];
+            atualizarSkinsDisponiveis();
+            atualizarUI_Skins();
         }
 
         function resetRocket() {
@@ -952,11 +1248,18 @@
 
         function applyLevel(level) {
             const fog = getFogueteConfig(level);
-            fogueteAtual = fog;
+            fogueteAtual = { ...fog };
+
+            // Aplica skin
+            const skin = getSkinAtual();
+            fogueteAtual.cor = skin.cor;
+            fogueteAtual.corDetalhe = skin.corDetalhe;
+            fogueteAtual.corChama = skin.corChama;
 
             gravity = fog.gravity;
             thrustPower = fog.thrustPower;
             fuelConsumption = fog.fuelConsumption;
+            consumoMultiplicador = fog.consumoMultiplicador || 1.0;
             pad.width = fog.padWidth;
             pad.x = (canvas.width - pad.width) / 2;
 
@@ -965,6 +1268,9 @@
                 rocket.startFuel = fog.fuel;
             }
 
+            // Atualiza skins (desbloqueios por fase)
+            atualizarUI_Skins();
+
             faseInfo.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;text-align:right;">
                     <div style="color:#4fc3f7;font-weight:bold;">${fog.label}</div>
@@ -972,19 +1278,19 @@
                     <div style="color:#aaa;font-size:12px;">🎯 Vel. Máx: ${fog.maxSpeedV.toFixed(1)}</div>
                     <div style="color:#aaa;font-size:12px;">📏 Plataforma: ${pad.width}px</div>
                     <div style="color:#ffd700;font-size:12px;">⭐ Bônus: ${fog.fuelBonus.toFixed(1)}x</div>
+                    ${consumoMultiplicador > 1.0 ? `<div style="color:#ff6b6b;font-size:11px;">⚠️ Consumo: ${(consumoMultiplicador * 100).toFixed(0)}%</div>` : ''}
                 </div>
             `;
         }
 
         // =========================================
-        // VELOCÍMETRO (estilo carro)
+        // VELOCÍMETRO
         // =========================================
         function drawSpeedometer() {
             const cx = 100;
             const cy = canvas.height - 80;
             const raio = 55;
 
-            // Velocidade total
             const speed = Math.sqrt(rocket.vx * rocket.vx + rocket.vy * rocket.vy);
             const speedKmh = speed * 250;
             const maxSpeed = 8;
@@ -992,7 +1298,6 @@
 
             ctx.save();
 
-            // Fundo
             ctx.shadowColor = "rgba(0,0,0,0.5)";
             ctx.shadowBlur = 15;
 
@@ -1018,7 +1323,6 @@
             ctx.arc(cx, cy, raio - 4, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Arco de velocidade
             const startAngle = 0.75 * Math.PI;
             const endAngle = 2.25 * Math.PI;
             const arcLength = endAngle - startAngle;
@@ -1041,7 +1345,6 @@
                 ctx.fill();
             }
 
-            // Ponteiro
             const pointerAngle = startAngle + percent * arcLength;
             const pointerLength = raio - 10;
 
@@ -1058,7 +1361,6 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Círculo central
             ctx.fillStyle = "#ff6b6b";
             ctx.beginPath();
             ctx.arc(cx, cy, 5, 0, Math.PI * 2);
@@ -1069,7 +1371,6 @@
             ctx.arc(cx, cy, 2, 0, Math.PI * 2);
             ctx.fill();
 
-            // Número digital
             ctx.fillStyle = "white";
             ctx.font = "bold 16px Arial";
             ctx.textAlign = "center";
@@ -1081,13 +1382,62 @@
             ctx.textBaseline = "top";
             ctx.fillText("km/h", cx, cy + raio - 16);
 
-            // Label
             ctx.fillStyle = "rgba(255,255,255,0.3)";
             ctx.font = "8px Arial";
             ctx.textBaseline = "bottom";
             ctx.fillText("VEL.", cx, cy - raio + 10);
 
             ctx.restore();
+        }
+
+        // =========================================
+        // INDICADOR DE ALVO NO CHÃO
+        // =========================================
+        function drawTarget() {
+            const groundY = 655;
+            const x = rocket.x;
+
+            // Sombra circular
+            const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 300);
+            const radius = 20 * pulse;
+
+            // Sombra difusa
+            const grad = ctx.createRadialGradient(x, groundY, 0, x, groundY, radius + 15);
+            grad.addColorStop(0, 'rgba(255, 200, 100, 0.25)');
+            grad.addColorStop(0.5, 'rgba(255, 200, 100, 0.1)');
+            grad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, groundY, radius + 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Círculo principal
+            ctx.strokeStyle = `rgba(255, 200, 100, ${0.3 + 0.3 * pulse})`;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 6]);
+            ctx.beginPath();
+            ctx.arc(x, groundY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Cruz
+            ctx.strokeStyle = `rgba(255, 200, 100, ${0.2 + 0.2 * pulse})`;
+            ctx.lineWidth = 1.5;
+            const crossSize = 6;
+            ctx.beginPath();
+            ctx.moveTo(x - crossSize, groundY);
+            ctx.lineTo(x + crossSize, groundY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, groundY - crossSize);
+            ctx.lineTo(x, groundY + crossSize);
+            ctx.stroke();
+
+            // Centro
+            ctx.fillStyle = `rgba(255, 200, 100, ${0.3 + 0.3 * pulse})`;
+            ctx.beginPath();
+            ctx.arc(x, groundY, 2, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         // =========================================
@@ -1215,10 +1565,10 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Chama
+            // Chama (com consumo visual)
             const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
             if (isThrusting && gameState === "playing") {
-                const flameHeight = (25 + Math.random() * 20) * scale;
+                const flameHeight = (25 + Math.random() * 20) * scale * (1 + (consumoMultiplicador - 1) * 0.3);
                 const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 + flameHeight /
                     2, flameHeight);
                 gradFlame.addColorStop(0, "rgba(255,255,255,1)");
@@ -1343,6 +1693,13 @@
             ctx.textAlign = "left";
             ctx.fillText("🔥 " + rocket.fuel.toFixed(1) + "%", barX + 8, barY + 17);
 
+            // Indicador de consumo acelerado
+            if (consumoMultiplicador > 1.0) {
+                ctx.fillStyle = "rgba(255,100,100,0.6)";
+                ctx.font = "10px Arial";
+                ctx.fillText(`⚠️ x${consumoMultiplicador.toFixed(1)}`, barX + 140, barY + 17);
+            }
+
             ctx.fillStyle = "rgba(255,255,255,0.6)";
             ctx.font = "12px Arial";
             ctx.fillText("COMBUSTÍVEL", barX, barY - 6);
@@ -1376,7 +1733,8 @@
                 const thrustY = -Math.cos(rocket.angle) * thrustPower;
                 rocket.vx += thrustX;
                 rocket.vy += thrustY;
-                rocket.fuel -= fuelConsumption;
+                // CONSUMO ACELERADO: multiplica pelo consumoMultiplicador
+                rocket.fuel -= fuelConsumption * consumoMultiplicador;
                 if (rocket.fuel < 0) rocket.fuel = 0;
 
                 if (!engineWasOn) {
@@ -1397,6 +1755,12 @@
 
             if (rocket.x < -30) rocket.x = canvas.width + 30;
             if (rocket.x > canvas.width + 30) rocket.x = -30;
+
+            // Atualiza rastro
+            atualizarRastro();
+
+            // Atualiza meteoros
+            atualizarMeteoros();
 
             if (rocket.y > 750) {
                 gameState = "crashed";
@@ -1433,6 +1797,20 @@
                             atualizarRankingPreview();
                         }
                     }
+
+                    // Desbloqueia skins com base no progresso
+                    if (currentLevel >= 3) {
+                        desbloquearSkin('ruby');
+                        desbloquearSkin('emerald');
+                    }
+                    if (currentLevel >= 5) {
+                        desbloquearSkin('sapphire');
+                        desbloquearSkin('gold');
+                        desbloquearSkin('neon');
+                        desbloquearSkin('carbon');
+                        desbloquearSkin('ice');
+                    }
+                    atualizarUI_Skins();
 
                     if (currentLevel >= maxLevel) {
                         gameState = "gameComplete";
@@ -1539,6 +1917,27 @@
         });
 
         // =========================================
+        // SKIN TOGGLE
+        // =========================================
+        skinToggle.addEventListener("click", function() {
+            if (skinSelector.style.display === 'flex') {
+                skinSelector.style.display = 'none';
+            } else {
+                skinSelector.style.display = 'flex';
+                atualizarUI_Skins();
+            }
+        });
+
+        // Fecha o seletor de skins se clicar fora
+        document.addEventListener('click', function(e) {
+            if (skinSelector.style.display === 'flex') {
+                if (!skinSelector.contains(e.target) && e.target !== skinToggle) {
+                    skinSelector.style.display = 'none';
+                }
+            }
+        });
+
+        // =========================================
         // HUD E MENSAGENS
         // =========================================
         function drawHUD() {
@@ -1553,6 +1952,7 @@
                     <div style="color:#4fc3f7;font-size:12px;">👤 ${currentPlayer || "Anônimo"}</div>
                     <div style="color:#ffd700;font-size:11px;">${fog.nome}</div>
                     <div style="color:#aaa;font-size:12px;">📊 Fase ${currentLevel} - ${pad.width}px</div>
+                    ${consumoMultiplicador > 1.0 ? `<div style="color:#ff6b6b;font-size:11px;">⚠️ Consumo x${consumoMultiplicador.toFixed(1)}</div>` : ''}
                 </div>
             `;
         }
@@ -1578,9 +1978,16 @@
                 ctx.font = "22px Arial";
                 const nextFog = getFogueteConfig(currentLevel + 1);
                 ctx.fillText(`Próxima: ${nextFog.label} - ${nextFog.nome}`, canvas.width / 2, 340);
+                // Mostra skins desbloqueadas
+                const novasSkins = SKINS.filter(s => s.id !== 'classic' && skinsDisponiveis.includes(s.id));
+                if (novasSkins.length > 0) {
+                    ctx.fillStyle = "#ffd700";
+                    ctx.font = "16px Arial";
+                    ctx.fillText(`🎨 Skins desbloqueadas: ${novasSkins.map(s => s.nome).join(', ')}`, canvas.width / 2, 390);
+                }
                 ctx.fillStyle = "#aaa";
                 ctx.font = "18px Arial";
-                ctx.fillText("Toque na tela ou clique no botão para continuar", canvas.width / 2, 400);
+                ctx.fillText("Toque na tela ou clique no botão para continuar", canvas.width / 2, 440);
                 ctx.textAlign = "left";
             }
 
@@ -1609,12 +2016,20 @@
                     ctx.fillText(`🏆 NOVO RECORDE, ${currentPlayer}!`, canvas.width / 2, 320);
                     ctx.shadowBlur = 0;
                 }
+                // Mostra skins desbloqueadas
+                const todasSkins = SKINS.filter(s => s.id !== 'classic' && skinsDisponiveis.includes(s.id));
+                if (todasSkins.length > 0) {
+                    ctx.fillStyle = "#ffd700";
+                    ctx.font = "18px Arial";
+                    ctx.fillText(`🎨 Todas as skins desbloqueadas: ${todasSkins.map(s => s.nome).join(', ')}`, canvas.width / 2, 380);
+                    ctx.fillText("Clique em 'SKINS' durante o jogo para trocar!", canvas.width / 2, 410);
+                }
                 ctx.fillStyle = "#4fc3f7";
                 ctx.font = "20px Arial";
-                ctx.fillText(`Você completou todas as ${maxLevel} fases!`, canvas.width / 2, 370);
+                ctx.fillText(`Você completou todas as ${maxLevel} fases!`, canvas.width / 2, 450);
                 ctx.fillStyle = "#aaa";
                 ctx.font = "18px Arial";
-                ctx.fillText("Toque na tela ou clique no botão para reiniciar", canvas.width / 2, 420);
+                ctx.fillText("Toque na tela ou clique no botão para reiniciar", canvas.width / 2, 490);
                 ctx.textAlign = "left";
             }
 
@@ -1645,9 +2060,14 @@
                 ctx.font = "24px Arial";
                 const fog = fogueteAtual;
                 ctx.fillText(`Fase ${currentLevel} - ${fog.nome} - Tente novamente, ${currentPlayer}`, canvas.width / 2, 260);
+                if (consumoMultiplicador > 1.0) {
+                    ctx.fillStyle = "#ff6b6b";
+                    ctx.font = "18px Arial";
+                    ctx.fillText(`⚠️ Consumo de combustível x${consumoMultiplicador.toFixed(1)} (mais rápido!)`, canvas.width / 2, 310);
+                }
                 ctx.fillStyle = "#aaa";
                 ctx.font = "20px Arial";
-                ctx.fillText("Pressione R para recomeçar a fase", canvas.width / 2, 320);
+                ctx.fillText("Pressione R para recomeçar a fase", canvas.width / 2, 360);
                 ctx.textAlign = "left";
             }
         }
@@ -1655,10 +2075,13 @@
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawStars();
+            desenharMeteoros();
             drawGround();
+            drawTarget(); // Indicador de alvo
+            desenharRastro(); // Rastro do foguete
             drawRocket();
             drawFuelBar();
-            drawSpeedometer(); // <--- VELOCÍMETRO ADICIONADO
+            drawSpeedometer();
             drawMessage();
             drawHUD();
         }
@@ -1699,6 +2122,9 @@
             loginScreen.classList.add('hidden');
             resizeCanvas();
 
+            // Inicializa skins
+            atualizarSkinsDisponiveis();
+
             resetGame();
             applyLevel(currentLevel);
             resetRocket();
@@ -1707,6 +2133,10 @@
             engineWasOn = false;
 
             atualizarRankingPreview();
+            atualizarUI_Skins();
+
+            // Mostra o botão de skins
+            skinToggle.style.display = 'block';
 
             if (!gameLoopStarted) {
                 console.log('🚀 Iniciando gameLoop...');
@@ -1728,6 +2158,9 @@
             if (nomeSalvo) {
                 nameInput.value = nomeSalvo;
             }
+
+            // Inicializa skins
+            atualizarSkinsDisponiveis();
 
             startBtn.addEventListener("click", function() {
                 const nome = nameInput.value.trim() || "Anônimo";
@@ -1756,10 +2189,11 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - COM VELOCÍMETRO");
+        console.log("🚀 ROCKET LANDER - COM TODAS AS ADIÇÕES");
+        console.log("🌟 Meteoros, Rastro, Alvo, Consumo Acelerado e Skins!");
         console.log("👤 Digite seu nome e clique em JOGAR");
         console.log("🏆 Top 3 salvo no navegador.");
-        console.log("📊 Velocímetro no canto inferior esquerdo!");
+        console.log("🎨 Clique em 'SKINS' para trocar a cor do foguete!");
     </script>
 </body>
 </html>
