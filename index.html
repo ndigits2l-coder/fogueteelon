@@ -163,6 +163,46 @@ canvas {
     margin-top: 20px;
 }
 
+/* ===== BOTÃO PRÓXIMA FASE ===== */
+#next-btn {
+    position: fixed;
+    bottom: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    border: 2px solid #00ff88;
+    padding: 14px 40px;
+    border-radius: 30px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: all 0.3s;
+    display: none;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+    animation: pulse 1.5s infinite;
+}
+
+#next-btn:hover {
+    background: rgba(0, 255, 136, 0.3);
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 0 50px rgba(0, 255, 136, 0.2);
+}
+
+#next-btn:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
+    50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.3); }
+    100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
+}
+
 /* ===== CONTROLES TOUCH ===== */
 #touch-controls {
     position: fixed;
@@ -228,6 +268,24 @@ canvas {
         display: none;
     }
 }
+
+@media (max-width: 480px) {
+    #touch-controls button {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+    #touch-controls .thrust-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+    }
+    #next-btn {
+        padding: 12px 30px;
+        font-size: 18px;
+        bottom: 170px;
+    }
+}
 </style>
 </head>
 <body>
@@ -237,6 +295,9 @@ canvas {
 <canvas id="game"></canvas>
 <button id="sound-toggle">🔊 Som: Ligado</button>
 <button id="ranking-btn">🏆 VER RANKING</button>
+
+<!-- BOTÃO PRÓXIMA FASE -->
+<button id="next-btn">▶ PRÓXIMA FASE</button>
 
 <!-- CONTROLES TOUCH -->
 <div id="touch-controls">
@@ -516,6 +577,7 @@ const soundBtn = document.getElementById("sound-toggle");
 const rankingBtn = document.getElementById("ranking-btn");
 const rankingScreen = document.getElementById("rankingScreen");
 const closeRanking = document.getElementById("closeRanking");
+const nextBtn = document.getElementById("next-btn");
 
 // ====================================================
 // CONTROLES TOUCH
@@ -530,11 +592,9 @@ let touchKeys = {
     thrust: false
 };
 
-// Funções auxiliares para touch
 function setupTouchButton(element, keyOn, keyOff) {
     if (!element) return;
 
-    // Toque
     element.addEventListener('touchstart', function(e) {
         e.preventDefault();
         touchKeys[keyOn] = true;
@@ -551,7 +611,6 @@ function setupTouchButton(element, keyOn, keyOff) {
         touchKeys[keyOn] = false;
     }, { passive: false });
 
-    // Mouse (para testes em desktop)
     element.addEventListener('mousedown', function(e) {
         e.preventDefault();
         touchKeys[keyOn] = true;
@@ -635,6 +694,7 @@ function resetGame(){
     resetRocket();
     gameState = "playing";
     audio.stopEngine();
+    nextBtn.style.display = 'none';
 }
 
 function resetRocket(){
@@ -666,6 +726,47 @@ function applyLevel(level){
 }
 
 // ====================================================
+// PRÓXIMA FASE (via botão ou toque)
+// ====================================================
+function avancarFase() {
+    if (gameState === "levelComplete") {
+        currentLevel++;
+        applyLevel(currentLevel);
+        resetRocket();
+        gameState = "playing";
+        audio.stopEngine();
+        engineWasOn = false;
+        nextBtn.style.display = 'none';
+    } else if (gameState === "gameComplete") {
+        resetGame();
+        audio.stopEngine();
+        engineWasOn = false;
+        nextBtn.style.display = 'none';
+    }
+}
+
+// Botão "PRÓXIMA FASE"
+nextBtn.addEventListener('click', avancarFase);
+nextBtn.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    avancarFase();
+});
+
+// Toque na tela também avança (qualquer lugar)
+canvas.addEventListener('click', function() {
+    if (gameState === "levelComplete" || gameState === "gameComplete") {
+        avancarFase();
+    }
+});
+
+canvas.addEventListener('touchstart', function(e) {
+    if (gameState === "levelComplete" || gameState === "gameComplete") {
+        e.preventDefault();
+        avancarFase();
+    }
+}, { passive: false });
+
+// ====================================================
 // EVENTOS DE TECLADO (Desktop)
 // ====================================================
 document.addEventListener("keydown", function(e){
@@ -675,7 +776,7 @@ document.addEventListener("keydown", function(e){
         audio.stopEngine();
     }
     if((e.key === "Enter" || e.key === " ") && (gameState === "levelComplete" || gameState === "gameComplete")){
-        nextLevel();
+        avancarFase();
     }
     if(!audio.ctx) {
         audio.init();
@@ -876,7 +977,6 @@ function drawRocket(){
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Verifica se o motor está ligado (teclado OU touch)
     const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
 
     if(isThrusting && gameState === "playing"){
@@ -958,16 +1058,25 @@ let engineWasOn = false;
 
 function update(){
     if(gameState === "levelComplete" || gameState === "gameComplete") {
+        // Mostra o botão "PRÓXIMA FASE" quando completa
+        if (gameState === "levelComplete" || gameState === "gameComplete") {
+            nextBtn.style.display = 'block';
+            if (gameState === "gameComplete") {
+                nextBtn.textContent = '🔄 REINICIAR';
+            } else {
+                nextBtn.textContent = `▶ PRÓXIMA FASE (${currentLevel + 1})`;
+            }
+        }
         audio.stopEngine();
         return;
     }
     if(gameState !== "playing") return;
 
-    // Rotação (teclado OU touch)
+    // Rotação
     if(keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
     if(keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
 
-    // Empuxo (teclado OU touch)
+    // Empuxo
     const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
 
     if(isThrusting){
@@ -1002,6 +1111,7 @@ function update(){
         audio.playExplosion();
         audio.stopEngine();
         engineWasOn = false;
+        nextBtn.style.display = 'none';
         return;
     }
 
@@ -1041,6 +1151,7 @@ function update(){
             audio.playExplosion();
             audio.stopEngine();
             engineWasOn = false;
+            nextBtn.style.display = 'none';
         }
         return;
     }
@@ -1050,24 +1161,7 @@ function update(){
         audio.playExplosion();
         audio.stopEngine();
         engineWasOn = false;
-    }
-}
-
-// ====================================================
-// PRÓXIMA FASE
-// ====================================================
-function nextLevel(){
-    if(gameState === "levelComplete"){
-        currentLevel++;
-        applyLevel(currentLevel);
-        resetRocket();
-        gameState = "playing";
-        audio.stopEngine();
-        engineWasOn = false;
-    } else if(gameState === "gameComplete"){
-        resetGame();
-        audio.stopEngine();
-        engineWasOn = false;
+        nextBtn.style.display = 'none';
     }
 }
 
@@ -1114,8 +1208,8 @@ function drawMessage(){
         ctx.fillText(`Próxima: ${getLevelConfig(currentLevel + 1).label}`, canvas.width/2, 340);
 
         ctx.fillStyle = "#aaa";
-        ctx.font = "20px Arial";
-        ctx.fillText("Pressione ENTER ou ESPAÇO para continuar", canvas.width/2, 400);
+        ctx.font = "18px Arial";
+        ctx.fillText("Toque na tela ou clique no botão para continuar", canvas.width/2, 400);
         ctx.textAlign = "left";
     }
 
@@ -1154,8 +1248,8 @@ function drawMessage(){
         ctx.fillText(`Você completou todas as ${maxLevel} fases!`, canvas.width/2, 370);
 
         ctx.fillStyle = "#aaa";
-        ctx.font = "20px Arial";
-        ctx.fillText("Pressione ENTER ou ESPAÇO para reiniciar", canvas.width/2, 420);
+        ctx.font = "18px Arial";
+        ctx.fillText("Toque na tela ou clique no botão para reiniciar", canvas.width/2, 420);
         ctx.textAlign = "left";
     }
 
@@ -1245,6 +1339,7 @@ atualizarRankingUI();
 
 console.log(`🚀 Rocket Lander - Jogador: ${NOME_JOGADOR}`);
 console.log(`📱 Controles touch ativados!`);
+console.log(`👆 Toque na tela ou clique em "PRÓXIMA FASE" para avançar`);
 </script>
 </body>
 </html>
