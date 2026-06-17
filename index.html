@@ -3,84 +3,208 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rocket Lander - Ranking</title>
+<title>Rocket Lander</title>
 
 <style>
-body{
-    margin:0;
-    background:#000;
-    overflow:hidden;
-    font-family:Arial,sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-canvas{
-    display:block;
-    margin:auto;
-    background:linear-gradient(#000814,#001d3d);
+body {
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
 }
 
-#info{
-    position:absolute;
-    top:10px;
-    left:10px;
-    color:white;
-    font-size:18px;
-    z-index:10;
-    pointer-events:none;
+canvas {
+    display: block;
+    margin: auto;
+    background: linear-gradient(#000814, #001d3d);
+    width: 100%;
+    height: 100vh;
 }
 
-#fase-info{
-    position:absolute;
-    top:10px;
-    right:10px;
-    color:white;
-    font-size:18px;
-    z-index:10;
-    pointer-events:none;
-    text-align:right;
+#info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-size: 18px;
+    z-index: 10;
+    pointer-events: none;
 }
 
-#sound-toggle{
-    position:absolute;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:10;
-    background:rgba(255,255,255,0.1);
-    color:white;
-    border:1px solid rgba(255,255,255,0.3);
-    padding:8px 20px;
-    border-radius:20px;
-    font-size:14px;
-    cursor:pointer;
-    font-family:Arial,sans-serif;
-    transition:all 0.3s;
+#fase-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 18px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: right;
 }
 
-#sound-toggle:hover{
-    background:rgba(255,255,255,0.2);
+#sound-toggle {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: all 0.3s;
 }
 
-#ranking-btn{
-    position:absolute;
-    bottom:70px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:10;
-    background:rgba(255,215,0,0.15);
-    color:#ffd700;
-    border:1px solid rgba(255,215,0,0.3);
-    padding:6px 16px;
-    border-radius:16px;
-    font-size:12px;
-    cursor:pointer;
-    font-family:Arial,sans-serif;
-    transition:all 0.3s;
-    letter-spacing:1px;
+#sound-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-#ranking-btn:hover{
-    background:rgba(255,215,0,0.25);
+#ranking-btn {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(255, 215, 0, 0.15);
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+    display: none;
+}
+
+#ranking-btn:hover {
+    background: rgba(255, 215, 0, 0.25);
+}
+
+/* ===== TELA DE LOGIN ===== */
+#loginScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.94);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    transition: opacity 0.6s ease;
+}
+
+#loginScreen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#loginScreen h1 {
+    color: #4fc3f7;
+    font-size: 52px;
+    margin-bottom: 6px;
+    text-shadow: 0 0 30px rgba(79, 195, 247, 0.3);
+}
+
+#loginScreen .subtitle {
+    color: #888;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+#loginScreen .input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 320px;
+}
+
+#loginScreen input {
+    padding: 14px 24px;
+    font-size: 20px;
+    border-radius: 10px;
+    border: 2px solid #4fc3f7;
+    background: #1a1a2e;
+    color: white;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    transition: 0.3s;
+}
+
+#loginScreen input:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+#loginScreen input::placeholder {
+    color: #555;
+}
+
+#startBtn {
+    margin-top: 18px;
+    padding: 14px 48px;
+    font-size: 20px;
+    border-radius: 10px;
+    background: #4fc3f7;
+    color: #000;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    width: 100%;
+    letter-spacing: 1px;
+}
+
+#startBtn:hover {
+    background: #ffd700;
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+#rankingPreview {
+    margin-top: 30px;
+    color: #aaa;
+    font-size: 15px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-width: 200px;
+    line-height: 1.8;
+}
+
+#rankingPreview .title {
+    color: #ffd700;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.credits {
+    position: absolute;
+    bottom: 20px;
+    color: #333;
+    font-size: 12px;
+    letter-spacing: 2px;
 }
 
 /* ===== TELA DE RANKING (popup) ===== */
@@ -159,13 +283,34 @@ canvas{
 </head>
 <body>
 
-<div id="info"></div>
-<div id="fase-info"></div>
-<canvas id="game"></canvas>
-<button id="sound-toggle">🔊 Som: Ligado</button>
-<button id="ranking-btn">🏆 VER RANKING</button>
+<!-- ===== TELA DE LOGIN ===== -->
+<div id="loginScreen">
+    <h1>🚀 ROCKET LANDER</h1>
+    <p class="subtitle">🌙 Pouse o foguete. Bata recordes.</p>
 
-<!-- TELA DE RANKING -->
+    <div class="input-group">
+        <input id="nameInput" type="text" maxlength="15" placeholder="Digite seu nome" autofocus>
+        <button id="startBtn">🚀 JOGAR</button>
+    </div>
+
+    <div id="rankingPreview">
+        <div class="title">🏆 TOP 3</div>
+        <div id="rankingList">Nenhum recorde ainda. Seja o primeiro!</div>
+    </div>
+
+    <span class="credits">⬆️ ↑ acelera &nbsp;|&nbsp; ← → inclina</span>
+</div>
+
+<!-- ===== JOGO ===== -->
+<div id="gameWrapper">
+    <div id="info"></div>
+    <div id="fase-info"></div>
+    <canvas id="game"></canvas>
+    <button id="sound-toggle">🔊 Som: Ligado</button>
+    <button id="ranking-btn">🏆 VER RANKING</button>
+</div>
+
+<!-- ===== TELA DE RANKING ===== -->
 <div id="rankingScreen">
     <button class="close-btn" id="closeRanking">✕</button>
     <h2>🏆 TOP 3</h2>
@@ -175,19 +320,10 @@ canvas{
 
 <script>
 // ====================================================
-// PEGA O NOME DA URL
-// ====================================================
-function getNomeDaURL() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('nome') || 'Anônimo';
-}
-
-const nomeJogador = getNomeDaURL();
-
-// ====================================================
 // SISTEMA DE RANKING
 // ====================================================
 let ranking = JSON.parse(localStorage.getItem('rocketScores')) || [];
+let currentPlayer = '';
 
 function salvarRecorde(nome, pontuacao) {
     if (!nome || pontuacao <= 0) return;
@@ -206,7 +342,6 @@ function salvarRecorde(nome, pontuacao) {
         ranking.push({ nome: nome, score: pontuacao });
     }
 
-    // Ordena e mantém só os 3 melhores
     ranking.sort((a, b) => b.score - a.score);
     if (ranking.length > 3) {
         ranking = ranking.slice(0, 3);
@@ -215,7 +350,25 @@ function salvarRecorde(nome, pontuacao) {
     localStorage.setItem('rocketScores', JSON.stringify(ranking));
 }
 
-function atualizarRankingUI() {
+function atualizarRankingPreview() {
+    const list = document.getElementById('rankingList');
+    if (!list) return;
+
+    if (ranking.length === 0) {
+        list.innerHTML = 'Nenhum recorde ainda. Seja o primeiro! 🏆';
+        return;
+    }
+
+    const medalhas = ['🥇', '🥈', '🥉'];
+    let html = '';
+    ranking.forEach((item, index) => {
+        const medalha = medalhas[index] || '🏅';
+        html += `${medalha} <strong>${item.nome}</strong> — ${item.score} pts<br>`;
+    });
+    list.innerHTML = html;
+}
+
+function atualizarRankingFull() {
     const list = document.getElementById('rankingListFull');
     if (!list) return;
 
@@ -228,7 +381,8 @@ function atualizarRankingUI() {
     let html = '';
     ranking.forEach((item, index) => {
         const medalha = medalhas[index] || '🏅';
-        html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
+        html += `<div class="medalha">${medalha}</div>
+                 <div><strong>${item.nome}</strong> — ${item.score} pts</div>`;
     });
     list.innerHTML = html;
 }
@@ -438,6 +592,10 @@ const rankingBtn = document.getElementById("ranking-btn");
 const rankingScreen = document.getElementById("rankingScreen");
 const closeRanking = document.getElementById("closeRanking");
 
+const loginScreen = document.getElementById('loginScreen');
+const startBtn = document.getElementById('startBtn');
+const nameInput = document.getElementById('nameInput');
+
 let keys = {};
 let score = 0;
 let levelScore = 0;
@@ -564,7 +722,7 @@ soundBtn.addEventListener("click", function(){
 // RANKING - EVENTOS
 // ====================================================
 rankingBtn.addEventListener("click", function(){
-    atualizarRankingUI();
+    atualizarRankingFull();
     rankingScreen.classList.toggle("active");
 });
 
@@ -572,7 +730,6 @@ closeRanking.addEventListener("click", function(){
     rankingScreen.classList.remove("active");
 });
 
-// Fecha ranking com ESC
 document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && rankingScreen.classList.contains("active")){
         rankingScreen.classList.remove("active");
@@ -893,9 +1050,10 @@ function update(){
             if(score > highScore){
                 highScore = score;
                 localStorage.setItem("rocketLanderHighScore", highScore.toString());
-                // SALVA NO RANKING COM NOME
-                salvarRecorde(nomeJogador, score);
-                atualizarRankingUI();
+                if (currentPlayer) {
+                    salvarRecorde(currentPlayer, score);
+                    atualizarRankingPreview();
+                }
             }
 
             if(currentLevel >= maxLevel){
@@ -951,7 +1109,7 @@ function drawHUD(){
             <div>➡️ Vel. Horizontal: <span style="color:#4fc3f7;">${Math.abs(rocket.vx).toFixed(2)}</span> / ${config.maxSpeedH.toFixed(1)}</div>
             <div style="color:#ffd700;">⭐ Pontuação: ${score}</div>
             <div style="color:#ff6b6b;">🏆 Recorde: ${highScore}</div>
-            <div style="color:#4fc3f7;font-size:12px;">👤 ${nomeJogador}</div>
+            <div style="color:#4fc3f7;font-size:12px;">👤 ${currentPlayer || "Anônimo"}</div>
             <div style="color:#aaa;font-size:12px;">📊 Fase ${currentLevel} - ${pad.width}px</div>
         </div>
     `;
@@ -1014,7 +1172,7 @@ function drawMessage(){
             ctx.font = "bold 26px Arial";
             ctx.shadowColor = "#ffd700";
             ctx.shadowBlur = 20;
-            ctx.fillText(`🏆 NOVO RECORDE, ${nomeJogador}!`, canvas.width/2, 320);
+            ctx.fillText(`🏆 NOVO RECORDE, ${currentPlayer}!`, canvas.width/2, 320);
             ctx.shadowBlur = 0;
         }
 
@@ -1054,7 +1212,7 @@ function drawMessage(){
 
         ctx.fillStyle = "white";
         ctx.font = "24px Arial";
-        ctx.fillText(`Fase ${currentLevel} - Tente novamente, ${nomeJogador}`, canvas.width/2, 260);
+        ctx.fillText(`Fase ${currentLevel} - Tente novamente, ${currentPlayer}`, canvas.width/2, 260);
 
         ctx.fillStyle = "#aaa";
         ctx.font = "20px Arial";
@@ -1092,6 +1250,56 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 }
 
 // ====================================================
+// INICIAR JOGO (chamado quando clica em JOGAR)
+// ====================================================
+function iniciarJogo(nome) {
+    currentPlayer = nome.trim() || "Anônimo";
+
+    // Esconde a tela de login
+    loginScreen.classList.add('hidden');
+
+    // Mostra o botão de ranking
+    rankingBtn.style.display = 'block';
+
+    // Reseta o jogo
+    resetGame();
+    applyLevel(currentLevel);
+    resetRocket();
+    gameState = "playing";
+    audio.stopEngine();
+    engineWasOn = false;
+
+    // Atualiza ranking
+    atualizarRankingPreview();
+
+    console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
+}
+
+// ====================================================
+// EVENTOS DA TELA DE LOGIN
+// ====================================================
+document.addEventListener("DOMContentLoaded", function() {
+    // Atualiza ranking na tela de login
+    atualizarRankingPreview();
+
+    // Botão JOGAR
+    startBtn.addEventListener("click", function() {
+        const nome = nameInput.value.trim() || "Anônimo";
+        iniciarJogo(nome);
+    });
+
+    // Enter no campo de nome
+    nameInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            startBtn.click();
+        }
+    });
+
+    // Foco automático no campo de nome
+    nameInput.focus();
+});
+
+// ====================================================
 // LOOP
 // ====================================================
 function gameLoop(){
@@ -1100,22 +1308,18 @@ function gameLoop(){
     requestAnimationFrame(gameLoop);
 }
 
-applyLevel(1);
-resetRocket();
+// Inicia o loop do jogo (já fica rodando, mas escondido)
 gameLoop();
 
+// Inicializa áudio no primeiro clique
 document.addEventListener('click', function initAudio() {
     audio.init();
     document.removeEventListener('click', initAudio);
 }, { once: true });
 
-// Atualiza ranking ao carregar
-atualizarRankingUI();
-
-console.log("🚀 Rocket Lander com Ranking!");
-console.log(`👤 Jogador: ${nomeJogador}`);
+console.log("🚀 ROCKET LANDER - COM LOGIN E RANKING");
+console.log("👤 Digite seu nome e clique em JOGAR");
 console.log("🏆 Top 3 salvo no navegador.");
-console.log("📊 Clique em 'VER RANKING' para ver os melhores.");
 </script>
 </body>
 </html>
