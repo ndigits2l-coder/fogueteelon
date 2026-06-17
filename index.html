@@ -6,7 +6,6 @@
 <title>Rocket Lander - Ranking</title>
 
 <style>
-    /* --- Seu estilo atual, sem alterações --- */
     * {
         margin: 0;
         padding: 0;
@@ -23,6 +22,8 @@
         display: block;
         margin: auto;
         background: linear-gradient(#000814, #001d3d);
+        width: 100%;
+        height: 100vh;
     }
 
     #info {
@@ -67,7 +68,9 @@
         background: rgba(255, 255, 255, 0.2);
     }
 
-    /* --- ESTILO DA TELA DE LOGIN (mais robusto) --- */
+    /* ============================================
+       TELA DE LOGIN
+       ============================================ */
     #loginScreen {
         position: absolute;
         top: 0;
@@ -82,12 +85,6 @@
         z-index: 100;
         font-family: Arial, sans-serif;
         padding: 20px;
-        transition: opacity 0.5s ease;
-    }
-    /* Classe para esconder a tela de login */
-    #loginScreen.hidden {
-        opacity: 0;
-        pointer-events: none;
     }
 
     #loginScreen h1 {
@@ -182,17 +179,17 @@
         letter-spacing: 2px;
     }
 
-    /* --- O JOGO FICA VISÍVEL POR PADRÃO --- */
-    #gameWrapper {
-        display: block;
-        width: 100%;
-        height: 100%;
+    /* Classe para esconder a tela de login */
+    .login-hidden {
+        display: none !important;
     }
 </style>
 </head>
 <body>
 
-    <!-- TELA DE LOGIN -->
+    <!-- ============================================
+    TELA DE LOGIN
+    ============================================ -->
     <div id="loginScreen">
         <h1>🚀 ROCKET LANDER</h1>
         <p class="subtitle">🌙 Pouse o foguete. Bata recordes.</p>
@@ -210,7 +207,9 @@
         <span class="credits">⬆️ ↑ acelera &nbsp;|&nbsp; ← → inclina</span>
     </div>
 
-    <!-- JOGO (sempre visível, mas atrás da tela de login) -->
+    <!-- ============================================
+    JOGO
+    ============================================ -->
     <div id="gameWrapper">
         <div id="info"></div>
         <div id="fase-info"></div>
@@ -220,83 +219,951 @@
 
     <script>
         // ====================================================
-        // TODO O SEU CÓDIGO JAVASCRIPT COMPLETO AQUI
-        // (incluindo a classe AudioManager, variáveis, funções, etc.)
+        // VARIÁVEIS GLOBAIS
+        // ====================================================
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        const info = document.getElementById("info");
+        const faseInfo = document.getElementById("fase-info");
+        const soundBtn = document.getElementById("sound-toggle");
+
+        let keys = {};
+        let score = 0;
+        let levelScore = 0;
+        let highScore = parseInt(localStorage.getItem("rocketLanderHighScore")) || 0;
+        let gameState = "playing";
+        let currentLevel = 1;
+        let maxLevel = 5;
+        let currentPlayer = "";
+        let engineWasOn = false;
+
+        // Ranking
+        let ranking = JSON.parse(localStorage.getItem("rocketScores")) || [];
+
+        // ====================================================
+        // SISTEMA DE ÁUDIO
+        // ====================================================
+        class AudioManager {
+            constructor() {
+                this.enabled = true;
+                this.ctx = null;
+                this.masterGain = null;
+                this.engineOsc = null;
+                this.engineGain = null;
+                this.isEngineRunning = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    try {
+                        this.ctx = new(window.AudioContext || window.webkitAudioContext)();
+                        this.masterGain = this.ctx.createGain();
+                        this.masterGain.gain.value = 0.3;
+                        this.masterGain.connect(this.ctx.destination);
+                    } catch (e) {
+                        console.warn("Web Audio API não suportada");
+                        this.enabled = false;
+                    }
+                }
+                return this.ctx;
+            }
+
+            startEngine() {
+                if (!this.enabled || !this.ctx || this.isEngineRunning) return;
+                try {
+                    this.engineGain = this.ctx.createGain();
+                    this.engineGain.gain.value = 0.15;
+                    this.engineGain.connect(this.masterGain);
+                    this.engineOsc = this.ctx.createOscillator();
+                    this.engineOsc.type = 'sawtooth';
+                    this.engineOsc.frequency.value = 80 + Math.random() * 20;
+                    this.engineOsc.connect(this.engineGain);
+
+                    const bufferSize = this.ctx.sampleRate * 0.05;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    noise.loop = true;
+                    const noiseGain = this.ctx.createGain();
+                    noiseGain.gain.value = 0.06;
+                    noise.connect(noiseGain);
+                    noiseGain.connect(this.engineGain);
+
+                    this.engineOsc.start();
+                    noise.start();
+                    this.isEngineRunning = true;
+                    this.engineNoise = noise;
+                    this.engineNoiseGain = noiseGain;
+                } catch (e) {
+                    console.warn("Erro ao iniciar motor:", e);
+                }
+            }
+
+            stopEngine() {
+                if (!this.enabled || !this.ctx || !this.isEngineRunning) return;
+                try {
+                    if (this.engineOsc) {
+                        this.engineOsc.stop();
+                        this.engineOsc.disconnect();
+                        this.engineOsc = null;
+                    }
+                    if (this.engineNoise) {
+                        this.engineNoise.stop();
+                        this.engineNoise.disconnect();
+                        this.engineNoise = null;
+                    }
+                    if (this.engineGain) {
+                        this.engineGain.disconnect();
+                        this.engineGain = null;
+                    }
+                    if (this.engineNoiseGain) {
+                        this.engineNoiseGain.disconnect();
+                        this.engineNoiseGain = null;
+                    }
+                    this.isEngineRunning = false;
+                } catch (e) {
+                    console.warn("Erro ao parar motor:", e);
+                }
+            }
+
+            playExplosion() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const bufferSize = this.ctx.sampleRate * 0.8;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        const envelope = Math.exp(-i / (this.ctx.sampleRate * 0.3));
+                        data[i] = (Math.random() * 2 - 1) * envelope;
+                    }
+                    const source = this.ctx.createBufferSource();
+                    source.buffer = buffer;
+                    const gain = this.ctx.createGain();
+                    gain.gain.value = 0.5;
+                    gain.connect(this.masterGain);
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 300 + Math.random() * 200;
+                    filter.Q.value = 1;
+                    source.connect(filter);
+                    filter.connect(gain);
+                    source.start();
+                    source.onended = () => {
+                        source.disconnect();
+                        filter.disconnect();
+                        gain.disconnect();
+                    };
+                } catch (e) {
+                    console.warn("Erro ao tocar explosão:", e);
+                }
+            }
+
+            playLanding() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const notes = [523, 659, 784, 1047];
+                    notes.forEach((freq, index) => {
+                        setTimeout(() => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            gain.gain.value = 0.15 * (1 - index * 0.1);
+                            gain.connect(this.masterGain);
+                            osc.connect(gain);
+                            osc.start();
+                            osc.stop(this.ctx.currentTime + 0.3);
+                            osc.onended = () => {
+                                osc.disconnect();
+                                gain.disconnect();
+                            };
+                        }, index * 80);
+                    });
+                } catch (e) {
+                    console.warn("Erro ao tocar pouso:", e);
+                }
+            }
+
+            playLevelComplete() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const melody = [523, 587, 659, 784, 880, 784, 880, 1047];
+                    melody.forEach((freq, index) => {
+                        setTimeout(() => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            gain.gain.value = 0.12;
+                            gain.connect(this.masterGain);
+                            osc.connect(gain);
+                            osc.start();
+                            osc.stop(this.ctx.currentTime + 0.15);
+                            osc.onended = () => {
+                                osc.disconnect();
+                                gain.disconnect();
+                            };
+                        }, index * 70);
+                    });
+                } catch (e) {
+                    console.warn("Erro ao tocar vitória:", e);
+                }
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (!this.enabled) {
+                    this.stopEngine();
+                }
+                return this.enabled;
+            }
+        }
+
+        const audio = new AudioManager();
+
+        // ====================================================
+        // FUNÇÕES DE RANKING
+        // ====================================================
+        function salvarRecorde(nome, pontuacao) {
+            if (!nome || pontuacao <= 0) return;
+            let encontrado = false;
+            for (let i = 0; i < ranking.length; i++) {
+                if (ranking[i].nome === nome) {
+                    if (pontuacao > ranking[i].score) {
+                        ranking[i].score = pontuacao;
+                    }
+                    encontrado = true;
+                    break;
+                }
+            }
+            if (!encontrado) {
+                ranking.push({ nome: nome, score: pontuacao });
+            }
+            ranking.sort((a, b) => b.score - a.score);
+            if (ranking.length > 3) {
+                ranking = ranking.slice(0, 3);
+            }
+            localStorage.setItem("rocketScores", JSON.stringify(ranking));
+        }
+
+        function atualizarRankingPreview() {
+            const list = document.getElementById("rankingList");
+            if (!list) return;
+            if (ranking.length === 0) {
+                list.innerHTML = "Nenhum recorde ainda. Seja o primeiro! 🏆";
+                return;
+            }
+            let html = "";
+            const medalhas = ["🥇", "🥈", "🥉"];
+            ranking.forEach((item, index) => {
+                const medalha = medalhas[index] || "🏅";
+                html += `${medalha} <strong>${item.nome}</strong> — ${item.score} pts<br>`;
+            });
+            list.innerHTML = html;
+        }
+
+        // ====================================================
+        // CONFIGURAÇÕES DO JOGO
+        // ====================================================
+        let gravity = 0.01;
+        let thrustPower = 0.12;
+        let fuelConsumption = 0.7;
+        let rotationSpeed = 0.04;
+
+        let pad = {
+            x: 420,
+            y: 650,
+            width: 160,
+            height: 10
+        };
+
+        function getLevelConfig(level) {
+            const configs = {
+                1: { gravity: 0.01, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.0,
+                    label: "🌙 FASE 1" },
+                2: { gravity: 0.015, padWidth: 140, maxSpeedV: 1.8, maxSpeedH: 1.3, maxAngle: 10, fuelBonus: 1.5,
+                    label: "🪐 FASE 2" },
+                3: { gravity: 0.02, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
+                    label: "☄️ FASE 3" },
+                4: { gravity: 0.025, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.5,
+                    label: "🔥 FASE 4" },
+                5: { gravity: 0.03, padWidth: 80, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.0,
+                    label: "🚀 FASE 5" }
+            };
+            if (level > 5) {
+                return {
+                    gravity: 0.03 + (level - 5) * 0.002,
+                    padWidth: Math.max(50, 80 - (level - 5) * 5),
+                    maxSpeedV: Math.max(0.6, 1.0 - (level - 5) * 0.05),
+                    maxSpeedH: Math.max(0.3, 0.6 - (level - 5) * 0.03),
+                    maxAngle: Math.max(2, 4 - (level - 5) * 0.3),
+                    fuelBonus: 3.0 + (level - 5) * 0.2,
+                    label: `💫 FASE ${level}`
+                };
+            }
+            return configs[level] || configs[1];
+        }
+
+        // ====================================================
+        // OBJETO FOGUETE
+        // ====================================================
+        let rocket;
+
+        function resetGame() {
+            score = 0;
+            levelScore = 0;
+            currentLevel = 1;
+            applyLevel(currentLevel);
+            resetRocket();
+            gameState = "playing";
+            audio.stopEngine();
+        }
+
+        function resetRocket() {
+            rocket = {
+                x: 500,
+                y: 120,
+                vx: 0,
+                vy: 0,
+                angle: 0,
+                fuel: 30,
+                startFuel: 30
+            };
+        }
+
+        function applyLevel(level) {
+            const config = getLevelConfig(level);
+            gravity = config.gravity;
+            pad.width = config.padWidth;
+            pad.x = (canvas.width - pad.width) / 2;
+
+            faseInfo.innerHTML = `
+                <div style="background:rgba(0,0,0,0.75);padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;text-align:right;">
+                    <div style="color:#4fc3f7;font-weight:bold;">${config.label}</div>
+                    <div style="color:#aaa;font-size:12px;">🎯 Vel. Máx: ${config.maxSpeedV.toFixed(1)}</div>
+                    <div style="color:#aaa;font-size:12px;">📏 Plataforma: ${pad.width}px</div>
+                    <div style="color:#ffd700;font-size:12px;">⭐ Bônus: ${config.fuelBonus.toFixed(1)}x</div>
+                </div>
+            `;
+        }
+
+        // ====================================================
+        // FUNÇÕES DE DESENHO
         // ====================================================
 
-        // ... (cole todo o seu código JavaScript existente aqui) ...
+        function drawStars() {
+            for (let i = 0; i < 120; i++) {
+                const x = (i * 97 + currentLevel * 13) % canvas.width;
+                const y = (i * 53 + currentLevel * 7) % canvas.height;
+                const size = 0.5 + (i % 3) * 0.5;
+                const brightness = 0.5 + (i % 5) / 5;
+                ctx.fillStyle = `rgba(255,255,255,${brightness})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawGround() {
+            const grad = ctx.createLinearGradient(0, 660, 0, 700);
+            grad.addColorStop(0, "#1b4332");
+            grad.addColorStop(1, "#0d2818");
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 660, canvas.width, 40);
+
+            ctx.fillStyle = "#2d6a4f";
+            ctx.fillRect(0, 655, canvas.width, 10);
+
+            ctx.fillStyle = "rgba(255,0,0,0.05)";
+            ctx.fillRect(0, 655, pad.x, 10);
+            ctx.fillRect(pad.x + pad.width, 655, canvas.width - pad.x - pad.width, 10);
+
+            const padGlow = ctx.createRadialGradient(pad.x + pad.width / 2, pad.y, 10, pad.x + pad.width / 2, pad.y, pad
+                .width);
+            padGlow.addColorStop(0, "rgba(244,162,97,0.3)");
+            padGlow.addColorStop(1, "rgba(244,162,97,0)");
+            ctx.fillStyle = padGlow;
+            ctx.fillRect(pad.x - 40, pad.y - 20, pad.width + 80, 40);
+
+            ctx.fillStyle = "#e9c46a";
+            ctx.shadowColor = "#f4a261";
+            ctx.shadowBlur = 25;
+            ctx.beginPath();
+            ctx.roundRect(pad.x, pad.y, pad.width, pad.height, 3);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "rgba(255,200,100,0.3)";
+            for (let i = 0; i < pad.width; i += 20) {
+                ctx.fillRect(pad.x + i, pad.y + 2, 10, 3);
+            }
+
+            ctx.fillStyle = "rgba(255,255,255,0.15)";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`FASE ${currentLevel}`, pad.x + pad.width / 2, pad.y + 24);
+            ctx.textAlign = "left";
+        }
+
+        function drawRocket() {
+            ctx.save();
+            ctx.translate(rocket.x, rocket.y);
+            ctx.rotate(rocket.angle);
+
+            const seatY = 16;
+            const seatWidth = 22;
+            const seatHeight = 8;
+
+            ctx.fillStyle = "#b8860b";
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.roundRect(-seatWidth / 2, seatY, seatWidth, seatHeight, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#cd853f";
+            ctx.beginPath();
+            ctx.roundRect(-12, seatY - 10, 4, 14, 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.roundRect(8, seatY - 10, 4, 14, 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#4a7c59";
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.roundRect(-8, seatY - 18, 16, 18, 3);
+            ctx.fill();
+
+            ctx.fillStyle = "#f5f5dc";
+            ctx.shadowColor = "rgba(0,0,0,0.2)";
+            ctx.shadowBlur = 4;
+            ctx.beginPath();
+            ctx.arc(0, seatY - 22, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#1a1a2e";
+            ctx.beginPath();
+            ctx.arc(1, seatY - 24, 5, 0, Math.PI);
+            ctx.fill();
+
+            ctx.strokeStyle = "#888";
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 0;
+
+            ctx.beginPath();
+            ctx.moveTo(-12, seatY + seatHeight);
+            ctx.lineTo(-20, seatY + seatHeight + 12);
+            ctx.stroke();
+
+            ctx.fillStyle = "#666";
+            ctx.beginPath();
+            ctx.roundRect(-24, seatY + seatHeight + 10, 8, 4, 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(12, seatY + seatHeight);
+            ctx.lineTo(20, seatY + seatHeight + 12);
+            ctx.stroke();
+
+            ctx.fillStyle = "#666";
+            ctx.beginPath();
+            ctx.roundRect(16, seatY + seatHeight + 10, 8, 4, 2);
+            ctx.fill();
+
+            const grad = ctx.createLinearGradient(-12, -25, 12, 25);
+            grad.addColorStop(0, "#e0e0e0");
+            grad.addColorStop(0.5, "#ffffff");
+            grad.addColorStop(1, "#aaaaaa");
+            ctx.fillStyle = grad;
+            ctx.shadowColor = "rgba(255,255,255,0.1)";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(-12, -25, 24, 40, 3);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#4fc3f7";
+            ctx.shadowColor = "#4fc3f7";
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.arc(0, -10, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.beginPath();
+            ctx.arc(-2, -12, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#ff6b6b";
+            ctx.fillRect(-10, -22, 20, 3);
+            ctx.fillRect(-8, 8, 16, 3);
+
+            ctx.fillStyle = "#ff6b6b";
+            ctx.shadowColor = "#ff6b6b";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(-10, -25);
+            ctx.lineTo(0, -40);
+            ctx.lineTo(10, -25);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            if (keys["ArrowUp"] && rocket.fuel > 0 && gameState === "playing") {
+                const flameHeight = 30 + Math.random() * 25;
+                const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 +
+                    flameHeight / 2, flameHeight);
+                gradFlame.addColorStop(0, "rgba(255,255,255,1)");
+                gradFlame.addColorStop(0.1, "rgba(255,255,200,1)");
+                gradFlame.addColorStop(0.3, "rgba(255,200,50,1)");
+                gradFlame.addColorStop(0.6, "rgba(255,100,0,0.8)");
+                gradFlame.addColorStop(1, "rgba(255,50,0,0)");
+                ctx.fillStyle = gradFlame;
+                ctx.beginPath();
+                ctx.moveTo(-10, seatY + seatHeight + 2);
+                ctx.quadraticCurveTo(-5, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 +
+                flameHeight);
+                ctx.quadraticCurveTo(5, seatY + seatHeight + 2 + flameHeight * 0.6, 10, seatY + seatHeight + 2);
+                ctx.fill();
+
+                for (let i = 0; i < 5; i++) {
+                    const alpha = 0.2 + Math.random() * 0.6;
+                    const size = 1 + Math.random() * 3;
+                    const px = (Math.random() - 0.5) * 10;
+                    const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
+                    ctx.fillStyle = `rgba(255,200,50,${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function drawFuelBar() {
+            const barX = 20;
+            const barY = 70;
+            const barWidth = 200;
+            const barHeight = 22;
+
+            ctx.fillStyle = "rgba(0,0,0,0.7)";
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth, barHeight, 3);
+            ctx.stroke();
+
+            const fuelPercent = Math.max(0, rocket.fuel / 30);
+            let color = "#00ff88";
+            if (fuelPercent < 0.2) color = "#ff4444";
+            else if (fuelPercent < 0.5) color = "#ffaa00";
+
+            const grad = ctx.createLinearGradient(barX, barY, barX + barWidth * fuelPercent, barY);
+            grad.addColorStop(0, color);
+            grad.addColorStop(1, color + "88");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(barX + 2, barY + 2, Math.max(0, (barWidth - 4) * fuelPercent), barHeight - 4, 2);
+            ctx.fill();
+
+            ctx.fillStyle = "white";
+            ctx.font = "bold 14px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText("🔥 " + rocket.fuel.toFixed(1) + "%", barX + 8, barY + 17);
+
+            ctx.fillStyle = "rgba(255,255,255,0.6)";
+            ctx.font = "12px Arial";
+            ctx.fillText("COMBUSTÍVEL", barX, barY - 6);
+        }
 
         // ====================================================
-        // FUNÇÃO PARA INICIAR O JOGO (COM UM PEQUENO ATO DE MÁGICA)
+        // ATUALIZAÇÃO
+        // ====================================================
+        function update() {
+            if (gameState === "levelComplete" || gameState === "gameComplete") {
+                audio.stopEngine();
+                return;
+            }
+            if (gameState !== "playing") return;
+
+            if (keys["ArrowLeft"]) rocket.angle -= rotationSpeed;
+            if (keys["ArrowRight"]) rocket.angle += rotationSpeed;
+
+            const isThrusting = keys["ArrowUp"] && rocket.fuel > 0;
+            if (isThrusting) {
+                const thrustX = Math.sin(rocket.angle) * thrustPower;
+                const thrustY = -Math.cos(rocket.angle) * thrustPower;
+                rocket.vx += thrustX;
+                rocket.vy += thrustY;
+                rocket.fuel -= fuelConsumption;
+                if (rocket.fuel < 0) rocket.fuel = 0;
+
+                if (!engineWasOn) {
+                    audio.init();
+                    audio.startEngine();
+                    engineWasOn = true;
+                }
+            } else {
+                if (engineWasOn) {
+                    audio.stopEngine();
+                    engineWasOn = false;
+                }
+            }
+
+            rocket.vy += gravity;
+            rocket.x += rocket.vx;
+            rocket.y += rocket.vy;
+
+            if (rocket.x < -30) rocket.x = canvas.width + 30;
+            if (rocket.x > canvas.width + 30) rocket.x = -30;
+
+            if (rocket.y > 750) {
+                gameState = "crashed";
+                audio.playExplosion();
+                audio.stopEngine();
+                engineWasOn = false;
+                return;
+            }
+
+            const bottom = rocket.y + 25;
+            const insidePadX = rocket.x > pad.x && rocket.x < pad.x + pad.width;
+            const config = getLevelConfig(currentLevel);
+            const speedV = Math.abs(rocket.vy);
+            const speedH = Math.abs(rocket.vx);
+            const angleDeg = Math.abs(rocket.angle * 180 / Math.PI);
+
+            if (bottom >= pad.y && insidePadX) {
+                if (speedV < config.maxSpeedV && speedH < config.maxSpeedH && angleDeg < config.maxAngle) {
+                    audio.stopEngine();
+                    engineWasOn = false;
+                    audio.playLanding();
+
+                    const fuelBonus = config.fuelBonus || 1;
+                    const baseScore = 1000 + Math.floor(rocket.fuel * 20) + Math.floor((config.maxSpeedV - speedV) * 300);
+                    levelScore = Math.floor(baseScore * fuelBonus);
+                    score += levelScore;
+
+                    if (score > highScore) {
+                        highScore = score;
+                        localStorage.setItem("rocketLanderHighScore", highScore.toString());
+                        if (currentPlayer) {
+                            salvarRecorde(currentPlayer, score);
+                            atualizarRankingPreview();
+                        }
+                    }
+
+                    if (currentLevel >= maxLevel) {
+                        gameState = "gameComplete";
+                        setTimeout(() => audio.playLevelComplete(), 300);
+                    } else {
+                        gameState = "levelComplete";
+                        setTimeout(() => audio.playLevelComplete(), 300);
+                    }
+                } else {
+                    gameState = "crashed";
+                    audio.playExplosion();
+                    audio.stopEngine();
+                    engineWasOn = false;
+                }
+                return;
+            }
+
+            if (bottom >= 660 && !insidePadX) {
+                gameState = "crashed";
+                audio.playExplosion();
+                audio.stopEngine();
+                engineWasOn = false;
+            }
+        }
+
+        // ====================================================
+        // PRÓXIMA FASE
+        // ====================================================
+        function nextLevel() {
+            if (gameState === "levelComplete") {
+                currentLevel++;
+                applyLevel(currentLevel);
+                resetRocket();
+                gameState = "playing";
+                audio.stopEngine();
+                engineWasOn = false;
+            } else if (gameState === "gameComplete") {
+                resetGame();
+                audio.stopEngine();
+                engineWasOn = false;
+            }
+        }
+
+        // ====================================================
+        // HUD
+        // ====================================================
+        function drawHUD() {
+            const config = getLevelConfig(currentLevel);
+            info.innerHTML = `
+                <div style="background:rgba(0,0,0,0.75);padding:12px 18px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-size:14px;line-height:1.6;">
+                    <div>⬆️ Vel. Vertical: <span style="color:#4fc3f7;">${Math.abs(rocket.vy).toFixed(2)}</span> / ${config.maxSpeedV.toFixed(1)}</div>
+                    <div>➡️ Vel. Horizontal: <span style="color:#4fc3f7;">${Math.abs(rocket.vx).toFixed(2)}</span> / ${config.maxSpeedH.toFixed(1)}</div>
+                    <div style="color:#ffd700;">⭐ Pontuação: ${score}</div>
+                    <div style="color:#ff6b6b;">🏆 Recorde: ${highScore}</div>
+                    <div style="color:#4fc3f7;font-size:12px;">👤 ${currentPlayer || "Anônimo"}</div>
+                    <div style="color:#aaa;font-size:12px;">📊 Fase ${currentLevel} - ${pad.width}px</div>
+                </div>
+            `;
+        }
+
+        function drawMessage() {
+            if (gameState === "levelComplete") {
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.textAlign = "center";
+
+                ctx.fillStyle = "#00ff88";
+                ctx.font = "bold 44px Arial";
+                ctx.shadowColor = "#00ff88";
+                ctx.shadowBlur = 30;
+                ctx.fillText("✅ FASE COMPLETA!", canvas.width / 2, 180);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "white";
+                ctx.font = "28px Arial";
+                ctx.fillText(`⭐ Pontuação da Fase: ${levelScore}`, canvas.width / 2, 240);
+
+                ctx.fillStyle = "#ffd700";
+                ctx.font = "24px Arial";
+                ctx.fillText(`Total: ${score}`, canvas.width / 2, 290);
+
+                ctx.fillStyle = "#4fc3f7";
+                ctx.font = "22px Arial";
+                ctx.fillText(`Próxima: ${getLevelConfig(currentLevel + 1).label}`, canvas.width / 2, 340);
+
+                ctx.fillStyle = "#aaa";
+                ctx.font = "20px Arial";
+                ctx.fillText("Pressione ENTER ou ESPAÇO para continuar", canvas.width / 2, 400);
+                ctx.textAlign = "left";
+            }
+
+            if (gameState === "gameComplete") {
+                ctx.fillStyle = "rgba(0,0,0,0.7)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.textAlign = "center";
+
+                ctx.fillStyle = "rgba(255,215,0,0.1)";
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, 250, 200, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = "#ffd700";
+                ctx.font = "bold 56px Arial";
+                ctx.shadowColor = "#ffd700";
+                ctx.shadowBlur = 40;
+                ctx.fillText("🏆 VITÓRIA!", canvas.width / 2, 200);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "white";
+                ctx.font = "30px Arial";
+                ctx.fillText(`⭐ Pontuação Final: ${score}`, canvas.width / 2, 270);
+
+                if (score >= highScore && score > 0) {
+                    ctx.fillStyle = "#ffd700";
+                    ctx.font = "bold 26px Arial";
+                    ctx.shadowColor = "#ffd700";
+                    ctx.shadowBlur = 20;
+                    ctx.fillText(`🏆 NOVO RECORDE, ${currentPlayer}!`, canvas.width / 2, 320);
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.fillStyle = "#4fc3f7";
+                ctx.font = "20px Arial";
+                ctx.fillText(`Você completou todas as ${maxLevel} fases!`, canvas.width / 2, 370);
+
+                ctx.fillStyle = "#aaa";
+                ctx.font = "20px Arial";
+                ctx.fillText("Pressione ENTER ou ESPAÇO para reiniciar", canvas.width / 2, 420);
+                ctx.textAlign = "left";
+            }
+
+            if (gameState === "crashed") {
+                for (let i = 0; i < 25; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 20 + Math.random() * 80;
+                    const size = 2 + Math.random() * 20;
+                    const alpha = 0.2 + Math.random() * 0.6;
+                    const colors = ["#ff4444", "#ff8800", "#ffcc00", "#ff6600", "#ff2200"];
+                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)] + Math.floor(alpha * 255)
+                        .toString(16).padStart(2, '0');
+                    ctx.beginPath();
+                    ctx.arc(rocket.x + Math.cos(angle) * distance, rocket.y + Math.sin(angle) * distance, size, 0, Math.PI *
+                        2);
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.textAlign = "center";
+
+                ctx.fillStyle = "#ff4444";
+                ctx.font = "bold 52px Arial";
+                ctx.shadowColor = "#ff4444";
+                ctx.shadowBlur = 30;
+                ctx.fillText("💥 EXPLODIU!", canvas.width / 2, 200);
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "white";
+                ctx.font = "24px Arial";
+                ctx.fillText(`Fase ${currentLevel} - Tente novamente, ${currentPlayer}`, canvas.width / 2, 260);
+
+                ctx.fillStyle = "#aaa";
+                ctx.font = "20px Arial";
+                ctx.fillText("Pressione R para recomeçar a fase", canvas.width / 2, 320);
+                ctx.textAlign = "left";
+            }
+        }
+
+        // ====================================================
+        // RENDER
+        // ====================================================
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawStars();
+            drawGround();
+            drawRocket();
+            drawFuelBar();
+            drawMessage();
+            drawHUD();
+        }
+
+        // ====================================================
+        // POLYFILL
+        // ====================================================
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+                const r = typeof radii === 'number' ? radii : (radii || 0);
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                return this;
+            };
+        }
+
+        // ====================================================
+        // EVENTOS DE TECLADO
+        // ====================================================
+        document.addEventListener("keydown", function(e) {
+            keys[e.key] = true;
+            if (e.key === "r" || e.key === "R") {
+                resetGame();
+                audio.stopEngine();
+            }
+            if ((e.key === "Enter" || e.key === " ") && (gameState === "levelComplete" || gameState === "gameComplete")) {
+                nextLevel();
+            }
+            if (!audio.ctx) {
+                audio.init();
+            }
+        });
+
+        document.addEventListener("keyup", function(e) {
+            keys[e.key] = false;
+            if (e.key === "ArrowUp") {
+                audio.stopEngine();
+            }
+        });
+
+        soundBtn.addEventListener("click", function() {
+            const enabled = audio.toggle();
+            soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
+            if (!audio.ctx) {
+                audio.init();
+            }
+        });
+
+        // ====================================================
+        // LOOP DO JOGO
+        // ====================================================
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ====================================================
+        // FUNÇÃO PARA INICIAR O JOGO (com nome)
         // ====================================================
         function iniciarJogo(nome) {
-            // 1. Guarda o nome do jogador
             currentPlayer = nome.trim() || "Anônimo";
 
-            // 2. ESCONDE A TELA DE LOGIN (a parte mais importante!)
-            const loginScreen = document.getElementById('loginScreen');
-            loginScreen.classList.add('hidden');
+            // Esconde a tela de login
+            const loginScreen = document.getElementById("loginScreen");
+            loginScreen.classList.add("login-hidden");
 
-            // 3. Reinicia o estado do jogo
+            // Reseta o jogo
             resetGame();
             applyLevel(currentLevel);
             resetRocket();
             gameState = "playing";
-
-            // 4. Para o som do motor, caso esteja tocando
             audio.stopEngine();
             engineWasOn = false;
 
-            // 5. Atualiza a prévia do ranking
+            // Atualiza ranking
             atualizarRankingPreview();
 
-            // 6. (OPCIONAL) Mostra uma mensagem de boas-vindas no console
             console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
         }
 
         // ====================================================
-        // CONFIGURA OS EVENTOS ASSIM QUE A PÁGINA CARREGAR
+        // INICIALIZAÇÃO
         // ====================================================
         document.addEventListener("DOMContentLoaded", function() {
             const startBtn = document.getElementById("startBtn");
             const nameInput = document.getElementById("nameInput");
 
-            // Mostra o ranking ao carregar a página
+            // Mostra o ranking inicial
             atualizarRankingPreview();
 
-            // Evento para o botão JOGAR
+            // Evento do botão JOGAR
             startBtn.addEventListener("click", function() {
                 const nome = nameInput.value.trim() || "Anônimo";
                 iniciarJogo(nome);
             });
 
-            // Evento para a tecla "Enter" no campo de nome
+            // Evento Enter no campo de nome
             nameInput.addEventListener("keydown", function(e) {
                 if (e.key === "Enter") {
                     startBtn.click();
                 }
             });
 
-            // Inicializa o áudio no primeiro clique do usuário
-            document.addEventListener('click', function initAudio() {
-                if (window.audio && typeof audio.init === 'function') {
+            // Inicializa áudio no primeiro clique
+            document.addEventListener("click", function initAudio() {
+                if (audio && typeof audio.init === "function") {
                     audio.init();
                 }
-                document.removeEventListener('click', initAudio);
+                document.removeEventListener("click", initAudio);
             }, { once: true });
 
-            // Inicia o loop do jogo (ele já vai estar rodando, mesmo com a tela de login)
-            // ... (seu loop `gameLoop` já deve estar chamando `requestAnimationFrame`)
+            // Inicia o loop do jogo
+            gameLoop();
         });
 
-        // ====================================================
-        // LOOP DO JOGO (já existente no seu código)
-        // ====================================================
-        // function gameLoop() { ... }
-        // gameLoop();
-
-        console.log('🚀 ROCKET LANDER - COM RANKING (versão turbinada)');
-        console.log('👤 Digite seu nome e bata recordes!');
+        console.log("🚀 ROCKET LANDER - COM RANKING (FUNCIONAL)");
+        console.log("👤 Digite seu nome e bata recordes!");
+        console.log("🏆 Top 3 salvo no navegador.");
     </script>
 </body>
 </html>
