@@ -117,6 +117,31 @@
             letter-spacing: 2px;
         }
 
+        /* ===== BOTÃO VOLTAR ===== */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: Arial, sans-serif;
+            z-index: 10;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
         /* ===== TELA DE LOGIN ===== */
         #loginScreen {
             position: fixed;
@@ -737,6 +762,12 @@
                 padding: 3px 10px;
                 bottom: 110px;
             }
+            .back-btn {
+                font-size: 12px;
+                padding: 6px 12px;
+                top: 10px;
+                left: 10px;
+            }
         }
     </style>
 </head>
@@ -773,6 +804,7 @@
 
     <!-- ===== TELA DE COMO JOGAR ===== -->
     <div id="helpScreen">
+        <button class="back-btn" id="backHelp">⬅ VOLTAR</button>
         <h2>❓ COMO JOGAR</h2>
         <div class="help-content">
             <p>🎮 <kbd>←</kbd> <kbd>→</kbd> Inclinar o foguete</p>
@@ -788,9 +820,19 @@
 
     <!-- ===== TELA DE SKINS (menu) ===== -->
     <div id="skinsMenuScreen">
+        <button class="back-btn" id="backSkins">⬅ VOLTAR</button>
         <h2>🎨 SKINS</h2>
         <div class="skins-grid" id="skinsGridMenu"></div>
         <button class="close-skins" id="closeSkinsMenu">FECHAR</button>
+    </div>
+
+    <!-- ===== RANKING ===== -->
+    <div id="rankingScreen">
+        <button class="back-btn" id="backRanking">⬅ VOLTAR</button>
+        <button class="close-btn" id="closeRanking">✕</button>
+        <h2>🏆 TOP 3</h2>
+        <div id="rankingListFull">Carregando...</div>
+        <div class="sub">Pressione R para reiniciar o jogo</div>
     </div>
 
     <!-- ===== JOGO ===== -->
@@ -812,14 +854,6 @@
                 <button id="btn-thrust" class="thrust-btn">🔥</button>
             </div>
         </div>
-    </div>
-
-    <!-- ===== RANKING ===== -->
-    <div id="rankingScreen">
-        <button class="close-btn" id="closeRanking">✕</button>
-        <h2>🏆 TOP 3</h2>
-        <div id="rankingListFull">Carregando...</div>
-        <div class="sub">Pressione R para reiniciar o jogo</div>
     </div>
 
     <script>
@@ -2164,6 +2198,22 @@
         closeRanking.addEventListener("click", function() {
             rankingScreen.classList.remove("active");
         });
+
+        // =========================================
+        // BOTÕES DE VOLTAR
+        // =========================================
+        document.getElementById('backRanking').addEventListener('click', function() {
+            rankingScreen.classList.remove('active');
+        });
+
+        document.getElementById('backSkins').addEventListener('click', function() {
+            skinsMenuScreen.classList.remove('active');
+        });
+
+        document.getElementById('backHelp').addEventListener('click', function() {
+            helpScreen.classList.remove('active');
+        });
+
         document.addEventListener("keydown", function(e) {
             if (e.key === "Escape") {
                 if (helpScreen.classList.contains('active')) {
@@ -2494,7 +2544,7 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - COM MENU PRINCIPAL");
+        console.log("🚀 ROCKET LANDER - COM MENU PRINCIPAL E BOTÕES DE VOLTAR");
         console.log("🎮 Aproveite!");
     </script>
 </body>
