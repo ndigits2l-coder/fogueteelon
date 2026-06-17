@@ -387,6 +387,67 @@
             background: #4fc3f7;
         }
 
+        /* ===== RANKING ===== */
+        #rankingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #rankingScreen.active {
+            display: flex;
+        }
+        #rankingScreen h2 {
+            color: #ffd700;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+        #rankingScreen .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: #aaa;
+            font-size: 32px;
+            cursor: pointer;
+            transition: 0.3s;
+            background: none;
+            border: none;
+        }
+        #rankingScreen .close-btn:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+        #rankingListFull {
+            color: white;
+            font-size: 22px;
+            text-align: center;
+            line-height: 2.2;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px 50px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            min-width: 280px;
+        }
+        #rankingListFull .empty {
+            color: #666;
+            font-size: 18px;
+        }
+        #rankingScreen .sub {
+            color: #666;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
         /* ===== JOGO ===== */
         #game-wrapper {
             position: relative;
@@ -467,65 +528,6 @@
         }
         #ranking-btn:hover {
             background: rgba(255, 215, 0, 0.25);
-        }
-        #rankingScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.88);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        #rankingScreen.active {
-            display: flex;
-        }
-        #rankingScreen h2 {
-            color: #ffd700;
-            font-size: 36px;
-            margin-bottom: 20px;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-        }
-        #rankingScreen .close-btn {
-            position: absolute;
-            top: 30px;
-            right: 40px;
-            color: #aaa;
-            font-size: 32px;
-            cursor: pointer;
-            transition: 0.3s;
-            background: none;
-            border: none;
-        }
-        #rankingScreen .close-btn:hover {
-            color: white;
-            transform: scale(1.1);
-        }
-        #rankingListFull {
-            color: white;
-            font-size: 22px;
-            text-align: center;
-            line-height: 2.2;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 30px 50px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            min-width: 280px;
-        }
-        #rankingListFull .empty {
-            color: #666;
-            font-size: 18px;
-        }
-        #rankingScreen .sub {
-            color: #666;
-            font-size: 14px;
-            margin-top: 20px;
         }
         #next-btn {
             position: absolute;
@@ -883,6 +885,7 @@
                 ranking = ranking.slice(0, 3);
             }
             localStorage.setItem('rocketScores', JSON.stringify(ranking));
+            console.log('💾 Recorde salvo:', ranking);
         }
 
         function atualizarRankingPreview() {
@@ -905,7 +908,10 @@
 
         function atualizarRankingFull() {
             const list = document.getElementById('rankingListFull');
-            if (!list) return;
+            if (!list) {
+                console.error('❌ Elemento rankingListFull não encontrado!');
+                return;
+            }
             if (ranking.length === 0) {
                 list.innerHTML = '<div class="empty">Nenhum recorde ainda.<br>Seja o primeiro! 🚀</div>';
                 return;
@@ -917,6 +923,7 @@
                 html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
             });
             list.innerHTML = html;
+            console.log('✅ Ranking atualizado:', ranking);
         }
 
         // =========================================
@@ -2191,21 +2198,34 @@
             if (menuSound) menuSound.textContent = enabled ? '🔊 SOM' : '🔇 SOM';
         });
 
-        rankingBtn.addEventListener("click", function() {
+        // =========================================
+        // RANKING - EVENTOS
+        // =========================================
+        document.getElementById('menuRanking').addEventListener('click', function() {
+            console.log('🔍 Abrindo ranking pelo menu...');
             atualizarRankingFull();
-            rankingScreen.classList.toggle("active");
-        });
-        closeRanking.addEventListener("click", function() {
-            rankingScreen.classList.remove("active");
+            rankingScreen.classList.add('active');
+            console.log('✅ Ranking aberto!');
         });
 
-        // =========================================
-        // BOTÕES DE VOLTAR
-        // =========================================
+        document.getElementById('ranking-btn').addEventListener('click', function() {
+            console.log('🔍 Abrindo ranking pelo jogo...');
+            atualizarRankingFull();
+            rankingScreen.classList.toggle('active');
+            console.log('✅ Ranking alternado!');
+        });
+
         document.getElementById('backRanking').addEventListener('click', function() {
             rankingScreen.classList.remove('active');
         });
 
+        document.getElementById('closeRanking').addEventListener('click', function() {
+            rankingScreen.classList.remove('active');
+        });
+
+        // =========================================
+        // BOTÕES DE VOLTAR (Skins e Help)
+        // =========================================
         document.getElementById('backSkins').addEventListener('click', function() {
             skinsMenuScreen.classList.remove('active');
         });
@@ -2258,11 +2278,6 @@
             menuScreen.classList.add('hidden');
             loginScreen.classList.remove('hidden');
             nameInput.focus();
-        });
-
-        document.getElementById('menuRanking').addEventListener('click', function() {
-            atualizarRankingFull();
-            rankingScreen.classList.add('active');
         });
 
         document.getElementById('menuSkins').addEventListener('click', function() {
@@ -2544,7 +2559,7 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🚀 ROCKET LANDER - COM MENU PRINCIPAL E BOTÕES DE VOLTAR");
+        console.log("🚀 ROCKET LANDER - COM MENU PRINCIPAL E RANKING FUNCIONANDO");
         console.log("🎮 Aproveite!");
     </script>
 </body>
