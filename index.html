@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Rocket Lander - Jornada Planetária</title>
+    <title>Parado no Tempo — Jornada Planetária</title>
     <style>
         /* ===== ESTILOS ===== */
         * {
@@ -126,6 +126,117 @@
             border: 1px solid rgba(255,215,0,0.1);
         }
 
+        /* ===== SELEÇÃO DE MODO ===== */
+        #modeScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #modeScreen.active {
+            display: flex;
+        }
+        #modeScreen h2 {
+            color: #ffd700;
+            font-size: 32px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+        #modeScreen .sub {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        #modeScreen .mode-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 320px;
+            width: 100%;
+        }
+        #modeScreen .mode-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #aaa;
+        }
+        #modeScreen .mode-item .emoji {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        #modeScreen .mode-item .name {
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+        #modeScreen .mode-item .desc {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+        #modeScreen .mode-item:hover {
+            transform: scale(1.02);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+        #modeScreen .mode-item.campaign {
+            border-color: rgba(79, 195, 247, 0.2);
+        }
+        #modeScreen .mode-item.campaign:hover {
+            border-color: rgba(79, 195, 247, 0.5);
+        }
+        #modeScreen .mode-item.time {
+            border-color: rgba(255, 215, 0, 0.2);
+        }
+        #modeScreen .mode-item.time:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+        #modeScreen .back-btn-mode {
+            padding: 10px 30px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            font-family: Arial, sans-serif;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 16px;
+        }
+        #modeScreen .back-btn-mode:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 480px) {
+            #modeScreen .mode-item {
+                padding: 16px 12px;
+            }
+            #modeScreen .mode-item .emoji {
+                font-size: 28px;
+            }
+            #modeScreen .mode-item .name {
+                font-size: 16px;
+            }
+            #modeScreen h2 {
+                font-size: 24px;
+            }
+        }
+
         /* ===== TELA DE PLANETAS ===== */
         #planetScreen {
             position: fixed;
@@ -138,7 +249,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 999;
+            z-index: 998;
             padding: 20px;
             font-family: Arial, sans-serif;
         }
@@ -242,19 +353,30 @@
             font-size: 13px;
             margin-bottom: 12px;
         }
-        #planetScreen .reset-btn {
-            padding: 6px 16px;
-            font-size: 11px;
-            border-radius: 8px;
+        #planetScreen .mode-badge {
+            color: #ffd700;
+            font-size: 12px;
+            background: rgba(255,215,0,0.1);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        /* ===== BOTÃO RESET ===== */
+        #resetProgressBtn {
+            padding: 8px 20px;
+            font-size: 13px;
+            border-radius: 10px;
             border: 1px solid rgba(255, 68, 68, 0.2);
             background: rgba(255, 68, 68, 0.05);
             color: #ff6b6b;
             cursor: pointer;
             transition: 0.3s;
             font-family: Arial, sans-serif;
-            margin-top: 6px;
+            margin-top: 12px;
         }
-        #planetScreen .reset-btn:hover {
+        #resetProgressBtn:hover {
             background: rgba(255, 68, 68, 0.15);
         }
 
@@ -309,7 +431,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 998;
+            z-index: 997;
             padding: 20px;
             transition: opacity 0.6s ease;
         }
@@ -549,12 +671,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.88);
+            background: rgba(0, 0, 0, 0.92);
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 200;
+            z-index: 2000;
             font-family: Arial, sans-serif;
             padding: 20px;
         }
@@ -1051,6 +1173,18 @@
             #rankingScreen h2 {
                 font-size: 24px;
             }
+            #modeScreen .mode-item {
+                padding: 14px 10px;
+            }
+            #modeScreen .mode-item .emoji {
+                font-size: 24px;
+            }
+            #modeScreen .mode-item .name {
+                font-size: 14px;
+            }
+            #modeScreen h2 {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
@@ -1058,32 +1192,54 @@
 
     <!-- ===== MENU PRINCIPAL ===== -->
     <div id="menuScreen">
-        <h1>🚀 ROCKET LANDER</h1>
+        <h1>⏳ PARADO NO TEMPO</h1>
         <p class="subtitle">🌍 Jornada Planetária</p>
         <div class="menu-buttons">
-            <button class="menu-btn primary" id="menuPlanetas">🌍 ESCOLHER PLANETA</button>
+            <button class="menu-btn primary" id="menuJogar">🚀 JOGAR</button>
             <button class="menu-btn ranking" id="menuRanking">🏆 RANKING</button>
             <button class="menu-btn skin" id="menuSkins">🎨 SKINS</button>
             <button class="menu-btn help" id="menuHelp">❓ COMO JOGAR</button>
             <button class="menu-btn sound" id="menuSound">🔊 SOM</button>
         </div>
         <div class="recorde-display" id="recordeDisplay">🏆 Recorde: 0 pousos</div>
-        <div class="version">v4.0 - Jornada Planetária</div>
+        <div class="version">v2.0 - Dois Modos de Jogo</div>
+    </div>
+
+    <!-- ===== SELEÇÃO DE MODO ===== -->
+    <div id="modeScreen">
+        <button class="back-btn" id="backMode">⬅ VOLTAR</button>
+        <h2>🌍 ESCOLHA O MODO</h2>
+        <p class="sub">Selecione como deseja jogar</p>
+        <div class="mode-grid">
+            <div class="mode-item campaign" id="modeCampaign">
+                <span class="emoji">🌍</span>
+                <div class="name">MODO CAMPANHA</div>
+                <div class="desc">Dificuldade progressiva • Valores ajustados para diversão</div>
+            </div>
+            <div class="mode-item time" id="modeTime">
+                <span class="emoji">🔬</span>
+                <div class="name">MODO TEMPO</div>
+                <div class="desc">Gravidade baseada na ciência real • Desafio extremo</div>
+            </div>
+        </div>
+        <button class="back-btn-mode" id="backModeBtn">VOLTAR AO MENU</button>
     </div>
 
     <!-- ===== TELA DE PLANETAS ===== -->
     <div id="planetScreen">
         <button class="back-btn" id="backPlanet">⬅ VOLTAR</button>
         <h2>🌍 SISTEMA SOLAR</h2>
-        <p class="subtitle">🌙 Pouse em cada planeta e conquiste o sistema</p>
-        <div class="progress-text" id="progressText">Progresso: 0 / 8 planetas</div>
+        <p class="sub">🌙 Pouse em cada corpo celeste e conquiste o sistema</p>
+        <div class="mode-badge" id="modeBadge">🌍 Modo Campanha</div>
+        <div class="progress-text" id="progressText">Progresso: 0 / 22 corpos</div>
         <div class="planet-grid" id="planetGrid"></div>
-        <button class="reset-btn" id="resetProgressBtn">🔄 Resetar Progresso</button>
+        <button id="resetProgressBtn">🔄 Resetar Progresso</button>
+        <button class="back-btn-planet" id="backPlanetBtn">VOLTAR</button>
     </div>
 
     <!-- ===== TELA DE LOGIN ===== -->
     <div id="loginScreen">
-        <h1>🚀 ROCKET LANDER</h1>
+        <h1>⏳ PARADO NO TEMPO</h1>
         <p class="subtitle">🌍 Jornada Planetária</p>
         <div class="input-group">
             <input id="nameInput" type="text" maxlength="15" placeholder="Digite seu nome" autofocus>
@@ -1107,9 +1263,10 @@
             <p>📱 Celular: use os botões na tela</p>
             <p>🎯 Pouse na plataforma com <strong>velocidade baixa</strong></p>
             <p>⭐ Quanto mais combustível sobrar, <strong>maior a pontuação</strong></p>
-            <p>🎨 Complete planetas para <strong>desbloquear skins</strong></p>
+            <p>🎨 Complete corpos celestes para <strong>desbloquear skins</strong></p>
             <p>🏆 Faça o maior número de <strong>pousos consecutivos</strong></p>
-            <p>🌍 Conquiste <strong>todos os 8 planetas</strong> para vencer!</p>
+            <p>🌍 Conquiste <strong>todos os 22 corpos</strong> para vencer!</p>
+            <p>🔬 O Modo Tempo usa gravidade baseada na ciência real!</p>
             <p>🎮 Conecte um controle para jogar!</p>
         </div>
         <button class="close-help" id="closeHelp">FECHAR</button>
@@ -1166,9 +1323,15 @@
 
     <script>
         // =========================================
-        // PLANETAS
+        // PLANETAS - MODO CAMPANHA
         // =========================================
-        const PLANETAS = [
+        const CAMPANHA = [
+            { id: 'mercurio', nome: 'Mercúrio', emoji: '☿', cor: '#b0b0b0', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
+                gravity: 0.008, padWidth: 170, maxSpeedV: 2.2, maxSpeedH: 1.6, maxAngle: 14, fuelBonus: 1.0,
+                fuel: 35, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
+            { id: 'venus', nome: 'Vênus', emoji: '🟠', cor: '#e8a87c', corCeu1: '#2d1a0a', corCeu2: '#4d2b1b',
+                gravity: 0.012, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.2,
+                fuel: 40, consumoMultiplicador: 1.1, corChama: '#ff8800', dificuldade: 'Fácil/Média' },
             { id: 'terra', nome: 'Terra', emoji: '🌍', cor: '#2d6a4f', corCeu1: '#000814', corCeu2: '#001d3d',
                 gravity: 0.01, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.0,
                 fuel: 40, consumoMultiplicador: 1.0, corChama: '#4fc3f7', dificuldade: 'Fácil' },
@@ -1177,32 +1340,136 @@
                 fuel: 40, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
             { id: 'marte', nome: 'Marte', emoji: '🔴', cor: '#e63946', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
                 gravity: 0.015, padWidth: 140, maxSpeedV: 1.8, maxSpeedH: 1.3, maxAngle: 10, fuelBonus: 1.5,
-                fuel: 45, consumoMultiplicador: 1.1, corChama: '#ff6b6b', dificuldade: 'Média' },
-            { id: 'venus', nome: 'Vênus', emoji: '🟠', cor: '#ff8800', corCeu1: '#2d1a0a', corCeu2: '#4d2b1b',
-                gravity: 0.02, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
-                fuel: 50, consumoMultiplicador: 1.2, corChama: '#ff8800', dificuldade: 'Média' },
-            { id: 'jupiter', nome: 'Júpiter', emoji: '🟣', cor: '#9c27b0', corCeu1: '#1a0a2e', corCeu2: '#3d1b5e',
-                gravity: 0.025, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.5,
-                fuel: 50, consumoMultiplicador: 1.3, corChama: '#9c27b0', dificuldade: 'Difícil' },
+                fuel: 45, consumoMultiplicador: 1.2, corChama: '#ff6b6b', dificuldade: 'Média' },
+            { id: 'ceres', nome: 'Ceres', emoji: '⚪', cor: '#bbb', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
+                gravity: 0.016, padWidth: 135, maxSpeedV: 1.7, maxSpeedH: 1.2, maxAngle: 9, fuelBonus: 1.6,
+                fuel: 45, consumoMultiplicador: 1.1, corChama: '#ccc', dificuldade: 'Média' },
+            { id: 'europa', nome: 'Europa', emoji: '🌊', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
+                gravity: 0.018, padWidth: 130, maxSpeedV: 1.6, maxSpeedH: 1.1, maxAngle: 9, fuelBonus: 1.8,
+                fuel: 42, consumoMultiplicador: 1.2, corChama: '#4fc3f7', dificuldade: 'Média' },
+            { id: 'io', nome: 'Io', emoji: '🔥', cor: '#ff6b35', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
+                gravity: 0.019, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
+                fuel: 40, consumoMultiplicador: 1.3, corChama: '#ff4400', dificuldade: 'Média' },
+            { id: 'ganimedes', nome: 'Ganímedes', emoji: '🟤', cor: '#b8860b', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
+                gravity: 0.02, padWidth: 110, maxSpeedV: 1.4, maxSpeedH: 0.9, maxAngle: 7, fuelBonus: 2.2,
+                fuel: 45, consumoMultiplicador: 1.3, corChama: '#ff8800', dificuldade: 'Difícil' },
+            { id: 'tita', nome: 'Titã', emoji: '🪐', cor: '#d4a574', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
+                gravity: 0.022, padWidth: 100, maxSpeedV: 1.3, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.4,
+                fuel: 48, consumoMultiplicador: 1.4, corChama: '#ff8800', dificuldade: 'Difícil' },
             { id: 'saturno', nome: 'Saturno', emoji: '🪐', cor: '#ffd700', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
                 gravity: 0.03, padWidth: 80, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.0,
-                fuel: 45, consumoMultiplicador: 1.4, corChama: '#ffd700', dificuldade: 'Muito Difícil' },
+                fuel: 45, consumoMultiplicador: 1.6, corChama: '#ffd700', dificuldade: 'Muito Difícil' },
+            { id: 'encelado', nome: 'Encélado', emoji: '❄️', cor: '#b3e5fc', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
+                gravity: 0.024, padWidth: 95, maxSpeedV: 1.1, maxSpeedH: 0.7, maxAngle: 5, fuelBonus: 2.6,
+                fuel: 38, consumoMultiplicador: 1.5, corChama: '#81d4fa', dificuldade: 'Muito Difícil' },
+            { id: 'urano', nome: 'Urano', emoji: '🟦', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
+                gravity: 0.028, padWidth: 90, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.2,
+                fuel: 42, consumoMultiplicador: 1.5, corChama: '#4fc3f7', dificuldade: 'Muito Difícil' },
+            { id: 'haumea', nome: 'Haumea', emoji: '🥚', cor: '#b8a88a', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
+                gravity: 0.032, padWidth: 75, maxSpeedV: 0.8, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 3.2,
+                fuel: 38, consumoMultiplicador: 1.6, corChama: '#d4a574', dificuldade: 'Muito Difícil' },
+            { id: 'makemake', nome: 'Makemake', emoji: '🧊', cor: '#b3b3b3', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
+                gravity: 0.038, padWidth: 65, maxSpeedV: 0.7, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 3.8,
+                fuel: 32, consumoMultiplicador: 1.7, corChama: '#88ccff', dificuldade: 'Extremo' },
             { id: 'netuno', nome: 'Netuno', emoji: '🔵', cor: '#1a3a5c', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
                 gravity: 0.035, padWidth: 70, maxSpeedV: 0.8, maxSpeedH: 0.5, maxAngle: 3, fuelBonus: 3.5,
-                fuel: 40, consumoMultiplicador: 1.5, corChama: '#4fc3f7', dificuldade: 'Extremo' },
+                fuel: 40, consumoMultiplicador: 1.7, corChama: '#4fc3f7', dificuldade: 'Extremo' },
+            { id: 'tritao', nome: 'Tritão', emoji: '🧊', cor: '#b3e5fc', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
+                gravity: 0.028, padWidth: 85, maxSpeedV: 0.9, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 2.8,
+                fuel: 35, consumoMultiplicador: 1.6, corChama: '#81d4fa', dificuldade: 'Extremo' },
             { id: 'plutao', nome: 'Plutão', emoji: '⚫', cor: '#444', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
                 gravity: 0.04, padWidth: 60, maxSpeedV: 0.6, maxSpeedH: 0.3, maxAngle: 2, fuelBonus: 4.0,
-                fuel: 35, consumoMultiplicador: 1.6, corChama: '#88ccff', dificuldade: 'Lendário' }
+                fuel: 35, consumoMultiplicador: 1.8, corChama: '#88ccff', dificuldade: 'Lendário' },
+            { id: 'eris', nome: 'Éris', emoji: '🟤', cor: '#a67c52', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
+                gravity: 0.045, padWidth: 55, maxSpeedV: 0.5, maxSpeedH: 0.25, maxAngle: 2, fuelBonus: 4.2,
+                fuel: 30, consumoMultiplicador: 1.9, corChama: '#d4a574', dificuldade: 'Lendário+' },
+            { id: 'sol', nome: 'Sol', emoji: '☀️', cor: '#ff6b00', corCeu1: '#1a0a00', corCeu2: '#3d1b00',
+                gravity: 0.06, padWidth: 40, maxSpeedV: 0.4, maxSpeedH: 0.2, maxAngle: 1, fuelBonus: 5.0,
+                fuel: 25, consumoMultiplicador: 2.5, corChama: '#ff4400', dificuldade: 'LENDÁRIO+' },
+            { id: 'estacao', nome: 'Estação Espacial', emoji: '🛰️', cor: '#4fc3f7', corCeu1: '#0a0a0a', corCeu2: '#0a0a1a',
+                gravity: 0.0, padWidth: 150, maxSpeedV: 0.3, maxSpeedH: 0.2, maxAngle: 2, fuelBonus: 5.0,
+                fuel: 20, consumoMultiplicador: 0.5, corChama: '#4fc3f7', dificuldade: 'Precisão' }
+        ];
+
+        // =========================================
+        // PLANETAS - MODO TEMPO (GRAVIDADE REAL ADAPTADA)
+        // =========================================
+        const TEMPO = [
+            { id: 'mercurio', nome: 'Mercúrio', emoji: '☿', cor: '#b0b0b0', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
+                gravity: 0.015, padWidth: 170, maxSpeedV: 1.8, maxSpeedH: 1.2, maxAngle: 12, fuelBonus: 1.5,
+                fuel: 45, consumoMultiplicador: 1.2, corChama: '#aaa', dificuldade: 'Fácil' },
+            { id: 'venus', nome: 'Vênus', emoji: '🟠', cor: '#e8a87c', corCeu1: '#2d1a0a', corCeu2: '#4d2b1b',
+                gravity: 0.025, padWidth: 160, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 10, fuelBonus: 2.0,
+                fuel: 50, consumoMultiplicador: 1.5, corChama: '#ff8800', dificuldade: 'Média' },
+            { id: 'terra', nome: 'Terra', emoji: '🌍', cor: '#2d6a4f', corCeu1: '#000814', corCeu2: '#001d3d',
+                gravity: 0.028, padWidth: 160, maxSpeedV: 1.4, maxSpeedH: 1.0, maxAngle: 10, fuelBonus: 2.0,
+                fuel: 50, consumoMultiplicador: 1.5, corChama: '#4fc3f7', dificuldade: 'Média' },
+            { id: 'lua', nome: 'Lua', emoji: '🌙', cor: '#888', corCeu1: '#1a1a2e', corCeu2: '#2d2d4e',
+                gravity: 0.008, padWidth: 150, maxSpeedV: 2.2, maxSpeedH: 1.6, maxAngle: 14, fuelBonus: 1.0,
+                fuel: 35, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
+            { id: 'marte', nome: 'Marte', emoji: '🔴', cor: '#e63946', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
+                gravity: 0.018, padWidth: 140, maxSpeedV: 1.7, maxSpeedH: 1.1, maxAngle: 10, fuelBonus: 1.8,
+                fuel: 48, consumoMultiplicador: 1.3, corChama: '#ff6b6b', dificuldade: 'Média' },
+            { id: 'ceres', nome: 'Ceres', emoji: '⚪', cor: '#bbb', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
+                gravity: 0.012, padWidth: 135, maxSpeedV: 1.9, maxSpeedH: 1.3, maxAngle: 11, fuelBonus: 1.4,
+                fuel: 42, consumoMultiplicador: 1.1, corChama: '#ccc', dificuldade: 'Fácil/Média' },
+            { id: 'europa', nome: 'Europa', emoji: '🌊', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
+                gravity: 0.02, padWidth: 130, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
+                fuel: 44, consumoMultiplicador: 1.3, corChama: '#4fc3f7', dificuldade: 'Média' },
+            { id: 'io', nome: 'Io', emoji: '🔥', cor: '#ff6b35', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
+                gravity: 0.021, padWidth: 120, maxSpeedV: 1.4, maxSpeedH: 0.9, maxAngle: 8, fuelBonus: 2.2,
+                fuel: 42, consumoMultiplicador: 1.4, corChama: '#ff4400', dificuldade: 'Média/Difícil' },
+            { id: 'ganimedes', nome: 'Ganímedes', emoji: '🟤', cor: '#b8860b', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
+                gravity: 0.022, padWidth: 110, maxSpeedV: 1.3, maxSpeedH: 0.8, maxAngle: 7, fuelBonus: 2.4,
+                fuel: 46, consumoMultiplicador: 1.4, corChama: '#ff8800', dificuldade: 'Difícil' },
+            { id: 'tita', nome: 'Titã', emoji: '🪐', cor: '#d4a574', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
+                gravity: 0.024, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.7, maxAngle: 6, fuelBonus: 2.6,
+                fuel: 48, consumoMultiplicador: 1.5, corChama: '#ff8800', dificuldade: 'Difícil' },
+            { id: 'saturno', nome: 'Saturno', emoji: '🪐', cor: '#ffd700', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
+                gravity: 0.035, padWidth: 80, maxSpeedV: 0.9, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 3.5,
+                fuel: 48, consumoMultiplicador: 1.8, corChama: '#ffd700', dificuldade: 'Muito Difícil' },
+            { id: 'encelado', nome: 'Encélado', emoji: '❄️', cor: '#b3e5fc', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
+                gravity: 0.026, padWidth: 95, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 5, fuelBonus: 2.8,
+                fuel: 40, consumoMultiplicador: 1.6, corChama: '#81d4fa', dificuldade: 'Muito Difícil' },
+            { id: 'urano', nome: 'Urano', emoji: '🟦', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
+                gravity: 0.03, padWidth: 90, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.2,
+                fuel: 44, consumoMultiplicador: 1.6, corChama: '#4fc3f7', dificuldade: 'Muito Difícil' },
+            { id: 'haumea', nome: 'Haumea', emoji: '🥚', cor: '#b8a88a', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
+                gravity: 0.034, padWidth: 75, maxSpeedV: 0.8, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 3.4,
+                fuel: 40, consumoMultiplicador: 1.7, corChama: '#d4a574', dificuldade: 'Muito Difícil' },
+            { id: 'makemake', nome: 'Makemake', emoji: '🧊', cor: '#b3b3b3', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
+                gravity: 0.038, padWidth: 65, maxSpeedV: 0.7, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 3.8,
+                fuel: 35, consumoMultiplicador: 1.8, corChama: '#88ccff', dificuldade: 'Extremo' },
+            { id: 'netuno', nome: 'Netuno', emoji: '🔵', cor: '#1a3a5c', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
+                gravity: 0.04, padWidth: 70, maxSpeedV: 0.7, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 4.0,
+                fuel: 42, consumoMultiplicador: 1.9, corChama: '#4fc3f7', dificuldade: 'Extremo' },
+            { id: 'tritao', nome: 'Tritão', emoji: '🧊', cor: '#b3e5fc', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
+                gravity: 0.032, padWidth: 85, maxSpeedV: 0.9, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 3.0,
+                fuel: 38, consumoMultiplicador: 1.6, corChama: '#81d4fa', dificuldade: 'Muito Difícil' },
+            { id: 'plutao', nome: 'Plutão', emoji: '⚫', cor: '#444', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
+                gravity: 0.005, padWidth: 60, maxSpeedV: 2.5, maxSpeedH: 1.8, maxAngle: 15, fuelBonus: 1.0,
+                fuel: 30, consumoMultiplicador: 0.8, corChama: '#88ccff', dificuldade: 'Fácil' },
+            { id: 'eris', nome: 'Éris', emoji: '🟤', cor: '#a67c52', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
+                gravity: 0.048, padWidth: 55, maxSpeedV: 0.4, maxSpeedH: 0.2, maxAngle: 2, fuelBonus: 4.5,
+                fuel: 28, consumoMultiplicador: 2.0, corChama: '#d4a574', dificuldade: 'Lendário' },
+            { id: 'sol', nome: 'Sol', emoji: '☀️', cor: '#ff6b00', corCeu1: '#1a0a00', corCeu2: '#3d1b00',
+                gravity: 0.12, padWidth: 40, maxSpeedV: 0.2, maxSpeedH: 0.1, maxAngle: 1, fuelBonus: 6.0,
+                fuel: 20, consumoMultiplicador: 3.0, corChama: '#ff4400', dificuldade: 'LENDÁRIO+' },
+            { id: 'estacao', nome: 'Estação Espacial', emoji: '🛰️', cor: '#4fc3f7', corCeu1: '#0a0a0a', corCeu2: '#0a0a1a',
+                gravity: 0.0, padWidth: 150, maxSpeedV: 0.3, maxSpeedH: 0.2, maxAngle: 2, fuelBonus: 5.0,
+                fuel: 20, consumoMultiplicador: 0.5, corChama: '#4fc3f7', dificuldade: 'Precisão' }
         ];
 
         // =========================================
         // SISTEMA DE PROGRESSO
         // =========================================
+        let modoAtual = 'campanha';
+        let planetasAtuais = CAMPANHA;
         let planetasConcluidos = JSON.parse(localStorage.getItem('rocketPlanetasConcluidos')) || [];
         let planetaAtualIndex = 0;
 
         function salvarProgressoPlanetas() {
-            localStorage.setItem('rocketPlanetasConcluidos', JSON.stringify(planetasConcluidos));
+            localStorage.setItem(`rocketPlanetasConcluidos_${modoAtual}`, JSON.stringify(planetasConcluidos));
         }
 
         function planetaEstaConcluido(id) {
@@ -1211,12 +1478,12 @@
 
         function planetaEstaDesbloqueado(index) {
             if (index === 0) return true;
-            return planetasConcluidos.includes(PLANETAS[index - 1].id);
+            return planetasConcluidos.includes(planetasAtuais[index - 1].id);
         }
 
         function getProximoPlanetaNaoConcluido() {
-            for (let i = 0; i < PLANETAS.length; i++) {
-                if (!planetasConcluidos.includes(PLANETAS[i].id)) {
+            for (let i = 0; i < planetasAtuais.length; i++) {
+                if (!planetasConcluidos.includes(planetasAtuais[i].id)) {
                     return i;
                 }
             }
@@ -1277,14 +1544,16 @@
             const display = document.getElementById('recordeDisplay');
             if (display) {
                 const concluidos = planetasConcluidos.length;
-                display.innerHTML = `🏆 Recorde: ${recordePousos} pousos | 🌍 Planetas: ${concluidos}/8`;
+                const total = planetasAtuais.length;
+                const modo = modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo';
+                display.innerHTML = `🏆 Recorde: ${recordePousos} pousos | ${modo}: ${concluidos}/${total}`;
             }
         }
 
         function atualizarProgressoPlanetas() {
-            const total = PLANETAS.length;
+            const total = planetasAtuais.length;
             const concluidos = planetasConcluidos.length;
-            document.getElementById('progressText').textContent = `Progresso: ${concluidos} / ${total} planetas`;
+            document.getElementById('progressText').textContent = `Progresso: ${concluidos} / ${total} corpos`;
             
             if (concluidos === total) {
                 document.getElementById('progressText').textContent = '🎉 PARABÉNS! Você conquistou todo o sistema solar! 🎉';
@@ -1318,13 +1587,13 @@
                 localStorage.setItem('rocketSkinAtual', skinAtual);
             }
             const totalConcluidos = planetasConcluidos.length;
-            if (totalConcluidos >= 2) desbloquearSkin('ruby');
-            if (totalConcluidos >= 3) desbloquearSkin('emerald');
-            if (totalConcluidos >= 4) desbloquearSkin('sapphire');
-            if (totalConcluidos >= 5) desbloquearSkin('gold');
-            if (totalConcluidos >= 6) desbloquearSkin('neon');
-            if (totalConcluidos >= 7) desbloquearSkin('carbon');
-            if (totalConcluidos >= 8) desbloquearSkin('ice');
+            if (totalConcluidos >= 3) desbloquearSkin('ruby');
+            if (totalConcluidos >= 5) desbloquearSkin('emerald');
+            if (totalConcluidos >= 8) desbloquearSkin('sapphire');
+            if (totalConcluidos >= 11) desbloquearSkin('gold');
+            if (totalConcluidos >= 14) desbloquearSkin('neon');
+            if (totalConcluidos >= 17) desbloquearSkin('carbon');
+            if (totalConcluidos >= 20) desbloquearSkin('ice');
         }
 
         function desbloquearSkin(id) {
@@ -1456,14 +1725,12 @@
             const gp = lerControle();
             if (!gp) return;
             
-            // Botão A (índice 0) = Acelerar
             if (gp.buttons[0] && gp.buttons[0].pressed) {
                 touchKeys.thrust = true;
             } else {
                 touchKeys.thrust = false;
             }
             
-            // Botão B (índice 1) = Reiniciar
             if (gp.buttons[1] && gp.buttons[1].pressed) {
                 if (!window._reiniciarPressed) {
                     window._reiniciarPressed = true;
@@ -1478,7 +1745,6 @@
                 window._reiniciarPressed = false;
             }
             
-            // Left Stick (eixo 0) = Inclinar
             const leftStickX = gp.axes[0] || 0;
             const deadZone = 0.15;
             
@@ -1493,7 +1759,6 @@
                 touchKeys.right = false;
             }
             
-            // D-Pad (alternativa)
             if (gp.buttons[12] && gp.buttons[12].pressed) {
                 touchKeys.thrust = true;
             }
@@ -1708,6 +1973,7 @@
         const helpScreen = document.getElementById('helpScreen');
         const skinsMenuScreen = document.getElementById('skinsMenuScreen');
         const planetScreen = document.getElementById('planetScreen');
+        const modeScreen = document.getElementById('modeScreen');
 
         // Controles Touch
         const btnLeft = document.getElementById('btn-left');
@@ -1816,7 +2082,7 @@
 
         function atualizarNuvens() {
             if (nuvens.length < 6) {
-                const planeta = PLANETAS[planetaAtualIndex];
+                const planeta = planetasAtuais[planetaAtualIndex];
                 const cor = planeta ? planeta.cor : '#ffffff';
                 criarNuvem(`rgba(255, 255, 255, 0.15)`);
             }
@@ -2008,8 +2274,8 @@
         }
 
         function getPlanetaConfig(index) {
-            const planeta = PLANETAS[index];
-            if (!planeta) return PLANETAS[0];
+            const planeta = planetasAtuais[index];
+            if (!planeta) return planetasAtuais[0];
             return planeta;
         }
 
@@ -2026,7 +2292,6 @@
             poeira = [];
             nuvens = [];
             gameOverScreen.classList.remove('active');
-            // NÃO oculta o HUD aqui — mantém visível após o Game Over
             for (let i = 0; i < 6; i++) {
                 criarNuvem();
             }
@@ -2056,7 +2321,7 @@
                 cor: planeta.cor || '#e0e0e0',
                 corDetalhe: '#ffd700',
                 corChama: planeta.corChama || '#4fc3f7',
-                tamanho: 0.8 + (index * 0.05),
+                tamanho: 0.8 + (index * 0.02),
                 padWidth: planeta.padWidth || 160,
                 maxSpeedV: planeta.maxSpeedV || 2.0,
                 maxSpeedH: planeta.maxSpeedH || 1.5,
@@ -2073,8 +2338,8 @@
             fogueteAtual.corChama = skin.corChama;
 
             gravity = planeta.gravity || 0.01;
-            thrustPower = Math.max(0.04, 0.12 - index * 0.008);
-            fuelConsumption = Math.min(2.5, 0.7 + index * 0.1);
+            thrustPower = Math.max(0.04, 0.12 - index * 0.005);
+            fuelConsumption = Math.min(2.5, 0.7 + index * 0.05);
             consumoMultiplicador = planeta.consumoMultiplicador || 1.0;
             pad.width = planeta.padWidth || 160;
             pad.x = (canvas.width - pad.width) / 2;
@@ -2086,7 +2351,7 @@
 
             atualizarUI_Skins();
 
-            // Atualiza fase-info
+            const modoTexto = modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo';
             faseInfo.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);font-size:12px;line-height:1.6;text-align:right;">
                     <div style="color:#4fc3f7;font-weight:bold;">${planeta.emoji} ${planeta.nome}</div>
@@ -2096,10 +2361,10 @@
                     <div style="color:#ffd700;font-size:10px;">⭐ Bônus: ${planeta.fuelBonus.toFixed(1)}x</div>
                     ${consumoMultiplicador > 1.0 ? `<div style="color:#ff6b6b;font-size:10px;">⚠️ Consumo: ${(consumoMultiplicador * 100).toFixed(0)}%</div>` : ''}
                     <div style="color:#4fc3f7;font-size:10px;">🔄 Pousos: ${pousosAtuais}</div>
+                    <div style="color:#888;font-size:9px;">${modoTexto}</div>
                 </div>
             `;
             
-            // Oculta o HUD no início de uma nova fase
             ocultarHUD();
         }
 
@@ -2544,7 +2809,7 @@
             stats.innerHTML = html;
             gameOverScreen.classList.add('active');
             gameState = "gameover";
-            mostrarHUD(); // Mostra o HUD no Game Over
+            mostrarHUD();
         }
 
         // =========================================
@@ -2594,7 +2859,6 @@
         // ATUALIZAÇÃO DO JOGO
         // =========================================
         function update() {
-            // Verifica controle
             verificarControle();
             
             if (gameState === "gameover") return;
@@ -2610,12 +2874,9 @@
             
             if (gameState !== "playing") return;
 
-            // ===== TECLADO E CONTROLE =====
-            // Rotação (setas + touch + controle)
             if (keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
             if (keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
 
-            // Aceleração (seta pra cima + touch + controle)
             const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
 
             if (isThrusting) {
@@ -2689,7 +2950,6 @@
                         salvarRecorde(currentPlayer, pontuacaoAtual);
                     }
 
-                    // Mostra o HUD após o pouso bem-sucedido
                     mostrarHUD();
 
                     if (!planetasConcluidos.includes(planeta.id)) {
@@ -2699,7 +2959,7 @@
                         atualizarUI_Planetas();
                     }
 
-                    if (planetasConcluidos.length === PLANETAS.length) {
+                    if (planetasConcluidos.length === planetasAtuais.length) {
                         setTimeout(() => {
                             alert('🎉 PARABÉNS! Você conquistou todo o sistema solar! 🌍🚀');
                         }, 500);
@@ -2749,7 +3009,7 @@
             const grid = document.getElementById('planetGrid');
             grid.innerHTML = '';
             
-            PLANETAS.forEach((planeta, index) => {
+            planetasAtuais.forEach((planeta, index) => {
                 const concluido = planetasConcluidos.includes(planeta.id);
                 const desbloqueado = planetaEstaDesbloqueado(index);
                 const isCurrent = index === planetaAtualIndex && !concluido;
@@ -2774,6 +3034,11 @@
             });
             
             atualizarProgressoPlanetas();
+
+            const badge = document.getElementById('modeBadge');
+            if (badge) {
+                badge.textContent = modoAtual === 'campanha' ? '🌍 Modo Campanha' : '🔬 Modo Tempo';
+            }
         }
 
         function iniciarJogoNoPlaneta() {
@@ -2797,7 +3062,6 @@
             skinToggle.style.display = 'none';
             skinSelector.style.display = 'none';
             
-            // Oculta o HUD no início de uma nova fase
             ocultarHUD();
             
             if (!gameLoopStarted) {
@@ -2846,16 +3110,51 @@
 
             const extra = document.getElementById('recordesExtra');
             if (extra) {
+                const total = planetasAtuais.length;
                 extra.innerHTML = `
                     🏆 Recorde de Pousos: <strong>${recordePousos}</strong> pousos<br>
                     ⭐ Recorde de Pontuação: <strong>${recordePontuacaoInfinito}</strong> pts<br>
-                    🌍 Planetas Conquistados: <strong>${planetasConcluidos.length}/8</strong>
+                    🌍 ${modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo'}: <strong>${planetasConcluidos.length}/${total}</strong> corpos
                 `;
             }
         }
 
         // =========================================
-        // EVENTOS DOS BOTÕES
+        // SELEÇÃO DE MODO
+        // =========================================
+        function selecionarModo(modo) {
+            modoAtual = modo;
+            planetasAtuais = modo === 'campanha' ? CAMPANHA : TEMPO;
+            
+            planetasConcluidos = JSON.parse(localStorage.getItem(`rocketPlanetasConcluidos_${modo}`)) || [];
+            planetaAtualIndex = getProximoPlanetaNaoConcluido();
+            if (planetaAtualIndex === -1) planetaAtualIndex = 0;
+            
+            modeScreen.classList.remove('active');
+            planetScreen.classList.add('active');
+            atualizarUI_Planetas();
+            atualizarRecordeDisplay();
+            atualizarProgressoPlanetas();
+        }
+
+        // =========================================
+        // RESETAR PROGRESSO
+        // =========================================
+        document.getElementById('resetProgressBtn').addEventListener('click', function() {
+            const modoNome = modoAtual === 'campanha' ? 'Campanha' : 'Tempo';
+            if (confirm(`⚠️ Tem certeza que deseja resetar todo o progresso do MODO ${modoNome.toUpperCase()}?\n\nIsso vai apagar todos os planetas concluídos e você vai começar do zero!`)) {
+                planetasConcluidos = [];
+                salvarProgressoPlanetas();
+                planetaAtualIndex = 0;
+                atualizarUI_Planetas();
+                atualizarProgressoPlanetas();
+                atualizarRecordeDisplay();
+                alert(`✅ Progresso do MODO ${modoNome.toUpperCase()} resetado com sucesso!`);
+            }
+        });
+
+        // =========================================
+        // EVENTOS DOS BOTÕES (RANKING CORRIGIDO)
         // =========================================
         soundBtn.addEventListener("click", function() {
             const enabled = audio.toggle();
@@ -2864,33 +3163,60 @@
             if (menuSound) menuSound.textContent = enabled ? '🔊 SOM' : '🔇 SOM';
         });
 
-        document.getElementById('menuPlanetas').addEventListener('click', function() {
+        document.getElementById('menuJogar').addEventListener('click', function() {
             menuScreen.classList.add('hidden');
-            planetScreen.classList.add('active');
-            atualizarUI_Planetas();
+            modeScreen.classList.add('active');
+        });
+
+        document.getElementById('backMode').addEventListener('click', function() {
+            modeScreen.classList.remove('active');
+            menuScreen.classList.remove('hidden');
+        });
+
+        document.getElementById('backModeBtn').addEventListener('click', function() {
+            modeScreen.classList.remove('active');
+            menuScreen.classList.remove('hidden');
+        });
+
+        document.getElementById('modeCampaign').addEventListener('click', function() {
+            selecionarModo('campanha');
+        });
+
+        document.getElementById('modeTime').addEventListener('click', function() {
+            selecionarModo('tempo');
         });
 
         document.getElementById('backPlanet').addEventListener('click', function() {
             planetScreen.classList.remove('active');
-            menuScreen.classList.remove('hidden');
+            modeScreen.classList.add('active');
         });
 
+        document.getElementById('backPlanetBtn').addEventListener('click', function() {
+            planetScreen.classList.remove('active');
+            modeScreen.classList.add('active');
+        });
+
+        // RANKING - CORRIGIDO
         document.getElementById('menuRanking').addEventListener('click', function() {
+            menuScreen.classList.add('hidden');
             atualizarRankingFull();
             rankingScreen.classList.add('active');
         });
 
         document.getElementById('ranking-btn').addEventListener('click', function() {
+            menuScreen.classList.add('hidden');
             atualizarRankingFull();
             rankingScreen.classList.toggle('active');
         });
 
         document.getElementById('backRanking').addEventListener('click', function() {
             rankingScreen.classList.remove('active');
+            menuScreen.classList.remove('hidden');
         });
 
         document.getElementById('closeRanking').addEventListener('click', function() {
             rankingScreen.classList.remove('active');
+            menuScreen.classList.remove('hidden');
         });
 
         document.getElementById('backSkins').addEventListener('click', function() {
@@ -2899,21 +3225,6 @@
 
         document.getElementById('backHelp').addEventListener('click', function() {
             helpScreen.classList.remove('active');
-        });
-
-        document.getElementById('resetProgressBtn').addEventListener('click', function() {
-            if (confirm('Tem certeza que deseja resetar todo o progresso dos planetas?')) {
-                planetasConcluidos = [];
-                salvarProgressoPlanetas();
-                recordePousos = 0;
-                recordePontuacaoInfinito = 0;
-                localStorage.setItem('rocketRecordePousos', '0');
-                localStorage.setItem('rocketRecordePontuacaoInfinito', '0');
-                atualizarUI_Planetas();
-                atualizarRecordeDisplay();
-                atualizarSkinsDisponiveis();
-                atualizarUI_Skins();
-            }
         });
 
         document.addEventListener("keydown", function(e) {
@@ -2926,9 +3237,14 @@
                 }
                 if (rankingScreen.classList.contains('active')) {
                     rankingScreen.classList.remove('active');
+                    menuScreen.classList.remove('hidden');
                 }
                 if (planetScreen.classList.contains('active')) {
                     planetScreen.classList.remove('active');
+                    modeScreen.classList.add('active');
+                }
+                if (modeScreen.classList.contains('active')) {
+                    modeScreen.classList.remove('active');
                     menuScreen.classList.remove('hidden');
                 }
                 if (skinSelector.style.display === 'flex') {
@@ -2986,7 +3302,7 @@
         // GAME OVER
         function reiniciarDoGameOver() {
             gameOverScreen.classList.remove('active');
-            if (planetasConcluidos.length === PLANETAS.length) {
+            if (planetasConcluidos.length === planetasAtuais.length) {
                 planetScreen.classList.add('active');
                 atualizarUI_Planetas();
                 return;
@@ -2995,7 +3311,6 @@
             gameState = "playing";
             audio.stopEngine();
             engineWasOn = false;
-            // NÃO oculta o HUD aqui — mantém visível após o reinício
         }
 
         function voltarMenuDoGameOver() {
@@ -3021,6 +3336,7 @@
         // =========================================
         function drawHUD() {
             const planeta = getPlanetaConfig(planetaAtualIndex);
+            const modoTexto = modoAtual === 'campanha' ? '🌍' : '🔬';
             info.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);font-size:12px;line-height:1.6;">
                     <div>⬆️ Vel. Vertical: <span style="color:#4fc3f7;">${Math.abs(rocket.vy).toFixed(2)}</span> / ${planeta.maxSpeedV.toFixed(1)}</div>
@@ -3029,7 +3345,7 @@
                     <div style="color:#4fc3f7;">🔄 Pousos: ${pousosAtuais}</div>
                     <div style="color:#ff6b6b;">🏆 Recorde: ${recordePousos}</div>
                     <div style="color:#4fc3f7;font-size:11px;">👤 ${currentPlayer || "Anônimo"}</div>
-                    <div style="color:#aaa;font-size:10px;">🌍 ${planeta.emoji} ${planeta.nome}</div>
+                    <div style="color:#aaa;font-size:10px;">${modoTexto} ${planeta.emoji} ${planeta.nome}</div>
                     ${gamepadConnected ? '<div style="color:#4fc3f7;font-size:9px;">🎮 Controle: Conectado</div>' : ''}
                 </div>
             `;
@@ -3109,6 +3425,10 @@
 
             resizeCanvas();
 
+            planetasConcluidos = JSON.parse(localStorage.getItem(`rocketPlanetasConcluidos_${modoAtual}`)) || [];
+            planetaAtualIndex = getProximoPlanetaNaoConcluido();
+            if (planetaAtualIndex === -1) planetaAtualIndex = 0;
+
             resetGame();
             applyPlaneta(planetaAtualIndex);
             resetRocket();
@@ -3128,7 +3448,6 @@
             skinToggle.style.display = 'none';
             skinSelector.style.display = 'none';
 
-            // Oculta o HUD no início
             ocultarHUD();
 
             if (!gameLoopStarted) {
@@ -3138,7 +3457,8 @@
 
             render();
             console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
-            console.log(`🌍 Planeta: ${PLANETAS[planetaAtualIndex].emoji} ${PLANETAS[planetaAtualIndex].nome}`);
+            console.log(`🌍 Modo: ${modoAtual.toUpperCase()}`);
+            console.log(`🌍 Corpo: ${planetasAtuais[planetaAtualIndex].emoji} ${planetasAtuais[planetaAtualIndex].nome}`);
         }
 
         // =========================================
@@ -3161,10 +3481,8 @@
 
             startBtn.addEventListener("click", function() {
                 const nome = nameInput.value.trim() || "Anônimo";
-                const primeiroPlaneta = getProximoPlanetaNaoConcluido();
-                if (primeiroPlaneta !== -1) {
-                    planetaAtualIndex = primeiroPlaneta;
-                }
+                modoAtual = 'campanha';
+                planetasAtuais = CAMPANHA;
                 iniciarJogo(nome);
             });
 
@@ -3185,10 +3503,10 @@
                 document.removeEventListener('click', initAudio);
             }, { once: true });
 
-            console.log("🚀 Rocket Lander - Jornada Planetária carregado!");
-            console.log("🎮 Controles: Setas do teclado, touch e controle!");
-            console.log("👀 HUD oculto durante o pouso - aparece depois da tentativa!");
-            console.log("🔄 HUD permanece visível ao reiniciar!");
+            console.log("⏳ Parado no Tempo — Jornada Planetária carregado!");
+            console.log("🌍 Dois modos de jogo disponíveis!");
+            console.log("🎮 Ranking corrigido!");
+            console.log("🔄 Botão de resetar progresso adicionado!");
         });
 
         document.addEventListener('click', function initAudio() {
@@ -3196,12 +3514,12 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("🌍 ROCKET LANDER - JORNADA PLANETÁRIA");
-        console.log("🚀 Conquiste todos os 8 planetas!");
-        console.log("💥 Se explodir, volta do zero!");
-        console.log("🎮 Controles: Setas do teclado, touch e controle!");
-        console.log("👀 HUD oculto durante o pouso - aparece depois da tentativa!");
-        console.log("🔄 HUD permanece visível ao reiniciar!");
+        console.log("⏳ PARADO NO TEMPO — JORNADA PLANETÁRIA v2.1");
+        console.log("🌍 Modo Campanha — Dificuldade progressiva");
+        console.log("🔬 Modo Tempo — Gravidade baseada na ciência real");
+        console.log("🏆 Ranking corrigido — agora abre por cima do menu");
+        console.log("🔄 Botão de resetar progresso adicionado");
+        console.log("🚀 Conquiste todos os 22 corpos celestes!");
         console.log("🎮 Aproveite!");
     </script>
 </body>
