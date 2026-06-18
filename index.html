@@ -2026,7 +2026,7 @@
             poeira = [];
             nuvens = [];
             gameOverScreen.classList.remove('active');
-            ocultarHUD();
+            // NÃO oculta o HUD aqui — mantém visível após o Game Over
             for (let i = 0; i < 6; i++) {
                 criarNuvem();
             }
@@ -2086,7 +2086,7 @@
 
             atualizarUI_Skins();
 
-            // Atualiza fase-info (mantém oculto até pousar)
+            // Atualiza fase-info
             faseInfo.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);font-size:12px;line-height:1.6;text-align:right;">
                     <div style="color:#4fc3f7;font-weight:bold;">${planeta.emoji} ${planeta.nome}</div>
@@ -2099,7 +2099,7 @@
                 </div>
             `;
             
-            // Oculta o HUD no início da fase
+            // Oculta o HUD no início de uma nova fase
             ocultarHUD();
         }
 
@@ -2797,7 +2797,7 @@
             skinToggle.style.display = 'none';
             skinSelector.style.display = 'none';
             
-            // Oculta o HUD no início da fase
+            // Oculta o HUD no início de uma nova fase
             ocultarHUD();
             
             if (!gameLoopStarted) {
@@ -2995,8 +2995,7 @@
             gameState = "playing";
             audio.stopEngine();
             engineWasOn = false;
-            // Oculta o HUD ao reiniciar
-            ocultarHUD();
+            // NÃO oculta o HUD aqui — mantém visível após o reinício
         }
 
         function voltarMenuDoGameOver() {
@@ -3188,7 +3187,8 @@
 
             console.log("🚀 Rocket Lander - Jornada Planetária carregado!");
             console.log("🎮 Controles: Setas do teclado, touch e controle!");
-            console.log("👀 HUD oculto durante o pouso!");
+            console.log("👀 HUD oculto durante o pouso - aparece depois da tentativa!");
+            console.log("🔄 HUD permanece visível ao reiniciar!");
         });
 
         document.addEventListener('click', function initAudio() {
@@ -3201,6 +3201,7 @@
         console.log("💥 Se explodir, volta do zero!");
         console.log("🎮 Controles: Setas do teclado, touch e controle!");
         console.log("👀 HUD oculto durante o pouso - aparece depois da tentativa!");
+        console.log("🔄 HUD permanece visível ao reiniciar!");
         console.log("🎮 Aproveite!");
     </script>
 </body>
