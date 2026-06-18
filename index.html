@@ -204,6 +204,12 @@
         #modeScreen .mode-item.time:hover {
             border-color: rgba(255, 215, 0, 0.5);
         }
+        #modeScreen .mode-item.free {
+            border-color: rgba(0, 255, 136, 0.2);
+        }
+        #modeScreen .mode-item.free:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+        }
         #modeScreen .back-btn-mode {
             padding: 10px 30px;
             font-size: 16px;
@@ -363,7 +369,6 @@
             border: 1px solid rgba(255,215,0,0.2);
         }
 
-        /* ===== BOTÃO RESET ===== */
         #resetProgressBtn {
             padding: 8px 20px;
             font-size: 13px;
@@ -1202,7 +1207,7 @@
             <button class="menu-btn sound" id="menuSound">🔊 SOM</button>
         </div>
         <div class="recorde-display" id="recordeDisplay">🏆 Recorde: 0 pousos</div>
-        <div class="version">v2.0 - Dois Modos de Jogo</div>
+        <div class="version">v2.0 - Três Modos de Jogo</div>
     </div>
 
     <!-- ===== SELEÇÃO DE MODO ===== -->
@@ -1220,6 +1225,11 @@
                 <span class="emoji">🔬</span>
                 <div class="name">MODO TEMPO</div>
                 <div class="desc">Gravidade baseada na ciência real • Desafio extremo</div>
+            </div>
+            <div class="mode-item free" id="modeFree">
+                <span class="emoji">🆓</span>
+                <div class="name">MODO LIVRE</div>
+                <div class="desc">Todos os planetas liberados • Combustível infinito • Sem recordes</div>
             </div>
         </div>
         <button class="back-btn-mode" id="backModeBtn">VOLTAR AO MENU</button>
@@ -1267,6 +1277,7 @@
             <p>🏆 Faça o maior número de <strong>pousos consecutivos</strong></p>
             <p>🌍 Conquiste <strong>todos os 22 corpos</strong> para vencer!</p>
             <p>🔬 O Modo Tempo usa gravidade baseada na ciência real!</p>
+            <p>🆓 O Modo Livre tem combustível infinito e todos os planetas liberados!</p>
             <p>🎮 Conecte um controle para jogar!</p>
         </div>
         <button class="close-help" id="closeHelp">FECHAR</button>
@@ -1392,9 +1403,9 @@
         ];
 
         // =========================================
-        // PLANETAS - MODO TEMPO (GRAVIDADE REAL ADAPTADA)
+        // PLANETAS - MODO TEMPO E LIVRE (GRAVIDADE REAL ADAPTADA)
         // =========================================
-        const TEMPO = [
+        const TEMPO_LIVRE = [
             { id: 'mercurio', nome: 'Mercúrio', emoji: '☿', cor: '#b0b0b0', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
                 gravity: 0.015, padWidth: 170, maxSpeedV: 1.8, maxSpeedH: 1.2, maxAngle: 12, fuelBonus: 1.5,
                 fuel: 45, consumoMultiplicador: 1.2, corChama: '#aaa', dificuldade: 'Fácil' },
@@ -1468,20 +1479,28 @@
         let planetasConcluidos = JSON.parse(localStorage.getItem('rocketPlanetasConcluidos')) || [];
         let planetaAtualIndex = 0;
 
+        // Para o Modo Livre, não há progresso
+        const isModoLivre = () => modoAtual === 'livre';
+
         function salvarProgressoPlanetas() {
-            localStorage.setItem(`rocketPlanetasConcluidos_${modoAtual}`, JSON.stringify(planetasConcluidos));
+            if (!isModoLivre()) {
+                localStorage.setItem(`rocketPlanetasConcluidos_${modoAtual}`, JSON.stringify(planetasConcluidos));
+            }
         }
 
         function planetaEstaConcluido(id) {
+            if (isModoLivre()) return false;
             return planetasConcluidos.includes(id);
         }
 
         function planetaEstaDesbloqueado(index) {
+            if (isModoLivre()) return true;
             if (index === 0) return true;
             return planetasConcluidos.includes(planetasAtuais[index - 1].id);
         }
 
         function getProximoPlanetaNaoConcluido() {
+            if (isModoLivre()) return 0;
             for (let i = 0; i < planetasAtuais.length; i++) {
                 if (!planetasConcluidos.includes(planetasAtuais[i].id)) {
                     return i;
@@ -1545,17 +1564,18 @@
             if (display) {
                 const concluidos = planetasConcluidos.length;
                 const total = planetasAtuais.length;
-                const modo = modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo';
-                display.innerHTML = `🏆 Recorde: ${recordePousos} pousos | ${modo}: ${concluidos}/${total}`;
+                const modo = modoAtual === 'campanha' ? '🌍 Campanha' : modoAtual === 'tempo' ? '🔬 Tempo' : '🆓 Livre';
+                const texto = isModoLivre() ? '🏆 Modo Livre — Sem recordes' : `🏆 Recorde: ${recordePousos} pousos | ${modo}: ${concluidos}/${total}`;
+                display.innerHTML = texto;
             }
         }
 
         function atualizarProgressoPlanetas() {
             const total = planetasAtuais.length;
-            const concluidos = planetasConcluidos.length;
-            document.getElementById('progressText').textContent = `Progresso: ${concluidos} / ${total} corpos`;
+            const concluidos = isModoLivre() ? 0 : planetasConcluidos.length;
+            document.getElementById('progressText').textContent = isModoLivre() ? '🆓 Todos os planetas liberados!' : `Progresso: ${concluidos} / ${total} corpos`;
             
-            if (concluidos === total) {
+            if (!isModoLivre() && concluidos === total) {
                 document.getElementById('progressText').textContent = '🎉 PARABÉNS! Você conquistou todo o sistema solar! 🎉';
             }
         }
@@ -1586,7 +1606,7 @@
                 skinAtual = 'classic';
                 localStorage.setItem('rocketSkinAtual', skinAtual);
             }
-            const totalConcluidos = planetasConcluidos.length;
+            const totalConcluidos = isModoLivre() ? 0 : planetasConcluidos.length;
             if (totalConcluidos >= 3) desbloquearSkin('ruby');
             if (totalConcluidos >= 5) desbloquearSkin('emerald');
             if (totalConcluidos >= 8) desbloquearSkin('sapphire');
@@ -2303,14 +2323,15 @@
 
         function resetRocket() {
             const planeta = getPlanetaConfig(planetaAtualIndex);
+            const isLivre = isModoLivre();
             rocket = {
                 x: 500,
                 y: 120,
                 vx: 0,
                 vy: 0,
                 angle: 0,
-                fuel: planeta.fuel || 30,
-                startFuel: planeta.fuel || 30
+                fuel: isLivre ? 9999 : (planeta.fuel || 30),
+                startFuel: isLivre ? 9999 : (planeta.fuel || 30)
             };
         }
 
@@ -2345,13 +2366,15 @@
             pad.x = (canvas.width - pad.width) / 2;
 
             if (rocket) {
-                rocket.fuel = planeta.fuel || 30;
-                rocket.startFuel = planeta.fuel || 30;
+                const isLivre = isModoLivre();
+                rocket.fuel = isLivre ? 9999 : (planeta.fuel || 30);
+                rocket.startFuel = isLivre ? 9999 : (planeta.fuel || 30);
             }
 
             atualizarUI_Skins();
 
-            const modoTexto = modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo';
+            const modoTexto = modoAtual === 'campanha' ? '🌍 Campanha' : modoAtual === 'tempo' ? '🔬 Tempo' : '🆓 Livre';
+            const combustivelTexto = isModoLivre() ? '♾️ Infinito' : `🔥 ${rocket.fuel.toFixed(0)}%`;
             faseInfo.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);font-size:12px;line-height:1.6;text-align:right;">
                     <div style="color:#4fc3f7;font-weight:bold;">${planeta.emoji} ${planeta.nome}</div>
@@ -2359,8 +2382,9 @@
                     <div style="color:#aaa;font-size:10px;">🎯 Vel. Máx: ${planeta.maxSpeedV.toFixed(1)}</div>
                     <div style="color:#aaa;font-size:10px;">📏 Plataforma: ${pad.width}px</div>
                     <div style="color:#ffd700;font-size:10px;">⭐ Bônus: ${planeta.fuelBonus.toFixed(1)}x</div>
-                    ${consumoMultiplicador > 1.0 ? `<div style="color:#ff6b6b;font-size:10px;">⚠️ Consumo: ${(consumoMultiplicador * 100).toFixed(0)}%</div>` : ''}
+                    ${!isModoLivre() && consumoMultiplicador > 1.0 ? `<div style="color:#ff6b6b;font-size:10px;">⚠️ Consumo: ${(consumoMultiplicador * 100).toFixed(0)}%</div>` : ''}
                     <div style="color:#4fc3f7;font-size:10px;">🔄 Pousos: ${pousosAtuais}</div>
+                    <div style="color:#4fc3f7;font-size:10px;">${combustivelTexto}</div>
                     <div style="color:#888;font-size:9px;">${modoTexto}</div>
                 </div>
             `;
@@ -2739,6 +2763,29 @@
         }
 
         function drawFuelBar() {
+            const isLivre = isModoLivre();
+            if (isLivre) {
+                // No Modo Livre, mostra "♾️ Infinito" em vez da barra
+                ctx.fillStyle = "rgba(0,0,0,0.7)";
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.roundRect(18, 68, 184, 24, 4);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = "rgba(0, 255, 136, 0.15)";
+                ctx.beginPath();
+                ctx.roundRect(20, 70, 180, 20, 3);
+                ctx.fill();
+
+                ctx.fillStyle = "#00ff88";
+                ctx.font = "bold 14px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("♾️ COMBUSTÍVEL INFINITO", 110, 86);
+                ctx.textAlign = "left";
+                return;
+            }
+
             const barX = 20;
             const barY = 70;
             const barWidth = 180;
@@ -2791,19 +2838,31 @@
         // =========================================
         function mostrarGameOver() {
             const stats = document.getElementById('gameOverStats');
-            const foiRecorde = salvarRecordeInfinito(pousosAtuais, pontuacaoAtual);
+            const isLivre = isModoLivre();
             
             let html = `
                 <div>📊 Pousos: <span class="highlight">${pousosAtuais}</span></div>
                 <div>⭐ Pontuação: <span class="highlight">${pontuacaoAtual}</span></div>
-                <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;">
-                    🏆 <span class="record">Recorde de Pousos:</span> <strong>${recordePousos}</strong>
-                </div>
-                <div>⭐ <span class="record">Recorde de Pontuação:</span> <strong>${recordePontuacaoInfinito}</strong></div>
             `;
             
-            if (foiRecorde) {
-                html += `<div class="novo-record">🎉 NOVO RECORDE DE POUSOS!</div>`;
+            if (!isLivre) {
+                const foiRecorde = salvarRecordeInfinito(pousosAtuais, pontuacaoAtual);
+                html += `
+                    <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;">
+                        🏆 <span class="record">Recorde de Pousos:</span> <strong>${recordePousos}</strong>
+                    </div>
+                    <div>⭐ <span class="record">Recorde de Pontuação:</span> <strong>${recordePontuacaoInfinito}</strong></div>
+                `;
+                if (foiRecorde) {
+                    html += `<div class="novo-record">🎉 NOVO RECORDE DE POUSOS!</div>`;
+                }
+            } else {
+                html += `
+                    <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;color:#00ff88;">
+                        🆓 <span class="record">MODO LIVRE — Sem recordes</span>
+                    </div>
+                    <div style="color:#888;font-size:16px;">♾️ Combustível infinito disponível</div>
+                `;
             }
             
             stats.innerHTML = html;
@@ -2877,15 +2936,18 @@
             if (keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
             if (keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
 
-            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
+            const isLivre = isModoLivre();
+            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && (isLivre || rocket.fuel > 0);
 
             if (isThrusting) {
                 const thrustX = Math.sin(rocket.angle) * thrustPower;
                 const thrustY = -Math.cos(rocket.angle) * thrustPower;
                 rocket.vx += thrustX;
                 rocket.vy += thrustY;
-                rocket.fuel -= fuelConsumption * consumoMultiplicador;
-                if (rocket.fuel < 0) rocket.fuel = 0;
+                if (!isLivre) {
+                    rocket.fuel -= fuelConsumption * consumoMultiplicador;
+                    if (rocket.fuel < 0) rocket.fuel = 0;
+                }
 
                 if (!engineWasOn) {
                     audio.init();
@@ -2942,9 +3004,13 @@
                     const baseScore = 1000 + Math.floor(rocket.fuel * 20) + Math.floor((planeta.maxSpeedV - speedV) * 300);
                     const pontoPouso = Math.floor(baseScore * fuelBonus);
                     pontuacaoAtual += pontoPouso;
-                    
-                    const foiRecorde = salvarRecordeInfinito(pousosAtuais, pontuacaoAtual);
-                    atualizarRecordeDisplay();
+
+                    if (!isLivre) {
+                        const foiRecorde = salvarRecordeInfinito(pousosAtuais, pontuacaoAtual);
+                        if (foiRecorde) {
+                            console.log('🎉 NOVO RECORDE!');
+                        }
+                    }
 
                     if (currentPlayer && pontuacaoAtual > 0) {
                         salvarRecorde(currentPlayer, pontuacaoAtual);
@@ -2952,22 +3018,25 @@
 
                     mostrarHUD();
 
-                    if (!planetasConcluidos.includes(planeta.id)) {
-                        planetasConcluidos.push(planeta.id);
-                        salvarProgressoPlanetas();
-                        atualizarProgressoPlanetas();
-                        atualizarUI_Planetas();
+                    // Modo Livre: não marca planetas como concluídos
+                    if (!isLivre) {
+                        if (!planetasConcluidos.includes(planeta.id)) {
+                            planetasConcluidos.push(planeta.id);
+                            salvarProgressoPlanetas();
+                            atualizarProgressoPlanetas();
+                            atualizarUI_Planetas();
+                        }
                     }
 
-                    if (planetasConcluidos.length === planetasAtuais.length) {
+                    if (!isLivre && planetasConcluidos.length === planetasAtuais.length) {
                         setTimeout(() => {
                             alert('🎉 PARABÉNS! Você conquistou todo o sistema solar! 🌍🚀');
                         }, 500);
                     }
 
-                    const proximo = getProximoPlanetaNaoConcluido();
+                    const proximo = isLivre ? 0 : getProximoPlanetaNaoConcluido();
                     if (proximo !== -1) {
-                        planetaAtualIndex = proximo;
+                        planetaAtualIndex = isLivre ? (planetaAtualIndex + 1) % planetasAtuais.length : proximo;
                         applyPlaneta(planetaAtualIndex);
                         resetRocket();
                         gameState = "playing";
@@ -3009,18 +3078,27 @@
             const grid = document.getElementById('planetGrid');
             grid.innerHTML = '';
             
+            const isLivre = isModoLivre();
+            
             planetasAtuais.forEach((planeta, index) => {
-                const concluido = planetasConcluidos.includes(planeta.id);
-                const desbloqueado = planetaEstaDesbloqueado(index);
+                const concluido = isLivre ? false : planetasConcluidos.includes(planeta.id);
+                const desbloqueado = isLivre ? true : planetaEstaDesbloqueado(index);
                 const isCurrent = index === planetaAtualIndex && !concluido;
                 
                 const div = document.createElement('div');
                 div.className = `planet-item ${concluido ? 'completed' : ''} ${!desbloqueado ? 'locked' : 'unlocked'} ${isCurrent ? 'current' : ''}`;
                 
+                let statusText = '';
+                if (isLivre) {
+                    statusText = isCurrent ? '▶ Jogar' : '🔓 Disponível';
+                } else {
+                    statusText = concluido ? '✅ Concluído' : !desbloqueado ? '🔒 Bloqueado' : isCurrent ? '▶ Jogar' : '🔓 Disponível';
+                }
+                
                 div.innerHTML = `
                     <span class="emoji">${planeta.emoji}</span>
                     <span class="name">${planeta.nome}</span>
-                    <span class="status">${concluido ? '✅ Concluído' : !desbloqueado ? '🔒 Bloqueado' : isCurrent ? '▶ Jogar' : '🔓 Disponível'}</span>
+                    <span class="status">${statusText}</span>
                 `;
                 
                 if (desbloqueado && !concluido) {
@@ -3037,7 +3115,8 @@
 
             const badge = document.getElementById('modeBadge');
             if (badge) {
-                badge.textContent = modoAtual === 'campanha' ? '🌍 Modo Campanha' : '🔬 Modo Tempo';
+                const nomes = { campanha: '🌍 Modo Campanha', tempo: '🔬 Modo Tempo', livre: '🆓 Modo Livre' };
+                badge.textContent = nomes[modoAtual] || '🌍 Modo Campanha';
             }
         }
 
@@ -3111,10 +3190,11 @@
             const extra = document.getElementById('recordesExtra');
             if (extra) {
                 const total = planetasAtuais.length;
+                const isLivre = isModoLivre();
                 extra.innerHTML = `
                     🏆 Recorde de Pousos: <strong>${recordePousos}</strong> pousos<br>
                     ⭐ Recorde de Pontuação: <strong>${recordePontuacaoInfinito}</strong> pts<br>
-                    🌍 ${modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo'}: <strong>${planetasConcluidos.length}/${total}</strong> corpos
+                    ${isLivre ? '🆓 Modo Livre — Todos os planetas liberados' : `🌍 ${modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo'}: <strong>${planetasConcluidos.length}/${total}</strong> corpos`}
                 `;
             }
         }
@@ -3124,7 +3204,23 @@
         // =========================================
         function selecionarModo(modo) {
             modoAtual = modo;
-            planetasAtuais = modo === 'campanha' ? CAMPANHA : TEMPO;
+            
+            if (modo === 'campanha') {
+                planetasAtuais = CAMPANHA;
+            } else if (modo === 'tempo') {
+                planetasAtuais = TEMPO_LIVRE;
+            } else if (modo === 'livre') {
+                planetasAtuais = TEMPO_LIVRE;
+                // Modo Livre: não carrega progresso
+                planetasConcluidos = [];
+                planetaAtualIndex = 0;
+                modeScreen.classList.remove('active');
+                planetScreen.classList.add('active');
+                atualizarUI_Planetas();
+                atualizarRecordeDisplay();
+                atualizarProgressoPlanetas();
+                return;
+            }
             
             planetasConcluidos = JSON.parse(localStorage.getItem(`rocketPlanetasConcluidos_${modo}`)) || [];
             planetaAtualIndex = getProximoPlanetaNaoConcluido();
@@ -3141,6 +3237,10 @@
         // RESETAR PROGRESSO
         // =========================================
         document.getElementById('resetProgressBtn').addEventListener('click', function() {
+            if (isModoLivre()) {
+                alert('🆓 No Modo Livre, todos os planetas já estão liberados!');
+                return;
+            }
             const modoNome = modoAtual === 'campanha' ? 'Campanha' : 'Tempo';
             if (confirm(`⚠️ Tem certeza que deseja resetar todo o progresso do MODO ${modoNome.toUpperCase()}?\n\nIsso vai apagar todos os planetas concluídos e você vai começar do zero!`)) {
                 planetasConcluidos = [];
@@ -3154,7 +3254,7 @@
         });
 
         // =========================================
-        // EVENTOS DOS BOTÕES (RANKING CORRIGIDO)
+        // EVENTOS DOS BOTÕES
         // =========================================
         soundBtn.addEventListener("click", function() {
             const enabled = audio.toggle();
@@ -3186,6 +3286,10 @@
             selecionarModo('tempo');
         });
 
+        document.getElementById('modeFree').addEventListener('click', function() {
+            selecionarModo('livre');
+        });
+
         document.getElementById('backPlanet').addEventListener('click', function() {
             planetScreen.classList.remove('active');
             modeScreen.classList.add('active');
@@ -3196,7 +3300,7 @@
             modeScreen.classList.add('active');
         });
 
-        // RANKING - CORRIGIDO
+        // RANKING
         document.getElementById('menuRanking').addEventListener('click', function() {
             menuScreen.classList.add('hidden');
             atualizarRankingFull();
@@ -3302,7 +3406,7 @@
         // GAME OVER
         function reiniciarDoGameOver() {
             gameOverScreen.classList.remove('active');
-            if (planetasConcluidos.length === planetasAtuais.length) {
+            if (!isModoLivre() && planetasConcluidos.length === planetasAtuais.length) {
                 planetScreen.classList.add('active');
                 atualizarUI_Planetas();
                 return;
@@ -3336,16 +3440,21 @@
         // =========================================
         function drawHUD() {
             const planeta = getPlanetaConfig(planetaAtualIndex);
-            const modoTexto = modoAtual === 'campanha' ? '🌍' : '🔬';
+            const isLivre = isModoLivre();
+            const modoTexto = modoAtual === 'campanha' ? '🌍' : modoAtual === 'tempo' ? '🔬' : '🆓';
+            
+            let recordeTexto = isLivre ? '♾️ Sem recordes' : `🏆 Recorde: ${recordePousos}`;
+            
             info.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);font-size:12px;line-height:1.6;">
                     <div>⬆️ Vel. Vertical: <span style="color:#4fc3f7;">${Math.abs(rocket.vy).toFixed(2)}</span> / ${planeta.maxSpeedV.toFixed(1)}</div>
                     <div>➡️ Vel. Horizontal: <span style="color:#4fc3f7;">${Math.abs(rocket.vx).toFixed(2)}</span> / ${planeta.maxSpeedH.toFixed(1)}</div>
                     <div style="color:#ffd700;">⭐ Pontuação: ${pontuacaoAtual}</div>
                     <div style="color:#4fc3f7;">🔄 Pousos: ${pousosAtuais}</div>
-                    <div style="color:#ff6b6b;">🏆 Recorde: ${recordePousos}</div>
+                    <div style="color:#ff6b6b;">${recordeTexto}</div>
                     <div style="color:#4fc3f7;font-size:11px;">👤 ${currentPlayer || "Anônimo"}</div>
                     <div style="color:#aaa;font-size:10px;">${modoTexto} ${planeta.emoji} ${planeta.nome}</div>
+                    ${isLivre ? '<div style="color:#00ff88;font-size:10px;">♾️ Combustível infinito</div>' : ''}
                     ${gamepadConnected ? '<div style="color:#4fc3f7;font-size:9px;">🎮 Controle: Conectado</div>' : ''}
                 </div>
             `;
@@ -3425,9 +3534,14 @@
 
             resizeCanvas();
 
-            planetasConcluidos = JSON.parse(localStorage.getItem(`rocketPlanetasConcluidos_${modoAtual}`)) || [];
-            planetaAtualIndex = getProximoPlanetaNaoConcluido();
-            if (planetaAtualIndex === -1) planetaAtualIndex = 0;
+            if (!isModoLivre()) {
+                planetasConcluidos = JSON.parse(localStorage.getItem(`rocketPlanetasConcluidos_${modoAtual}`)) || [];
+                planetaAtualIndex = getProximoPlanetaNaoConcluido();
+                if (planetaAtualIndex === -1) planetaAtualIndex = 0;
+            } else {
+                planetasConcluidos = [];
+                planetaAtualIndex = 0;
+            }
 
             resetGame();
             applyPlaneta(planetaAtualIndex);
@@ -3504,9 +3618,8 @@
             }, { once: true });
 
             console.log("⏳ Parado no Tempo — Jornada Planetária carregado!");
-            console.log("🌍 Dois modos de jogo disponíveis!");
-            console.log("🎮 Ranking corrigido!");
-            console.log("🔄 Botão de resetar progresso adicionado!");
+            console.log("🌍 Três modos de jogo disponíveis!");
+            console.log("🆓 Modo Livre: combustível infinito, todos os planetas liberados!");
         });
 
         document.addEventListener('click', function initAudio() {
@@ -3514,11 +3627,10 @@
             document.removeEventListener('click', initAudio);
         }, { once: true });
 
-        console.log("⏳ PARADO NO TEMPO — JORNADA PLANETÁRIA v2.1");
+        console.log("⏳ PARADO NO TEMPO — JORNADA PLANETÁRIA v3.0");
         console.log("🌍 Modo Campanha — Dificuldade progressiva");
         console.log("🔬 Modo Tempo — Gravidade baseada na ciência real");
-        console.log("🏆 Ranking corrigido — agora abre por cima do menu");
-        console.log("🔄 Botão de resetar progresso adicionado");
+        console.log("🆓 Modo Livre — Combustível infinito, todos os planetas liberados, sem recordes");
         console.log("🚀 Conquiste todos os 22 corpos celestes!");
         console.log("🎮 Aproveite!");
     </script>
