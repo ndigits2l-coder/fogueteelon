@@ -1101,6 +1101,7 @@
             <p>🎨 Complete planetas para <strong>desbloquear skins</strong></p>
             <p>🏆 Faça o maior número de <strong>pousos consecutivos</strong></p>
             <p>🌍 Conquiste <strong>todos os 8 planetas</strong> para vencer!</p>
+            <p>🎮 Conecte um controle para jogar!</p>
         </div>
         <button class="close-help" id="closeHelp">FECHAR</button>
     </div>
@@ -1161,28 +1162,28 @@
         const PLANETAS = [
             { id: 'terra', nome: 'Terra', emoji: '🌍', cor: '#2d6a4f', corCeu1: '#000814', corCeu2: '#001d3d',
                 gravity: 0.01, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.0,
-                fuel: 30, consumoMultiplicador: 1.0, corChama: '#4fc3f7', dificuldade: 'Fácil' },
+                fuel: 40, consumoMultiplicador: 1.0, corChama: '#4fc3f7', dificuldade: 'Fácil' },
             { id: 'lua', nome: 'Lua', emoji: '🌙', cor: '#888', corCeu1: '#1a1a2e', corCeu2: '#2d2d4e',
                 gravity: 0.012, padWidth: 150, maxSpeedV: 1.9, maxSpeedH: 1.4, maxAngle: 11, fuelBonus: 1.2,
-                fuel: 30, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
+                fuel: 40, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
             { id: 'marte', nome: 'Marte', emoji: '🔴', cor: '#e63946', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
                 gravity: 0.015, padWidth: 140, maxSpeedV: 1.8, maxSpeedH: 1.3, maxAngle: 10, fuelBonus: 1.5,
-                fuel: 35, consumoMultiplicador: 1.2, corChama: '#ff6b6b', dificuldade: 'Média' },
+                fuel: 45, consumoMultiplicador: 1.1, corChama: '#ff6b6b', dificuldade: 'Média' },
             { id: 'venus', nome: 'Vênus', emoji: '🟠', cor: '#ff8800', corCeu1: '#2d1a0a', corCeu2: '#4d2b1b',
                 gravity: 0.02, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
-                fuel: 40, consumoMultiplicador: 1.5, corChama: '#ff8800', dificuldade: 'Média' },
+                fuel: 50, consumoMultiplicador: 1.2, corChama: '#ff8800', dificuldade: 'Média' },
             { id: 'jupiter', nome: 'Júpiter', emoji: '🟣', cor: '#9c27b0', corCeu1: '#1a0a2e', corCeu2: '#3d1b5e',
                 gravity: 0.025, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.5,
-                fuel: 45, consumoMultiplicador: 1.8, corChama: '#9c27b0', dificuldade: 'Difícil' },
+                fuel: 50, consumoMultiplicador: 1.3, corChama: '#9c27b0', dificuldade: 'Difícil' },
             { id: 'saturno', nome: 'Saturno', emoji: '🪐', cor: '#ffd700', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
                 gravity: 0.03, padWidth: 80, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.0,
-                fuel: 25, consumoMultiplicador: 2.0, corChama: '#ffd700', dificuldade: 'Muito Difícil' },
+                fuel: 45, consumoMultiplicador: 1.4, corChama: '#ffd700', dificuldade: 'Muito Difícil' },
             { id: 'netuno', nome: 'Netuno', emoji: '🔵', cor: '#1a3a5c', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
                 gravity: 0.035, padWidth: 70, maxSpeedV: 0.8, maxSpeedH: 0.5, maxAngle: 3, fuelBonus: 3.5,
-                fuel: 20, consumoMultiplicador: 2.2, corChama: '#4fc3f7', dificuldade: 'Extremo' },
+                fuel: 40, consumoMultiplicador: 1.5, corChama: '#4fc3f7', dificuldade: 'Extremo' },
             { id: 'plutao', nome: 'Plutão', emoji: '⚫', cor: '#444', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
                 gravity: 0.04, padWidth: 60, maxSpeedV: 0.6, maxSpeedH: 0.3, maxAngle: 2, fuelBonus: 4.0,
-                fuel: 15, consumoMultiplicador: 2.5, corChama: '#88ccff', dificuldade: 'Lendário' }
+                fuel: 35, consumoMultiplicador: 1.6, corChama: '#88ccff', dificuldade: 'Lendário' }
         ];
 
         // =========================================
@@ -1210,7 +1211,7 @@
                     return i;
                 }
             }
-            return -1; // Todos concluídos
+            return -1;
         }
 
         // =========================================
@@ -1307,7 +1308,6 @@
                 skinAtual = 'classic';
                 localStorage.setItem('rocketSkinAtual', skinAtual);
             }
-            // Desbloqueia skins baseado nos planetas concluídos
             const totalConcluidos = planetasConcluidos.length;
             if (totalConcluidos >= 2) desbloquearSkin('ruby');
             if (totalConcluidos >= 3) desbloquearSkin('emerald');
@@ -1388,6 +1388,114 @@
                     }
                 });
             });
+        }
+
+        // =========================================
+        // SUPORTE A CONTROLE (XBOX/PS5)
+        // =========================================
+        let gamepadConnected = false;
+        let gamepadIndex = -1;
+
+        function conectarControle() {
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                const gp = gamepads[i];
+                if (gp && gp.connected) {
+                    gamepadConnected = true;
+                    gamepadIndex = i;
+                    console.log(`🎮 Controle conectado: ${gp.id}`);
+                    return true;
+                }
+            }
+            
+            gamepadConnected = false;
+            gamepadIndex = -1;
+            return false;
+        }
+
+        function lerControle() {
+            if (!gamepadConnected || gamepadIndex === -1) return null;
+            
+            const gp = navigator.getGamepads()[gamepadIndex];
+            if (!gp || !gp.connected) {
+                gamepadConnected = false;
+                return null;
+            }
+            
+            return gp;
+        }
+
+        window.addEventListener('gamepadconnected', function(e) {
+            console.log(`🎮 Controle conectado: ${e.gamepad.id}`);
+            gamepadConnected = true;
+            gamepadIndex = e.gamepad.index;
+        });
+
+        window.addEventListener('gamepaddisconnected', function(e) {
+            console.log(`🎮 Controle desconectado`);
+            gamepadConnected = false;
+            gamepadIndex = -1;
+        });
+
+        function verificarControle() {
+            if (!gamepadConnected) {
+                conectarControle();
+                return;
+            }
+            
+            const gp = lerControle();
+            if (!gp) return;
+            
+            // Botão A (índice 0) = Acelerar
+            if (gp.buttons[0] && gp.buttons[0].pressed) {
+                touchKeys.thrust = true;
+            } else {
+                touchKeys.thrust = false;
+            }
+            
+            // Botão B (índice 1) = Reiniciar
+            if (gp.buttons[1] && gp.buttons[1].pressed) {
+                if (!window._reiniciarPressed) {
+                    window._reiniciarPressed = true;
+                    if (gameState === "gameover") {
+                        reiniciarDoGameOver();
+                    } else {
+                        resetGame();
+                        audio.stopEngine();
+                    }
+                }
+            } else {
+                window._reiniciarPressed = false;
+            }
+            
+            // Left Stick (eixo 0) = Inclinar
+            const leftStickX = gp.axes[0] || 0;
+            const deadZone = 0.15;
+            
+            if (leftStickX < -deadZone) {
+                touchKeys.left = true;
+                touchKeys.right = false;
+            } else if (leftStickX > deadZone) {
+                touchKeys.right = true;
+                touchKeys.left = false;
+            } else {
+                touchKeys.left = false;
+                touchKeys.right = false;
+            }
+            
+            // D-Pad (alternativa)
+            if (gp.buttons[12] && gp.buttons[12].pressed) {
+                touchKeys.thrust = true;
+            }
+            if (gp.buttons[14] && gp.buttons[14].pressed) {
+                touchKeys.left = true;
+                touchKeys.right = false;
+            }
+            if (gp.buttons[15] && gp.buttons[15].pressed) {
+                touchKeys.right = true;
+                touchKeys.left = false;
+            }
         }
 
         // =========================================
@@ -1630,11 +1738,40 @@
         setupTouchButton(btnRight, 'right', 'left');
         setupTouchButton(btnThrust, 'thrust');
 
-        // Variáveis do jogo
+        // =========================================
+        // TECLADO
+        // =========================================
         let keys = {};
-        let gameState = "playing";
-        let engineWasOn = false;
-        let gameLoopStarted = false;
+
+        document.addEventListener("keydown", function(e) {
+            keys[e.key] = true;
+            
+            if (e.key === "r" || e.key === "R") {
+                if (gameState === "gameover") {
+                    reiniciarDoGameOver();
+                } else {
+                    resetGame();
+                    audio.stopEngine();
+                }
+            }
+            
+            if (e.key === "Enter" || e.key === " ") {
+                if (gameState === "gameover") {
+                    reiniciarDoGameOver();
+                }
+            }
+            
+            if (!audio.ctx) {
+                audio.init();
+            }
+        });
+
+        document.addEventListener("keyup", function(e) {
+            keys[e.key] = false;
+            if (e.key === "ArrowUp") {
+                audio.stopEngine();
+            }
+        });
 
         // =========================================
         // NUVENS
@@ -1822,6 +1959,10 @@
         let pad = { x: 420, y: 650, width: 160, height: 10 };
         let rocket;
         let fogueteAtual = {};
+        let engineWasOn = false;
+        let gameState = "playing";
+        let gameLoopStarted = false;
+        let currentLevel = 1;
 
         // Rastro do foguete
         let rastro = [];
@@ -2425,6 +2566,9 @@
         // ATUALIZAÇÃO DO JOGO
         // =========================================
         function update() {
+            // Verifica controle
+            verificarControle();
+            
             if (gameState === "gameover") return;
             
             if (explosaoAtiva) {
@@ -2438,9 +2582,12 @@
             
             if (gameState !== "playing") return;
 
+            // ===== TECLADO E CONTROLE =====
+            // Rotação (setas + touch + controle)
             if (keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
             if (keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
 
+            // Aceleração (seta pra cima + touch + controle)
             const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
 
             if (isThrusting) {
@@ -2514,7 +2661,6 @@
                         salvarRecorde(currentPlayer, pontuacaoAtual);
                     }
 
-                    // Marca planeta como concluído
                     if (!planetasConcluidos.includes(planeta.id)) {
                         planetasConcluidos.push(planeta.id);
                         salvarProgressoPlanetas();
@@ -2522,15 +2668,12 @@
                         atualizarUI_Planetas();
                     }
 
-                    // Verifica se todos os planetas foram concluídos
                     if (planetasConcluidos.length === PLANETAS.length) {
-                        // Todos concluídos! Mostra mensagem de vitória
                         setTimeout(() => {
                             alert('🎉 PARABÉNS! Você conquistou todo o sistema solar! 🌍🚀');
                         }, 500);
                     }
 
-                    // Avança para o próximo planeta não concluído
                     const proximo = getProximoPlanetaNaoConcluido();
                     if (proximo !== -1) {
                         planetaAtualIndex = proximo;
@@ -2540,7 +2683,6 @@
                         audio.stopEngine();
                         engineWasOn = false;
                     } else {
-                        // Todos concluídos, volta para o menu de planetas
                         setTimeout(() => {
                             gameState = "gameover";
                             gameOverScreen.classList.remove('active');
@@ -2762,24 +2904,6 @@
                     voltarMenuDoGameOver();
                 }
             }
-            if (e.key === "r" || e.key === "R") {
-                if (gameState === "gameover") {
-                    reiniciarDoGameOver();
-                } else if (gameState !== "gameover" && gameState !== "crashed") {
-                    resetGame();
-                    audio.stopEngine();
-                }
-            }
-            if (!audio.ctx) {
-                audio.init();
-            }
-        });
-
-        document.addEventListener("keyup", function(e) {
-            keys[e.key] = false;
-            if (e.key === "ArrowUp") {
-                audio.stopEngine();
-            }
         });
 
         // SKIN TOGGLE
@@ -2871,6 +2995,7 @@
                     <div style="color:#ff6b6b;">🏆 Recorde: ${recordePousos}</div>
                     <div style="color:#4fc3f7;font-size:11px;">👤 ${currentPlayer || "Anônimo"}</div>
                     <div style="color:#aaa;font-size:10px;">🌍 ${planeta.emoji} ${planeta.nome}</div>
+                    ${gamepadConnected ? '<div style="color:#4fc3f7;font-size:9px;">🎮 Controle: Conectado</div>' : ''}
                 </div>
             `;
         }
@@ -3023,6 +3148,7 @@
             }, { once: true });
 
             console.log("🚀 Rocket Lander - Jornada Planetária carregado!");
+            console.log("🎮 Controles: Setas do teclado, touch e controle!");
         });
 
         document.addEventListener('click', function initAudio() {
@@ -3033,6 +3159,7 @@
         console.log("🌍 ROCKET LANDER - JORNADA PLANETÁRIA");
         console.log("🚀 Conquiste todos os 8 planetas!");
         console.log("💥 Se explodir, volta do zero!");
+        console.log("🎮 Controles: Setas do teclado, touch e controle!");
         console.log("🎮 Aproveite!");
     </script>
 </body>
