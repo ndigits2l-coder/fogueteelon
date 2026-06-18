@@ -628,6 +628,8 @@
             max-width: 100vw;
             max-height: 100vh;
         }
+
+        /* ===== HUD ===== */
         #info {
             position: absolute;
             top: 8px;
@@ -637,6 +639,8 @@
             z-index: 10;
             pointer-events: none;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
         #fase-info {
             position: absolute;
@@ -648,6 +652,11 @@
             pointer-events: none;
             text-align: right;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        #info.visible, #fase-info.visible {
+            opacity: 1;
         }
 
         /* ===== BOTÕES OCULTOS DURANTE O JOGO ===== */
@@ -1774,6 +1783,19 @@
         });
 
         // =========================================
+        // FUNÇÕES DO HUD
+        // =========================================
+        function mostrarHUD() {
+            document.getElementById('info').classList.add('visible');
+            document.getElementById('fase-info').classList.add('visible');
+        }
+
+        function ocultarHUD() {
+            document.getElementById('info').classList.remove('visible');
+            document.getElementById('fase-info').classList.remove('visible');
+        }
+
+        // =========================================
         // NUVENS
         // =========================================
         let nuvens = [];
@@ -2004,6 +2026,7 @@
             poeira = [];
             nuvens = [];
             gameOverScreen.classList.remove('active');
+            ocultarHUD();
             for (let i = 0; i < 6; i++) {
                 criarNuvem();
             }
@@ -2063,6 +2086,7 @@
 
             atualizarUI_Skins();
 
+            // Atualiza fase-info (mantém oculto até pousar)
             faseInfo.innerHTML = `
                 <div style="background:rgba(0,0,0,0.75);padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);font-size:12px;line-height:1.6;text-align:right;">
                     <div style="color:#4fc3f7;font-weight:bold;">${planeta.emoji} ${planeta.nome}</div>
@@ -2074,6 +2098,9 @@
                     <div style="color:#4fc3f7;font-size:10px;">🔄 Pousos: ${pousosAtuais}</div>
                 </div>
             `;
+            
+            // Oculta o HUD no início da fase
+            ocultarHUD();
         }
 
         // =========================================
@@ -2517,6 +2544,7 @@
             stats.innerHTML = html;
             gameOverScreen.classList.add('active');
             gameState = "gameover";
+            mostrarHUD(); // Mostra o HUD no Game Over
         }
 
         // =========================================
@@ -2661,6 +2689,9 @@
                         salvarRecorde(currentPlayer, pontuacaoAtual);
                     }
 
+                    // Mostra o HUD após o pouso bem-sucedido
+                    mostrarHUD();
+
                     if (!planetasConcluidos.includes(planeta.id)) {
                         planetasConcluidos.push(planeta.id);
                         salvarProgressoPlanetas();
@@ -2765,6 +2796,9 @@
             rankingBtn.style.display = 'none';
             skinToggle.style.display = 'none';
             skinSelector.style.display = 'none';
+            
+            // Oculta o HUD no início da fase
+            ocultarHUD();
             
             if (!gameLoopStarted) {
                 gameLoop();
@@ -2961,6 +2995,8 @@
             gameState = "playing";
             audio.stopEngine();
             engineWasOn = false;
+            // Oculta o HUD ao reiniciar
+            ocultarHUD();
         }
 
         function voltarMenuDoGameOver() {
@@ -3093,6 +3129,9 @@
             skinToggle.style.display = 'none';
             skinSelector.style.display = 'none';
 
+            // Oculta o HUD no início
+            ocultarHUD();
+
             if (!gameLoopStarted) {
                 gameLoop();
                 gameLoopStarted = true;
@@ -3149,6 +3188,7 @@
 
             console.log("🚀 Rocket Lander - Jornada Planetária carregado!");
             console.log("🎮 Controles: Setas do teclado, touch e controle!");
+            console.log("👀 HUD oculto durante o pouso!");
         });
 
         document.addEventListener('click', function initAudio() {
@@ -3160,6 +3200,7 @@
         console.log("🚀 Conquiste todos os 8 planetas!");
         console.log("💥 Se explodir, volta do zero!");
         console.log("🎮 Controles: Setas do teclado, touch e controle!");
+        console.log("👀 HUD oculto durante o pouso - aparece depois da tentativa!");
         console.log("🎮 Aproveite!");
     </script>
 </body>
