@@ -155,7 +155,7 @@ function drawTerrain(){
 }
 
 // =========================================
-// FOGUETE ESTILIZADO (do segundo código)
+// FOGUETE SIMPLIFICADO (com antena no topo)
 // =========================================
 function drawShip(){
     ctx.save();
@@ -167,76 +167,7 @@ function drawShip(){
     const corDetalhe = skinAtual.corDetalhe;
     const corChama = skinAtual.corChama;
 
-    // Assento
-    const seatY = 16 * scale;
-    const seatWidth = 22 * scale;
-    const seatHeight = 8 * scale;
-
-    ctx.fillStyle = "#b8860b";
-    ctx.shadowColor = "rgba(0,0,0,0.3)";
-    ctx.shadowBlur = 6;
-    ctx.beginPath();
-    ctx.roundRect(-seatWidth/2, seatY, seatWidth, seatHeight, 4);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // Braços do assento
-    ctx.fillStyle = "#cd853f";
-    ctx.beginPath();
-    ctx.roundRect(-12 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.roundRect(8 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
-    ctx.fill();
-
-    // Corpo do foguete
-    ctx.fillStyle = "#4a7c59";
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.roundRect(-8 * scale, seatY - 18 * scale, 16 * scale, 18 * scale, 3);
-    ctx.fill();
-
-    // Capacete
-    ctx.fillStyle = "#f5f5dc";
-    ctx.shadowColor = "rgba(0,0,0,0.2)";
-    ctx.shadowBlur = 4;
-    ctx.beginPath();
-    ctx.arc(0, seatY - 22 * scale, 8 * scale, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // Visor
-    ctx.fillStyle = "#1a1a2e";
-    ctx.beginPath();
-    ctx.arc(1 * scale, seatY - 24 * scale, 5 * scale, 0, Math.PI);
-    ctx.fill();
-
-    // Pernas
-    ctx.strokeStyle = "#888";
-    ctx.lineWidth = 3 * scale;
-    ctx.shadowBlur = 0;
-
-    ctx.beginPath();
-    ctx.moveTo(-12 * scale, seatY + seatHeight);
-    ctx.lineTo(-20 * scale, seatY + seatHeight + 12 * scale);
-    ctx.stroke();
-
-    ctx.fillStyle = "#666";
-    ctx.beginPath();
-    ctx.roundRect(-24 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(12 * scale, seatY + seatHeight);
-    ctx.lineTo(20 * scale, seatY + seatHeight + 12 * scale);
-    ctx.stroke();
-
-    ctx.fillStyle = "#666";
-    ctx.beginPath();
-    ctx.roundRect(16 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
-    ctx.fill();
-
-    // Cabine
+    // Corpo principal do foguete
     const grad = ctx.createLinearGradient(-12 * scale, -25 * scale, 12 * scale, 25 * scale);
     grad.addColorStop(0, cor);
     grad.addColorStop(0.5, cor);
@@ -249,27 +180,12 @@ function drawShip(){
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // Luz na cabine
-    ctx.fillStyle = "#5fd4d6";
-    ctx.shadowColor = "#5fd4d6";
-    ctx.shadowBlur = 20;
-    ctx.beginPath();
-    ctx.arc(0, -10 * scale, 7 * scale, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // Reflexo
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    ctx.beginPath();
-    ctx.arc(-2 * scale, -12 * scale, 2.5 * scale, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Detalhes
+    // Detalhes (faixas decorativas)
     ctx.fillStyle = corDetalhe;
     ctx.fillRect(-10 * scale, -22 * scale, 20 * scale, 3 * scale);
     ctx.fillRect(-8 * scale, 8 * scale, 16 * scale, 3 * scale);
 
-    // Antena
+    // ANTENA NO TOPO
     ctx.fillStyle = corDetalhe;
     ctx.shadowColor = corDetalhe;
     ctx.shadowBlur = 10;
@@ -284,7 +200,7 @@ function drawShip(){
     const isThrusting = (keys["ArrowUp"]) && fuel > 0 && !landed;
     if (isThrusting) {
         const flameHeight = (25 + Math.random() * 20) * scale;
-        const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 + flameHeight/2, flameHeight);
+        const gradFlame = ctx.createRadialGradient(0, 15 * scale + 2, 2, 0, 15 * scale + 2 + flameHeight/2, flameHeight);
         gradFlame.addColorStop(0, "rgba(255,255,255,1)");
         gradFlame.addColorStop(0.1, corChama + "cc");
         gradFlame.addColorStop(0.3, corChama + "99");
@@ -292,9 +208,9 @@ function drawShip(){
         gradFlame.addColorStop(1, corChama + "00");
         ctx.fillStyle = gradFlame;
         ctx.beginPath();
-        ctx.moveTo(-10 * scale, seatY + seatHeight + 2);
-        ctx.quadraticCurveTo(-5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 + flameHeight);
-        ctx.quadraticCurveTo(5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 10 * scale, seatY + seatHeight + 2);
+        ctx.moveTo(-10 * scale, 15 * scale + 2);
+        ctx.quadraticCurveTo(-5 * scale, 15 * scale + 2 + flameHeight * 0.6, 0, 15 * scale + 2 + flameHeight);
+        ctx.quadraticCurveTo(5 * scale, 15 * scale + 2 + flameHeight * 0.6, 10 * scale, 15 * scale + 2);
         ctx.fill();
 
         // Partículas da chama
@@ -302,7 +218,7 @@ function drawShip(){
             const alpha = 0.2 + Math.random() * 0.6;
             const size = (1 + Math.random() * 3) * scale;
             const px = (Math.random() - 0.5) * 10 * scale;
-            const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
+            const py = 15 * scale + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
             ctx.fillStyle = `rgba(255,200,50,${alpha})`;
             ctx.beginPath();
             ctx.arc(px, py, size, 0, Math.PI * 2);
