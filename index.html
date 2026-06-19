@@ -1,3617 +1,495 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Parado no Tempo — Jornada Planetária</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        /* =========================================
-           IDENTIDADE VISUAL — "Painel de Instrumentos"
-           Paleta inspirada em mostradores de espaçonave:
-           fundo azul-noturno profundo, âmbar de instrumento
-           para destaques, ciano-telemetria para dados.
-           ========================================= */
-        :root {
-            --void: #070b14;
-            --void-2: #0d1424;
-            --panel: rgba(255, 255, 255, 0.04);
-            --panel-line: rgba(255, 255, 255, 0.09);
-            --ink: #e9edf6;
-            --ink-dim: #8493ad;
-            --amber: #ffb454;
-            --cyan: #5fd4d6;
-            --rose: #ff6b6b;
-            --green: #4ade80;
-            --font-display: 'Space Grotesk', Arial, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-        }
-        /* ===== ESTILOS ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            margin: 0;
-            background:
-                radial-gradient(ellipse 120% 80% at 50% -10%, #131c33 0%, var(--void) 55%),
-                var(--void);
-            overflow: hidden;
-            font-family: var(--font-display);
-            touch-action: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚀 Pouso Lunar</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
 
-        /* Régua de instrumento — divisor com marcações, usado sob títulos */
-        .gauge-rule {
-            width: 84px;
-            height: 6px;
-            margin: 10px auto 22px;
-            background-image: repeating-linear-gradient(
-                90deg,
-                var(--amber) 0, var(--amber) 2px,
-                transparent 2px, transparent 10px
-            );
-            background-position: center;
-            opacity: 0.8;
-        }
+    body {
+      background: #0b0e1a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Courier New', monospace;
+    }
 
-        /* ===== MENU PRINCIPAL ===== */
-        #menuScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #16203b 0%, var(--void-2) 45%, var(--void) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-            font-family: var(--font-display);
-            transition: opacity 0.5s ease;
-        }
-        #menuScreen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        #menuScreen h1 {
-            color: var(--cyan);
-            font-size: 48px;
-            text-shadow: 0 0 40px rgba(95, 212, 214, 0.3);
-            margin-bottom: 2px;
-        }
-        #menuScreen .subtitle {
-            color: var(--ink-dim);
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        #menuScreen .menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-            max-width: 280px;
-        }
-        #menuScreen .menu-btn {
-            padding: 12px 20px;
-            font-size: 16px;
-            border-radius: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--ink);
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            text-align: center;
-            letter-spacing: 1px;
-            font-family: var(--font-display);
-        }
-        #menuScreen .menu-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.02);
-        }
-        #menuScreen .menu-btn.primary {
-            background: var(--cyan);
-            color: #000;
-            border-color: var(--cyan);
-        }
-        #menuScreen .menu-btn.primary:hover {
-            background: var(--amber);
-            border-color: var(--amber);
-            box-shadow: 0 0 30px rgba(255, 180, 84, 0.2);
-        }
-        #menuScreen .menu-btn.ranking {
-            border-color: rgba(255, 180, 84, 0.2);
-            color: var(--amber);
-        }
-        #menuScreen .menu-btn.skin {
-            border-color: rgba(255, 180, 84, 0.3);
-            color: var(--amber);
-        }
-        #menuScreen .menu-btn.sound {
-            border-color: rgba(255, 255, 255, 0.1);
-            color: #aaa;
-        }
-        #menuScreen .menu-btn.help {
-            border-color: rgba(95, 212, 214, 0.2);
-            color: var(--cyan);
-        }
-        #menuScreen .version {
-            color: #333;
-            font-size: 11px;
-            margin-top: 20px;
-            letter-spacing: 2px;
-        }
-        #menuScreen .recorde-display {
-            color: var(--amber);
-            font-size: 14px;
-            margin-top: 12px;
-            background: rgba(255, 180, 84,0.05);
-            padding: 6px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 180, 84,0.1);
-        }
+    .game-container {
+      background: #141a2b;
+      padding: 20px 30px 30px;
+      border-radius: 40px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        /* ===== SELEÇÃO DE MODO ===== */
-        #modeScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #16203b 0%, var(--void-2) 45%, var(--void) 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            padding: 20px;
-            font-family: var(--font-display);
-        }
-        #modeScreen.active {
-            display: flex;
-        }
-        #modeScreen h2 {
-            color: var(--amber);
-            font-size: 32px;
-            margin-bottom: 4px;
-            text-shadow: 0 0 30px rgba(255, 180, 84, 0.2);
-        }
-        #modeScreen .sub {
-            color: var(--ink-dim);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        #modeScreen .mode-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-width: 320px;
-            width: 100%;
-        }
-        #modeScreen .mode-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 20px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #aaa;
-        }
-        #modeScreen .mode-item .emoji {
-            font-size: 36px;
-            display: block;
-            margin-bottom: 4px;
-        }
-        #modeScreen .mode-item .name {
-            font-weight: bold;
-            font-size: 18px;
-            color: var(--ink);
-        }
-        #modeScreen .mode-item .desc {
-            font-size: 12px;
-            color: var(--ink-dim);
-            margin-top: 4px;
-        }
-        #modeScreen .mode-item:hover {
-            transform: scale(1.02);
-            border-color: rgba(255, 180, 84, 0.3);
-        }
-        #modeScreen .mode-item.campaign {
-            border-color: rgba(95, 212, 214, 0.2);
-        }
-        #modeScreen .mode-item.campaign:hover {
-            border-color: rgba(95, 212, 214, 0.5);
-        }
-        #modeScreen .mode-item.time {
-            border-color: rgba(255, 180, 84, 0.2);
-        }
-        #modeScreen .mode-item.time:hover {
-            border-color: rgba(255, 180, 84, 0.5);
-        }
-        #modeScreen .back-btn-mode {
-            padding: 10px 30px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--ink);
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            font-family: var(--font-display);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-top: 16px;
-        }
-        #modeScreen .back-btn-mode:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+    canvas {
+      display: block;
+      background: radial-gradient(circle at 20% 30%, #1a2340, #0a0e1a);
+      border-radius: 24px;
+      box-shadow: inset 0 0 30px rgba(0, 20, 60, 0.8), 0 10px 20px rgba(0,0,0,0.6);
+      cursor: pointer;
+      width: 600px;
+      height: 600px;
+    }
 
-        @media (max-width: 480px) {
-            #modeScreen .mode-item {
-                padding: 16px 12px;
-            }
-            #modeScreen .mode-item .emoji {
-                font-size: 28px;
-            }
-            #modeScreen .mode-item .name {
-                font-size: 16px;
-            }
-            #modeScreen h2 {
-                font-size: 24px;
-            }
-        }
+    .dashboard {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 18px;
+      color: #b7e1fa;
+      text-shadow: 0 0 8px #00a6ff;
+      font-weight: bold;
+      font-size: 1.2rem;
+      background: #0e1422cc;
+      padding: 12px 24px;
+      border-radius: 60px;
+      backdrop-filter: blur(4px);
+      border: 1px solid #2f4b7a;
+      box-shadow: inset 0 0 12px #1a3355;
+    }
 
-        /* ===== TELA DE PLANETAS ===== */
-        #planetScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #16203b 0%, var(--void-2) 45%, var(--void) 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 998;
-            padding: 20px;
-            font-family: var(--font-display);
-        }
-        #planetScreen.active {
-            display: flex;
-        }
-        #planetScreen h2 {
-            color: var(--amber);
-            font-size: 32px;
-            margin-bottom: 4px;
-            text-shadow: 0 0 30px rgba(255, 180, 84, 0.2);
-        }
-        #planetScreen .sub {
-            color: var(--ink-dim);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        #planetScreen .planet-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            max-width: 500px;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        #planetScreen .planet-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #aaa;
-            font-size: 12px;
-        }
-        #planetScreen .planet-item .emoji {
-            font-size: 28px;
-            display: block;
-            margin-bottom: 4px;
-        }
-        #planetScreen .planet-item .name {
-            font-weight: bold;
-            font-size: 11px;
-        }
-        #planetScreen .planet-item .status {
-            font-size: 9px;
-            display: block;
-            margin-top: 2px;
-        }
-        #planetScreen .planet-item.locked {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        #planetScreen .planet-item.locked .status {
-            color: #ff6b6b;
-        }
-        #planetScreen .planet-item.unlocked {
-            border-color: rgba(255, 180, 84, 0.2);
-        }
-        #planetScreen .planet-item.unlocked .status {
-            color: #00ff88;
-        }
-        #planetScreen .planet-item.completed {
-            border-color: #00ff88;
-            background: rgba(0, 255, 136, 0.05);
-        }
-        #planetScreen .planet-item.completed .status {
-            color: #00ff88;
-        }
-        #planetScreen .planet-item.current {
-            border-color: var(--cyan);
-            background: rgba(95, 212, 214, 0.05);
-            box-shadow: 0 0 20px rgba(95, 212, 214, 0.1);
-        }
-        #planetScreen .planet-item.current .status {
-            color: var(--cyan);
-        }
-        #planetScreen .planet-item:hover:not(.locked) {
-            transform: scale(1.05);
-            border-color: rgba(255, 180, 84, 0.4);
-        }
-        #planetScreen .back-btn-planet {
-            padding: 10px 30px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--ink);
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            font-family: var(--font-display);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        #planetScreen .back-btn-planet:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        #planetScreen .progress-text {
-            color: #aaa;
-            font-size: 13px;
-            margin-bottom: 12px;
-        }
-        #planetScreen .mode-badge {
-            color: var(--amber);
-            font-size: 12px;
-            background: rgba(255, 180, 84,0.1);
-            padding: 4px 12px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255, 180, 84,0.2);
-        }
+    .data {
+      display: flex;
+      gap: 30px;
+    }
 
-        /* ===== BOTÃO RESET ===== */
-        #resetProgressBtn {
-            padding: 8px 20px;
-            font-size: 13px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 68, 68, 0.2);
-            background: rgba(255, 68, 68, 0.05);
-            color: #ff6b6b;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: var(--font-display);
-            margin-top: 12px;
-        }
-        #resetProgressBtn:hover {
-            background: rgba(255, 68, 68, 0.15);
-        }
+    .data span {
+      background: #070b14;
+      padding: 6px 18px;
+      border-radius: 40px;
+      border: 1px solid #2f6f9f;
+      color: #8fcbff;
+    }
 
-        @media (max-width: 480px) {
-            #planetScreen .planet-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 8px;
-            }
-            #planetScreen .planet-item {
-                padding: 8px 4px;
-                font-size: 10px;
-            }
-            #planetScreen .planet-item .emoji {
-                font-size: 22px;
-            }
-            #planetScreen h2 {
-                font-size: 24px;
-            }
-        }
+    button {
+      background: #1e3b5e;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+      padding: 8px 28px;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #0077ff66, inset 0 1px 0 #7abaff;
+      transition: all 0.15s;
+      font-family: inherit;
+      letter-spacing: 1px;
+      border: 1px solid #3f7fb0;
+    }
 
-        /* ===== BOTÃO VOLTAR ===== */
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 8px 16px;
-            font-size: 14px;
-            border-radius: 10px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.5);
-            color: var(--ink);
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            font-family: var(--font-display);
-            z-index: 10;
-        }
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
+    button:hover {
+      background: #2a4f7a;
+      box-shadow: 0 0 20px #0080ffaa, inset 0 1px 0 #b0daff;
+      transform: scale(1.02);
+    }
 
-        /* ===== TELA DE LOGIN ===== */
-        #loginScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #16203b 0%, var(--void-2) 45%, var(--void) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 997;
-            padding: 20px;
-            transition: opacity 0.6s ease;
-        }
-        #loginScreen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        #loginScreen h1 {
-            color: var(--cyan);
-            font-size: 42px;
-            margin-bottom: 4px;
-            text-shadow: 0 0 30px rgba(95, 212, 214, 0.3);
-        }
-        #loginScreen .subtitle {
-            color: var(--ink-dim);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        #loginScreen .input-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 280px;
-        }
-        #loginScreen input {
-            padding: 12px 20px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: 2px solid var(--cyan);
-            background: #1a1a2e;
-            color: var(--ink);
-            text-align: center;
-            width: 100%;
-            outline: none;
-            transition: 0.3s;
-            font-family: var(--font-display);
-        }
-        #loginScreen input:focus {
-            border-color: var(--amber);
-            box-shadow: 0 0 20px rgba(255, 180, 84, 0.2);
-        }
-        #loginScreen input::placeholder {
-            color: #555;
-        }
-        #startBtn {
-            margin-top: 14px;
-            padding: 12px 20px;
-            font-size: 18px;
-            border-radius: 10px;
-            background: var(--cyan);
-            color: #000;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            width: 100%;
-            letter-spacing: 1px;
-        }
-        #startBtn:hover {
-            background: var(--amber);
-            transform: scale(1.02);
-            box-shadow: 0 0 30px rgba(255, 180, 84, 0.2);
-        }
-        #startBtn:active {
-            transform: scale(0.95);
-        }
-        #rankingPreview {
-            margin-top: 20px;
-            color: #aaa;
-            font-size: 13px;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            min-width: 180px;
-            line-height: 1.8;
-            width: 100%;
-            max-width: 280px;
-        }
-        #rankingPreview .title {
-            color: var(--amber);
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-        #rankingPreview .empty {
-            color: #666;
-            font-size: 12px;
-        }
-        .credits {
-            position: absolute;
-            bottom: 20px;
-            color: #333;
-            font-size: 10px;
-            letter-spacing: 2px;
-        }
+    button:active {
+      transform: scale(0.96);
+      background: #12324f;
+    }
 
-        /* ===== TELA DE COMO JOGAR ===== */
-        #helpScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #16203b 0%, var(--void-2) 45%, var(--void) 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
-            padding: 20px;
-            font-family: var(--font-display);
-        }
-        #helpScreen.active {
-            display: flex;
-        }
-        #helpScreen h2 {
-            color: var(--cyan);
-            font-size: 28px;
-            margin-bottom: 16px;
-        }
-        #helpScreen .help-content {
-            color: #ccc;
-            font-size: 16px;
-            text-align: center;
-            line-height: 2;
-            max-width: 380px;
-        }
-        #helpScreen .help-content kbd {
-            background: #333;
-            color: var(--ink);
-            padding: 2px 10px;
-            border-radius: 6px;
-            border: 1px solid #555;
-            font-size: 14px;
-        }
-        #helpScreen .close-help {
-            margin-top: 24px;
-            padding: 10px 32px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: none;
-            background: var(--cyan);
-            color: #000;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        #helpScreen .close-help:hover {
-            background: var(--amber);
-        }
+    .controls {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
 
-        /* ===== TELA DE SKINS ===== */
-        #skinsMenuScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #16203b 0%, var(--void-2) 45%, var(--void) 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
-            padding: 20px;
-            font-family: var(--font-display);
-        }
-        #skinsMenuScreen.active {
-            display: flex;
-        }
-        #skinsMenuScreen h2 {
-            color: var(--amber);
-            font-size: 28px;
-            margin-bottom: 16px;
-        }
-        #skinsMenuScreen .skins-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-            max-width: 380px;
-            margin-bottom: 16px;
-        }
-        #skinsMenuScreen .skin-item {
-            width: 60px;
-            height: 70px;
-            border-radius: 10px;
-            border: 3px solid rgba(255,255,255,0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 9px;
-            color: #aaa;
-            transition: 0.3s;
-            background: rgba(255,255,255,0.02);
-        }
-        #skinsMenuScreen .skin-item.unlocked {
-            border-color: rgba(255, 180, 84,0.3);
-        }
-        #skinsMenuScreen .skin-item.locked {
-            opacity: 0.4;
-        }
-        #skinsMenuScreen .skin-item .color-preview {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin-bottom: 3px;
-            border: 2px solid rgba(255,255,255,0.1);
-        }
-        #skinsMenuScreen .skin-item .skin-name {
-            font-size: 8px;
-            text-align: center;
-            line-height: 1.1;
-        }
-        #skinsMenuScreen .close-skins {
-            padding: 10px 32px;
-            font-size: 16px;
-            border-radius: 10px;
-            border: none;
-            background: var(--amber);
-            color: #000;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        #skinsMenuScreen .close-skins:hover {
-            background: var(--cyan);
-        }
+    .key-hint {
+      color: #6b8aaa;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      background: #0a111f;
+      padding: 4px 16px;
+      border-radius: 30px;
+      border: 1px solid #28415e;
+    }
 
-        /* ===== RANKING ===== */
-        #rankingScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #16203b 0%, var(--void-2) 45%, var(--void) 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            font-family: var(--font-display);
-            padding: 20px;
-        }
-        #rankingScreen.active {
-            display: flex;
-        }
-        #rankingScreen h2 {
-            color: var(--amber);
-            font-size: 32px;
-            margin-bottom: 16px;
-            text-shadow: 0 0 30px rgba(255, 180, 84, 0.2);
-        }
-        #rankingScreen .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            color: #aaa;
-            font-size: 28px;
-            cursor: pointer;
-            transition: 0.3s;
-            background: none;
-            border: none;
-        }
-        #rankingScreen .close-btn:hover {
-            color: var(--ink);
-            transform: scale(1.1);
-        }
-        #rankingListFull {
-            color: var(--ink);
-            font-size: 20px;
-            text-align: center;
-            line-height: 2;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            min-width: 240px;
-        }
-        #rankingListFull .empty {
-            color: #666;
-            font-size: 16px;
-        }
-        #rankingScreen .sub {
-            color: #666;
-            font-size: 13px;
-            margin-top: 16px;
-        }
-        #rankingScreen .recordes-extra {
-            color: var(--cyan);
-            font-size: 16px;
-            margin-top: 12px;
-            text-align: center;
-            line-height: 1.8;
-        }
-
-        /* ===== JOGO ===== */
-        #game-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #000;
-        }
-        canvas {
-            display: block;
-            border-radius: 8px;
-            width: auto;
-            height: auto;
-            max-width: 100vw;
-            max-height: 100vh;
-        }
-
-        /* ===== HUD ===== */
-        #info {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            color: var(--ink);
-            font-size: 14px;
-            z-index: 10;
-            pointer-events: none;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        #fase-info {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            color: var(--ink);
-            font-size: 14px;
-            z-index: 10;
-            pointer-events: none;
-            text-align: right;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        #info.visible, #fase-info.visible {
-            opacity: 1;
-        }
-
-        /* ===== BOTÕES OCULTOS DURANTE O JOGO ===== */
-        #sound-toggle,
-        #ranking-btn,
-        #skin-toggle,
-        #skin-selector {
-            display: none !important;
-        }
-        #sound-toggle.show-buttons,
-        #ranking-btn.show-buttons,
-        #skin-toggle.show-buttons,
-        #skin-selector.show-buttons {
-            display: block !important;
-        }
-        #skin-selector.show-buttons {
-            display: flex !important;
-        }
-
-        #sound-toggle {
-            position: absolute;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--ink);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 6px 16px;
-            border-radius: 16px;
-            font-size: 12px;
-            cursor: pointer;
-            font-family: var(--font-display);
-            transition: all 0.3s;
-        }
-        #sound-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        #ranking-btn {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            background: rgba(255, 180, 84, 0.15);
-            color: var(--amber);
-            border: 1px solid rgba(255, 180, 84, 0.3);
-            padding: 4px 14px;
-            border-radius: 14px;
-            font-size: 11px;
-            cursor: pointer;
-            font-family: var(--font-display);
-            transition: all 0.3s;
-            letter-spacing: 1px;
-        }
-        #ranking-btn:hover {
-            background: rgba(255, 180, 84, 0.25);
-        }
-
-        #touch-controls {
-            position: absolute;
-            bottom: 70px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 16px;
-            z-index: 20;
-            pointer-events: none;
-        }
-        #touch-controls button {
-            pointer-events: auto;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--ink);
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-            transition: all 0.1s;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        #touch-controls button:active {
-            background: rgba(255, 255, 255, 0.25);
-            transform: scale(0.92);
-        }
-        #touch-controls .left-group {
-            display: flex;
-            gap: 12px;
-        }
-        #touch-controls .right-group {
-            display: flex;
-            gap: 12px;
-        }
-        #touch-controls .thrust-btn {
-            width: 70px;
-            height: 70px;
-            font-size: 28px;
-            background: rgba(255, 100, 0, 0.15);
-            border-color: rgba(255, 150, 0, 0.4);
-        }
-        #touch-controls .thrust-btn:active {
-            background: rgba(255, 150, 0, 0.35);
-        }
-
-        #skin-selector {
-            position: absolute;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 15;
-            display: none;
-            gap: 8px;
-            background: rgba(0,0,0,0.7);
-            padding: 6px 12px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        #skin-selector button {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: 0.2s;
-            padding: 0;
-        }
-        #skin-selector button:hover {
-            transform: scale(1.15);
-        }
-        #skin-selector button.active {
-            border-color: var(--amber);
-            box-shadow: 0 0 15px rgba(255, 180, 84,0.4);
-        }
-        #skin-selector button.locked {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-        #skin-selector button.locked::after {
-            content: "🔒";
-            font-size: 10px;
-            display: block;
-            margin-top: -4px;
-        }
-
-        #skin-toggle {
-            position: absolute;
-            bottom: 110px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 15;
-            background: rgba(255, 180, 84,0.15);
-            color: var(--amber);
-            border: 1px solid rgba(255, 180, 84,0.3);
-            padding: 3px 12px;
-            border-radius: 12px;
-            font-size: 10px;
-            cursor: pointer;
-            font-family: var(--font-display);
-            transition: all 0.3s;
-            letter-spacing: 1px;
-        }
-        #skin-toggle:hover {
-            background: rgba(255, 180, 84,0.25);
-        }
-
-        /* ===== GAME OVER ===== */
-        #gameOverScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(ellipse 130% 90% at 50% -5%, #1f1320 0%, var(--void-2) 45%, var(--void) 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 500;
-            font-family: var(--font-display);
-            padding: 20px;
-        }
-        #gameOverScreen.active {
-            display: flex;
-        }
-        #gameOverScreen h1 {
-            color: #ff4444;
-            font-size: 44px;
-            text-shadow: 0 0 40px rgba(255, 68, 68, 0.3);
-            margin-bottom: 8px;
-        }
-        #gameOverScreen .stats {
-            color: var(--ink);
-            font-size: 20px;
-            text-align: center;
-            line-height: 2;
-            margin: 16px 0;
-        }
-        #gameOverScreen .stats .highlight {
-            color: var(--amber);
-            font-weight: bold;
-        }
-        #gameOverScreen .stats .record {
-            color: var(--cyan);
-            font-weight: bold;
-        }
-        #gameOverScreen .stats .novo-record {
-            color: #00ff88;
-            font-weight: bold;
-            font-size: 24px;
-            animation: pulse 1s infinite;
-        }
-        #gameOverScreen .buttons {
-            display: flex;
-            gap: 16px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        #gameOverScreen .buttons button {
-            padding: 12px 32px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: var(--font-display);
-            transition: 0.3s;
-            min-width: 120px;
-        }
-        #gameOverScreen .buttons .retry {
-            background: var(--cyan);
-            color: #000;
-        }
-        #gameOverScreen .buttons .retry:hover {
-            background: var(--amber);
-            transform: scale(1.05);
-        }
-        #gameOverScreen .buttons .menu-go {
-            background: rgba(255,255,255,0.1);
-            color: var(--ink);
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-        #gameOverScreen .buttons .menu-go:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.05);
-        }
-        #gameOverScreen .buttons .planet-go {
-            background: rgba(95, 212, 214, 0.2);
-            color: var(--cyan);
-            border: 2px solid rgba(95, 212, 214, 0.2);
-        }
-        #gameOverScreen .buttons .planet-go:hover {
-            background: rgba(95, 212, 214, 0.3);
-            transform: scale(1.05);
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
-            50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.3); }
-            100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
-        }
-
-        /* ===== RESPONSIVIDADE ===== */
-        @media (min-width: 768px) {
-            #touch-controls {
-                display: none;
-            }
-        }
-        @media (max-width: 480px) {
-            #touch-controls button {
-                width: 50px;
-                height: 50px;
-                font-size: 18px;
-            }
-            #touch-controls .thrust-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 22px;
-            }
-            #info {
-                font-size: 11px;
-                top: 4px;
-                left: 4px;
-            }
-            #fase-info {
-                font-size: 11px;
-                top: 4px;
-                right: 4px;
-            }
-            #sound-toggle {
-                font-size: 9px;
-                padding: 3px 10px;
-                bottom: 8px;
-            }
-            #ranking-btn {
-                font-size: 9px;
-                padding: 3px 10px;
-                bottom: 48px;
-            }
-            #loginScreen h1 {
-                font-size: 32px;
-            }
-            #loginScreen .subtitle {
-                font-size: 12px;
-            }
-            #loginScreen input {
-                font-size: 14px;
-                padding: 10px 14px;
-            }
-            #startBtn {
-                font-size: 14px;
-                padding: 10px 14px;
-            }
-            #menuScreen h1 {
-                font-size: 32px;
-            }
-            #menuScreen .subtitle {
-                font-size: 13px;
-            }
-            #menuScreen .menu-btn {
-                font-size: 14px;
-                padding: 10px 14px;
-            }
-            #helpScreen .help-content {
-                font-size: 14px;
-            }
-            #skinsMenuScreen .skin-item {
-                width: 50px;
-                height: 60px;
-            }
-            #skin-selector button {
-                width: 22px;
-                height: 22px;
-            }
-            #skin-selector {
-                padding: 4px 10px;
-                bottom: 110px;
-            }
-            #skin-toggle {
-                font-size: 8px;
-                padding: 2px 8px;
-                bottom: 100px;
-            }
-            .back-btn {
-                font-size: 11px;
-                padding: 5px 10px;
-                top: 8px;
-                left: 8px;
-            }
-            #menuScreen .recorde-display {
-                font-size: 12px;
-                padding: 4px 12px;
-            }
-            #gameOverScreen h1 {
-                font-size: 32px;
-            }
-            #gameOverScreen .stats {
-                font-size: 16px;
-            }
-            #gameOverScreen .buttons button {
-                padding: 10px 20px;
-                font-size: 14px;
-                min-width: 100px;
-            }
-            #planetScreen .planet-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 6px;
-            }
-            #planetScreen .planet-item {
-                padding: 6px 4px;
-                font-size: 9px;
-            }
-            #planetScreen .planet-item .emoji {
-                font-size: 18px;
-            }
-            #planetScreen h2 {
-                font-size: 20px;
-            }
-            #rankingListFull {
-                font-size: 16px;
-                padding: 16px 20px;
-                min-width: 200px;
-            }
-            #rankingScreen h2 {
-                font-size: 24px;
-            }
-            #modeScreen .mode-item {
-                padding: 14px 10px;
-            }
-            #modeScreen .mode-item .emoji {
-                font-size: 24px;
-            }
-            #modeScreen .mode-item .name {
-                font-size: 14px;
-            }
-            #modeScreen h2 {
-                font-size: 22px;
-            }
-        }
-    </style>
-    <style>
-        /* Assinatura visual: régua de instrumento sob os títulos */
-        #menuScreen h1::after,
-        #loginScreen h1::after,
-        #modeScreen h2::after,
-        #planetScreen h2::after,
-        #helpScreen h2::after,
-        #skinsMenuScreen h2::after,
-        #rankingScreen h2::after {
-            content: '';
-            display: block;
-            width: 84px;
-            height: 6px;
-            margin: 14px auto 0;
-            background-image: repeating-linear-gradient(
-                90deg,
-                var(--amber) 0, var(--amber) 2px,
-                transparent 2px, transparent 10px
-            );
-            opacity: 0.75;
-        }
-        #menuScreen .subtitle,
-        #loginScreen .subtitle,
-        #modeScreen .sub,
-        #planetScreen .sub {
-            margin-top: 4px;
-        }
-    </style>
+    @media (max-width: 700px) {
+      canvas {
+        width: 90vw;
+        height: 90vw;
+      }
+      .dashboard {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+      }
+      .data {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="game-container">
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-    <!-- ===== MENU PRINCIPAL ===== -->
-    <div id="menuScreen">
-        <h1>⏳ PARADO NO TEMPO</h1>
-        <p class="subtitle">🌍 Jornada Planetária</p>
-        <div class="menu-buttons">
-            <button class="menu-btn primary" id="menuJogar">🚀 JOGAR</button>
-            <button class="menu-btn ranking" id="menuRanking">🏆 RANKING</button>
-            <button class="menu-btn skin" id="menuSkins">🎨 SKINS</button>
-            <button class="menu-btn help" id="menuHelp">❓ COMO JOGAR</button>
-            <button class="menu-btn sound" id="menuSound">🔊 SOM</button>
-        </div>
-        <div class="recorde-display" id="recordeDisplay">🏆 Recorde: 0 pousos</div>
-        <div class="version">v2.0 - Dois Modos de Jogo</div>
+    <div class="dashboard">
+      <div class="data">
+        <span>📉 <span id="altitudeDisplay">100</span>m</span>
+        <span>⚡ <span id="velocityDisplay">0.0</span>m/s</span>
+        <span>⛽ <span id="fuelDisplay">100</span>%</span>
+      </div>
+      <div class="controls">
+        <span class="key-hint">⬆️ acelera</span>
+        <button id="resetButton">🔄 Reiniciar</button>
+      </div>
     </div>
+  </div>
 
-    <!-- ===== SELEÇÃO DE MODO ===== -->
-    <div id="modeScreen">
-        <button class="back-btn" id="backMode">⬅ VOLTAR</button>
-        <h2>🌍 ESCOLHA O MODO</h2>
-        <p class="sub">Selecione como deseja jogar</p>
-        <div class="mode-grid">
-            <div class="mode-item campaign" id="modeCampaign">
-                <span class="emoji">🌍</span>
-                <div class="name">MODO CAMPANHA</div>
-                <div class="desc">Dificuldade progressiva • Valores ajustados para diversão</div>
-            </div>
-            <div class="mode-item time" id="modeTime">
-                <span class="emoji">🔬</span>
-                <div class="name">MODO TEMPO</div>
-                <div class="desc">Gravidade baseada na ciência real • Desafio extremo</div>
-            </div>
-        </div>
-        <button class="back-btn-mode" id="backModeBtn">VOLTAR AO MENU</button>
-    </div>
+  <script>
+    (function(){
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
 
-    <!-- ===== TELA DE PLANETAS ===== -->
-    <div id="planetScreen">
-        <button class="back-btn" id="backPlanet">⬅ VOLTAR</button>
-        <h2>🌍 SISTEMA SOLAR</h2>
-        <p class="sub">🌙 Pouse em cada corpo celeste e conquiste o sistema</p>
-        <div class="mode-badge" id="modeBadge">🌍 Modo Campanha</div>
-        <div class="progress-text" id="progressText">Progresso: 0 / 22 corpos</div>
-        <div class="planet-grid" id="planetGrid"></div>
-        <button id="resetProgressBtn">🔄 Resetar Progresso</button>
-        <button class="back-btn-planet" id="backPlanetBtn">VOLTAR</button>
-    </div>
+      // Elementos do display
+      const altitudeSpan = document.getElementById('altitudeDisplay');
+      const velocitySpan = document.getElementById('velocityDisplay');
+      const fuelSpan = document.getElementById('fuelDisplay');
 
-    <!-- ===== TELA DE LOGIN ===== -->
-    <div id="loginScreen">
-        <h1>⏳ PARADO NO TEMPO</h1>
-        <p class="subtitle">🌍 Jornada Planetária</p>
-        <div class="input-group">
-            <input id="nameInput" type="text" maxlength="15" placeholder="Digite seu nome" autofocus>
-            <button id="startBtn">🚀 JOGAR</button>
-        </div>
-        <div id="rankingPreview">
-            <div class="title">🏆 TOP 3</div>
-            <div id="rankingList" class="empty">Nenhum recorde ainda. Seja o primeiro!</div>
-        </div>
-        <span class="credits">⬆️ ↑ acelera &nbsp;|&nbsp; ← → inclina</span>
-    </div>
+      // Configurações do jogo
+      const GRAVITY = 0.15;        // aceleração por frame (queda)
+      const THRUST_POWER = 0.22;    // aceleração para cima por frame
+      const FUEL_CONSUMPTION = 0.7; // consumo por frame com thrust
+      const MAX_FUEL = 100;
+      const LANDING_Y = 530;        // y do chão (base da nave)
+      const ROCKET_WIDTH = 32;
+      const ROCKET_HEIGHT = 48;
 
-    <!-- ===== TELA DE COMO JOGAR ===== -->
-    <div id="helpScreen">
-        <button class="back-btn" id="backHelp">⬅ VOLTAR</button>
-        <h2>❓ COMO JOGAR</h2>
-        <div class="help-content">
-            <p>🎮 <kbd>←</kbd> <kbd>→</kbd> Inclinar o foguete</p>
-            <p>🔥 <kbd>↑</kbd> Acelerar (segure)</p>
-            <p>🔄 <kbd>R</kbd> Reiniciar a fase</p>
-            <p>📱 Celular: use os botões na tela</p>
-            <p>🎯 Pouse na plataforma com <strong>velocidade baixa</strong></p>
-            <p>⭐ Quanto mais combustível sobrar, <strong>maior a pontuação</strong></p>
-            <p>🎨 Complete corpos celestes para <strong>desbloquear skins</strong></p>
-            <p>🏆 Faça o maior número de <strong>pousos consecutivos</strong></p>
-            <p>🌍 Conquiste <strong>todos os 22 corpos</strong> para vencer!</p>
-            <p>🔬 O Modo Tempo usa gravidade baseada na ciência real!</p>
-            <p>🎮 Conecte um controle para jogar!</p>
-        </div>
-        <button class="close-help" id="closeHelp">FECHAR</button>
-    </div>
+      // Estado do jogo
+      let rocket = {
+        x: 300,
+        y: 80,           // começa no alto
+        vy: 0.2,
+        fuel: MAX_FUEL,
+        altitude: 100,   // metros (simulado)
+      };
 
-    <!-- ===== TELA DE SKINS ===== -->
-    <div id="skinsMenuScreen">
-        <button class="back-btn" id="backSkins">⬅ VOLTAR</button>
-        <h2>🎨 SKINS</h2>
-        <div class="skins-grid" id="skinsGridMenu"></div>
-        <button class="close-skins" id="closeSkinsMenu">FECHAR</button>
-    </div>
+      let gameOver = false;
+      let victory = false;
+      let thrustActive = false;
+      let animFrameId = null;
 
-    <!-- ===== RANKING ===== -->
-    <div id="rankingScreen">
-        <button class="back-btn" id="backRanking">⬅ VOLTAR</button>
-        <button class="close-btn" id="closeRanking">✕</button>
-        <h2>🏆 RANKING</h2>
-        <div id="rankingListFull">Carregando...</div>
-        <div class="recordes-extra" id="recordesExtra"></div>
-        <div class="sub">Pressione R para reiniciar o jogo</div>
-    </div>
+      // reset completo
+      function resetGame() {
+        rocket = {
+          x: 300,
+          y: 80,
+          vy: 0.2,
+          fuel: MAX_FUEL,
+          altitude: 100,
+        };
+        gameOver = false;
+        victory = false;
+        thrustActive = false;
+        updateDisplay();
+        draw(); // redesenho imediato
+      }
 
-    <!-- ===== GAME OVER ===== -->
-    <div id="gameOverScreen">
-        <h1>💥 EXPLODIU!</h1>
-        <div class="stats" id="gameOverStats"></div>
-        <div class="buttons">
-            <button class="retry" id="goRetry">🔄 TENTAR</button>
-            <button class="planet-go" id="goPlanets">🌍 PLANETAS</button>
-            <button class="menu-go" id="goMenu">⬅ MENU</button>
-        </div>
-    </div>
+      // Atualiza os textos do painel
+      function updateDisplay() {
+        const alt = Math.max(0, Math.round(rocket.altitude));
+        altitudeSpan.textContent = alt;
 
-    <!-- ===== JOGO ===== -->
-    <div id="game-wrapper">
-        <div id="info"></div>
-        <div id="fase-info"></div>
-        <canvas id="game"></canvas>
-        <button id="sound-toggle">🔊 Som: Ligado</button>
-        <button id="ranking-btn">🏆 VER RANKING</button>
-        <button id="skin-toggle">🎨 SKINS</button>
-        <div id="skin-selector"></div>
-        <div id="touch-controls">
-            <div class="left-group">
-                <button id="btn-left">◀</button>
-                <button id="btn-right">▶</button>
-            </div>
-            <div class="right-group">
-                <button id="btn-thrust" class="thrust-btn">🔥</button>
-            </div>
-        </div>
-    </div>
+        const vel = rocket.vy;
+        velocitySpan.textContent = vel.toFixed(1);
 
-    <script>
-        // =========================================
-        // PLANETAS - MODO CAMPANHA
-        // =========================================
-        const CAMPANHA = [
-            { id: 'mercurio', nome: 'Mercúrio', emoji: '☿', cor: '#b0b0b0', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
-                gravity: 0.008, padWidth: 170, maxSpeedV: 2.2, maxSpeedH: 1.6, maxAngle: 14, fuelBonus: 1.0,
-                fuel: 35, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
-            { id: 'venus', nome: 'Vênus', emoji: '🟠', cor: '#e8a87c', corCeu1: '#2d1a0a', corCeu2: '#4d2b1b',
-                gravity: 0.012, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.2,
-                fuel: 40, consumoMultiplicador: 1.1, corChama: '#ff8800', dificuldade: 'Fácil/Média' },
-            { id: 'terra', nome: 'Terra', emoji: '🌍', cor: '#2d6a4f', corCeu1: '#000814', corCeu2: '#001d3d',
-                gravity: 0.01, padWidth: 160, maxSpeedV: 2.0, maxSpeedH: 1.5, maxAngle: 12, fuelBonus: 1.0,
-                fuel: 40, consumoMultiplicador: 1.0, corChama: '#4fc3f7', dificuldade: 'Fácil' },
-            { id: 'lua', nome: 'Lua', emoji: '🌙', cor: '#888', corCeu1: '#1a1a2e', corCeu2: '#2d2d4e',
-                gravity: 0.012, padWidth: 150, maxSpeedV: 1.9, maxSpeedH: 1.4, maxAngle: 11, fuelBonus: 1.2,
-                fuel: 40, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
-            { id: 'marte', nome: 'Marte', emoji: '🔴', cor: '#e63946', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
-                gravity: 0.015, padWidth: 140, maxSpeedV: 1.8, maxSpeedH: 1.3, maxAngle: 10, fuelBonus: 1.5,
-                fuel: 45, consumoMultiplicador: 1.2, corChama: '#ff6b6b', dificuldade: 'Média' },
-            { id: 'ceres', nome: 'Ceres', emoji: '⚪', cor: '#bbb', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
-                gravity: 0.016, padWidth: 135, maxSpeedV: 1.7, maxSpeedH: 1.2, maxAngle: 9, fuelBonus: 1.6,
-                fuel: 45, consumoMultiplicador: 1.1, corChama: '#ccc', dificuldade: 'Média' },
-            { id: 'europa', nome: 'Europa', emoji: '🌊', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
-                gravity: 0.018, padWidth: 130, maxSpeedV: 1.6, maxSpeedH: 1.1, maxAngle: 9, fuelBonus: 1.8,
-                fuel: 42, consumoMultiplicador: 1.2, corChama: '#4fc3f7', dificuldade: 'Média' },
-            { id: 'io', nome: 'Io', emoji: '🔥', cor: '#ff6b35', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
-                gravity: 0.019, padWidth: 120, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
-                fuel: 40, consumoMultiplicador: 1.3, corChama: '#ff4400', dificuldade: 'Média' },
-            { id: 'ganimedes', nome: 'Ganímedes', emoji: '🟤', cor: '#b8860b', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
-                gravity: 0.02, padWidth: 110, maxSpeedV: 1.4, maxSpeedH: 0.9, maxAngle: 7, fuelBonus: 2.2,
-                fuel: 45, consumoMultiplicador: 1.3, corChama: '#ff8800', dificuldade: 'Difícil' },
-            { id: 'tita', nome: 'Titã', emoji: '🪐', cor: '#d4a574', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
-                gravity: 0.022, padWidth: 100, maxSpeedV: 1.3, maxSpeedH: 0.8, maxAngle: 6, fuelBonus: 2.4,
-                fuel: 48, consumoMultiplicador: 1.4, corChama: '#ff8800', dificuldade: 'Difícil' },
-            { id: 'saturno', nome: 'Saturno', emoji: '🪐', cor: '#ffd700', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
-                gravity: 0.03, padWidth: 80, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.0,
-                fuel: 45, consumoMultiplicador: 1.6, corChama: '#ffd700', dificuldade: 'Muito Difícil' },
-            { id: 'encelado', nome: 'Encélado', emoji: '❄️', cor: '#b3e5fc', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
-                gravity: 0.024, padWidth: 95, maxSpeedV: 1.1, maxSpeedH: 0.7, maxAngle: 5, fuelBonus: 2.6,
-                fuel: 38, consumoMultiplicador: 1.5, corChama: '#81d4fa', dificuldade: 'Muito Difícil' },
-            { id: 'urano', nome: 'Urano', emoji: '🟦', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
-                gravity: 0.028, padWidth: 90, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.2,
-                fuel: 42, consumoMultiplicador: 1.5, corChama: '#4fc3f7', dificuldade: 'Muito Difícil' },
-            { id: 'haumea', nome: 'Haumea', emoji: '🥚', cor: '#b8a88a', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
-                gravity: 0.032, padWidth: 75, maxSpeedV: 0.8, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 3.2,
-                fuel: 38, consumoMultiplicador: 1.6, corChama: '#d4a574', dificuldade: 'Muito Difícil' },
-            { id: 'makemake', nome: 'Makemake', emoji: '🧊', cor: '#b3b3b3', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
-                gravity: 0.038, padWidth: 65, maxSpeedV: 0.7, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 3.8,
-                fuel: 32, consumoMultiplicador: 1.7, corChama: '#88ccff', dificuldade: 'Extremo' },
-            { id: 'netuno', nome: 'Netuno', emoji: '🔵', cor: '#1a3a5c', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
-                gravity: 0.035, padWidth: 70, maxSpeedV: 0.8, maxSpeedH: 0.5, maxAngle: 3, fuelBonus: 3.5,
-                fuel: 40, consumoMultiplicador: 1.7, corChama: '#4fc3f7', dificuldade: 'Extremo' },
-            { id: 'tritao', nome: 'Tritão', emoji: '🧊', cor: '#b3e5fc', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
-                gravity: 0.028, padWidth: 85, maxSpeedV: 0.9, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 2.8,
-                fuel: 35, consumoMultiplicador: 1.6, corChama: '#81d4fa', dificuldade: 'Extremo' },
-            { id: 'plutao', nome: 'Plutão', emoji: '⚫', cor: '#444', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
-                gravity: 0.04, padWidth: 60, maxSpeedV: 0.6, maxSpeedH: 0.3, maxAngle: 2, fuelBonus: 4.0,
-                fuel: 35, consumoMultiplicador: 1.8, corChama: '#88ccff', dificuldade: 'Lendário' },
-            { id: 'eris', nome: 'Éris', emoji: '🟤', cor: '#a67c52', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
-                gravity: 0.045, padWidth: 55, maxSpeedV: 0.5, maxSpeedH: 0.25, maxAngle: 2, fuelBonus: 4.2,
-                fuel: 30, consumoMultiplicador: 1.9, corChama: '#d4a574', dificuldade: 'Lendário+' },
-            { id: 'sol', nome: 'Sol', emoji: '☀️', cor: '#ff6b00', corCeu1: '#1a0a00', corCeu2: '#3d1b00',
-                gravity: 0.06, padWidth: 40, maxSpeedV: 0.4, maxSpeedH: 0.2, maxAngle: 1, fuelBonus: 5.0,
-                fuel: 25, consumoMultiplicador: 2.5, corChama: '#ff4400', dificuldade: 'LENDÁRIO+' },
-            { id: 'estacao', nome: 'Estação Espacial', emoji: '🛰️', cor: '#4fc3f7', corCeu1: '#0a0a0a', corCeu2: '#0a0a1a',
-                gravity: 0.0, padWidth: 150, maxSpeedV: 0.3, maxSpeedH: 0.2, maxAngle: 2, fuelBonus: 5.0,
-                fuel: 20, consumoMultiplicador: 0.5, corChama: '#4fc3f7', dificuldade: 'Precisão' }
-        ];
+        const fuelPercent = Math.max(0, Math.round(rocket.fuel));
+        fuelSpan.textContent = fuelPercent;
+      }
 
-        // =========================================
-        // PLANETAS - MODO TEMPO (GRAVIDADE REAL ADAPTADA)
-        // =========================================
-        const TEMPO = [
-            { id: 'mercurio', nome: 'Mercúrio', emoji: '☿', cor: '#b0b0b0', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
-                gravity: 0.015, padWidth: 170, maxSpeedV: 1.8, maxSpeedH: 1.2, maxAngle: 12, fuelBonus: 1.5,
-                fuel: 45, consumoMultiplicador: 1.2, corChama: '#aaa', dificuldade: 'Fácil' },
-            { id: 'venus', nome: 'Vênus', emoji: '🟠', cor: '#e8a87c', corCeu1: '#2d1a0a', corCeu2: '#4d2b1b',
-                gravity: 0.025, padWidth: 160, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 10, fuelBonus: 2.0,
-                fuel: 50, consumoMultiplicador: 1.5, corChama: '#ff8800', dificuldade: 'Média' },
-            { id: 'terra', nome: 'Terra', emoji: '🌍', cor: '#2d6a4f', corCeu1: '#000814', corCeu2: '#001d3d',
-                gravity: 0.028, padWidth: 160, maxSpeedV: 1.4, maxSpeedH: 1.0, maxAngle: 10, fuelBonus: 2.0,
-                fuel: 50, consumoMultiplicador: 1.5, corChama: '#4fc3f7', dificuldade: 'Média' },
-            { id: 'lua', nome: 'Lua', emoji: '🌙', cor: '#888', corCeu1: '#1a1a2e', corCeu2: '#2d2d4e',
-                gravity: 0.008, padWidth: 150, maxSpeedV: 2.2, maxSpeedH: 1.6, maxAngle: 14, fuelBonus: 1.0,
-                fuel: 35, consumoMultiplicador: 1.0, corChama: '#aaa', dificuldade: 'Fácil' },
-            { id: 'marte', nome: 'Marte', emoji: '🔴', cor: '#e63946', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
-                gravity: 0.018, padWidth: 140, maxSpeedV: 1.7, maxSpeedH: 1.1, maxAngle: 10, fuelBonus: 1.8,
-                fuel: 48, consumoMultiplicador: 1.3, corChama: '#ff6b6b', dificuldade: 'Média' },
-            { id: 'ceres', nome: 'Ceres', emoji: '⚪', cor: '#bbb', corCeu1: '#1a1a1a', corCeu2: '#2a2a2a',
-                gravity: 0.012, padWidth: 135, maxSpeedV: 1.9, maxSpeedH: 1.3, maxAngle: 11, fuelBonus: 1.4,
-                fuel: 42, consumoMultiplicador: 1.1, corChama: '#ccc', dificuldade: 'Fácil/Média' },
-            { id: 'europa', nome: 'Europa', emoji: '🌊', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
-                gravity: 0.02, padWidth: 130, maxSpeedV: 1.5, maxSpeedH: 1.0, maxAngle: 8, fuelBonus: 2.0,
-                fuel: 44, consumoMultiplicador: 1.3, corChama: '#4fc3f7', dificuldade: 'Média' },
-            { id: 'io', nome: 'Io', emoji: '🔥', cor: '#ff6b35', corCeu1: '#2d0a0a', corCeu2: '#4d1b1b',
-                gravity: 0.021, padWidth: 120, maxSpeedV: 1.4, maxSpeedH: 0.9, maxAngle: 8, fuelBonus: 2.2,
-                fuel: 42, consumoMultiplicador: 1.4, corChama: '#ff4400', dificuldade: 'Média/Difícil' },
-            { id: 'ganimedes', nome: 'Ganímedes', emoji: '🟤', cor: '#b8860b', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
-                gravity: 0.022, padWidth: 110, maxSpeedV: 1.3, maxSpeedH: 0.8, maxAngle: 7, fuelBonus: 2.4,
-                fuel: 46, consumoMultiplicador: 1.4, corChama: '#ff8800', dificuldade: 'Difícil' },
-            { id: 'tita', nome: 'Titã', emoji: '🪐', cor: '#d4a574', corCeu1: '#1a0a0a', corCeu2: '#2d1b1b',
-                gravity: 0.024, padWidth: 100, maxSpeedV: 1.2, maxSpeedH: 0.7, maxAngle: 6, fuelBonus: 2.6,
-                fuel: 48, consumoMultiplicador: 1.5, corChama: '#ff8800', dificuldade: 'Difícil' },
-            { id: 'saturno', nome: 'Saturno', emoji: '🪐', cor: '#ffd700', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
-                gravity: 0.035, padWidth: 80, maxSpeedV: 0.9, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 3.5,
-                fuel: 48, consumoMultiplicador: 1.8, corChama: '#ffd700', dificuldade: 'Muito Difícil' },
-            { id: 'encelado', nome: 'Encélado', emoji: '❄️', cor: '#b3e5fc', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
-                gravity: 0.026, padWidth: 95, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 5, fuelBonus: 2.8,
-                fuel: 40, consumoMultiplicador: 1.6, corChama: '#81d4fa', dificuldade: 'Muito Difícil' },
-            { id: 'urano', nome: 'Urano', emoji: '🟦', cor: '#4fc3f7', corCeu1: '#0a1a2e', corCeu2: '#1a2a4e',
-                gravity: 0.03, padWidth: 90, maxSpeedV: 1.0, maxSpeedH: 0.6, maxAngle: 4, fuelBonus: 3.2,
-                fuel: 44, consumoMultiplicador: 1.6, corChama: '#4fc3f7', dificuldade: 'Muito Difícil' },
-            { id: 'haumea', nome: 'Haumea', emoji: '🥚', cor: '#b8a88a', corCeu1: '#1a1a0a', corCeu2: '#2d2d1b',
-                gravity: 0.034, padWidth: 75, maxSpeedV: 0.8, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 3.4,
-                fuel: 40, consumoMultiplicador: 1.7, corChama: '#d4a574', dificuldade: 'Muito Difícil' },
-            { id: 'makemake', nome: 'Makemake', emoji: '🧊', cor: '#b3b3b3', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
-                gravity: 0.038, padWidth: 65, maxSpeedV: 0.7, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 3.8,
-                fuel: 35, consumoMultiplicador: 1.8, corChama: '#88ccff', dificuldade: 'Extremo' },
-            { id: 'netuno', nome: 'Netuno', emoji: '🔵', cor: '#1a3a5c', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
-                gravity: 0.04, padWidth: 70, maxSpeedV: 0.7, maxSpeedH: 0.4, maxAngle: 3, fuelBonus: 4.0,
-                fuel: 42, consumoMultiplicador: 1.9, corChama: '#4fc3f7', dificuldade: 'Extremo' },
-            { id: 'tritao', nome: 'Tritão', emoji: '🧊', cor: '#b3e5fc', corCeu1: '#0a0a2e', corCeu2: '#1a1a4e',
-                gravity: 0.032, padWidth: 85, maxSpeedV: 0.9, maxSpeedH: 0.5, maxAngle: 4, fuelBonus: 3.0,
-                fuel: 38, consumoMultiplicador: 1.6, corChama: '#81d4fa', dificuldade: 'Muito Difícil' },
-            { id: 'plutao', nome: 'Plutão', emoji: '⚫', cor: '#444', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
-                gravity: 0.005, padWidth: 60, maxSpeedV: 2.5, maxSpeedH: 1.8, maxAngle: 15, fuelBonus: 1.0,
-                fuel: 30, consumoMultiplicador: 0.8, corChama: '#88ccff', dificuldade: 'Fácil' },
-            { id: 'eris', nome: 'Éris', emoji: '🟤', cor: '#a67c52', corCeu1: '#0a0a0a', corCeu2: '#1a1a2e',
-                gravity: 0.048, padWidth: 55, maxSpeedV: 0.4, maxSpeedH: 0.2, maxAngle: 2, fuelBonus: 4.5,
-                fuel: 28, consumoMultiplicador: 2.0, corChama: '#d4a574', dificuldade: 'Lendário' },
-            { id: 'sol', nome: 'Sol', emoji: '☀️', cor: '#ff6b00', corCeu1: '#1a0a00', corCeu2: '#3d1b00',
-                gravity: 0.12, padWidth: 40, maxSpeedV: 0.2, maxSpeedH: 0.1, maxAngle: 1, fuelBonus: 6.0,
-                fuel: 20, consumoMultiplicador: 3.0, corChama: '#ff4400', dificuldade: 'LENDÁRIO+' },
-            { id: 'estacao', nome: 'Estação Espacial', emoji: '🛰️', cor: '#4fc3f7', corCeu1: '#0a0a0a', corCeu2: '#0a0a1a',
-                gravity: 0.0, padWidth: 150, maxSpeedV: 0.3, maxSpeedH: 0.2, maxAngle: 2, fuelBonus: 5.0,
-                fuel: 20, consumoMultiplicador: 0.5, corChama: '#4fc3f7', dificuldade: 'Precisão' }
-        ];
+      // Lógica principal de física e colisão
+      function updateGame() {
+        if (gameOver || victory) return;
 
-        // =========================================
-        // HELPER: leitura segura do localStorage
-        // (se o JSON salvo estiver corrompido, cai no fallback
-        // em vez de travar o carregamento do jogo inteiro)
-        // =========================================
-        function safeJSONParse(key, fallback) {
-            try {
-                const raw = localStorage.getItem(key);
-                if (raw === null) return fallback;
-                const parsed = JSON.parse(raw);
-                return parsed === null || parsed === undefined ? fallback : parsed;
-            } catch (e) {
-                console.warn(`⚠️ Dado salvo inválido em "${key}", usando padrão.`, e);
-                return fallback;
-            }
+        // 1. Aplica gravidade (sempre)
+        rocket.vy += GRAVITY;
+
+        // 2. Aplica thrust se ativo e com combustível
+        if (thrustActive && rocket.fuel > 0 && !gameOver && !victory) {
+          rocket.vy -= THRUST_POWER;
+          rocket.fuel = Math.max(0, rocket.fuel - FUEL_CONSUMPTION);
         }
 
-        // =========================================
-        // SISTEMA DE PROGRESSO
-        // =========================================
-        let modoAtual = 'campanha';
-        let planetasAtuais = CAMPANHA;
-        let planetasConcluidos = safeJSONParse(`rocketPlanetasConcluidos_${modoAtual}`, []);
-        let planetaAtualIndex = 0;
+        // 3. Atualiza posição Y
+        rocket.y += rocket.vy;
 
-        function salvarProgressoPlanetas() {
-            localStorage.setItem(`rocketPlanetasConcluidos_${modoAtual}`, JSON.stringify(planetasConcluidos));
+        // 4. Calcula altitude (em metros) baseado na posição Y
+        //    Distância do chão (LANDING_Y) até o topo da nave (y)
+        const distanceFromGround = LANDING_Y - rocket.y;
+        rocket.altitude = Math.max(0, (distanceFromGround / 5.3).toFixed(1)); // escala arbitrária
+
+        // 5. Verifica colisão com o chão
+        if (rocket.y >= LANDING_Y) {
+          rocket.y = LANDING_Y; // trava no chão
+
+          // Velocidade de impacto (módulo)
+          const impactSpeed = Math.abs(rocket.vy);
+
+          // Critério de pouso suave: velocidade < 1.2 m/s e nave razoavelmente vertical
+          if (impactSpeed < 1.2) {
+            victory = true;
+            gameOver = false; // não é game over, é vitória
+          } else {
+            gameOver = true;
+            victory = false;
+          }
+
+          // Congela a velocidade após o impacto
+          rocket.vy = 0;
         }
 
-        function planetaEstaConcluido(id) {
-            return planetasConcluidos.includes(id);
+        // 6. Se ficar sem combustível, desativa o thrust visual
+        if (rocket.fuel <= 0) {
+          thrustActive = false;
         }
 
-        function planetaEstaDesbloqueado(index) {
-            if (index === 0) return true;
-            return planetasConcluidos.includes(planetasAtuais[index - 1].id);
+        // 7. Se sair da tela por cima (não deve acontecer, mas segurança)
+        if (rocket.y < -50) {
+          rocket.y = -30;
+          rocket.vy = 0.2;
         }
 
-        function getProximoPlanetaNaoConcluido() {
-            for (let i = 0; i < planetasAtuais.length; i++) {
-                if (!planetasConcluidos.includes(planetasAtuais[i].id)) {
-                    return i;
-                }
-            }
-            return -1;
+        // Atualiza display
+        updateDisplay();
+      }
+
+      // ----- DESENHO -----
+      function draw() {
+        ctx.clearRect(0, 0, 600, 600);
+
+        // --- Chão lunar ---
+        ctx.fillStyle = '#2b3f5e';
+        ctx.shadowColor = '#2f6f9f';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.rect(0, LANDING_Y, 600, 70);
+        ctx.fill();
+
+        // Base de pouso (plataforma)
+        ctx.shadowBlur = 30;
+        ctx.fillStyle = '#3d5f7a';
+        ctx.beginPath();
+        ctx.rect(240, LANDING_Y-4, 120, 12);
+        ctx.fill();
+        ctx.fillStyle = '#5f8bb0';
+        ctx.beginPath();
+        ctx.rect(260, LANDING_Y-8, 80, 8);
+        ctx.fill();
+
+        // Detalhes da base
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#aac7e6';
+        ctx.beginPath();
+        ctx.rect(290, LANDING_Y-16, 20, 12);
+        ctx.fill();
+
+        // --- Estrelas (decoração) ---
+        ctx.shadowBlur = 6;
+        ctx.fillStyle = '#f0f9ff';
+        for (let i = 0; i < 40; i++) {
+          const x = (i * 31) % 600;
+          const y = (i * 17) % 300;
+          ctx.beginPath();
+          ctx.arc(x, y, (i % 3) + 1, 0, Math.PI * 2);
+          ctx.fill();
         }
 
-        // =========================================
-        // SISTEMA DE RANKING
-        // =========================================
-        let ranking = safeJSONParse('rocketScores', []);
-        let currentPlayer = '';
+        // --- FOGO DO MOTOR (se thrust ativo e combustível > 0) ---
+        if (thrustActive && rocket.fuel > 0 && !gameOver && !victory) {
+          ctx.shadowBlur = 60;
+          ctx.shadowColor = '#ff8800';
+          const gradient = ctx.createRadialGradient(
+            rocket.x, rocket.y + ROCKET_HEIGHT/2 + 10, 2,
+            rocket.x, rocket.y + ROCKET_HEIGHT/2 + 30, 28
+          );
+          gradient.addColorStop(0, '#ffcc44');
+          gradient.addColorStop(0.6, '#ff7700');
+          gradient.addColorStop(1, '#ff2200aa');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.ellipse(rocket.x, rocket.y + ROCKET_HEIGHT/2 + 20, 18, 32, 0, 0, Math.PI * 2);
+          ctx.fill();
 
-        let recordePousos = parseInt(localStorage.getItem('rocketRecordePousos')) || 0;
-        let recordePontuacaoInfinito = parseInt(localStorage.getItem('rocketRecordePontuacaoInfinito')) || 0;
-
-        let pousosAtuais = 0;
-        let pontuacaoAtual = 0;
-        let explosaoAtiva = false;
-        let tempoExplosao = 0;
-
-        function salvarRecorde(nome, pontuacao) {
-            if (!nome || pontuacao <= 0) return;
-            let encontrado = false;
-            for (let i = 0; i < ranking.length; i++) {
-                if (ranking[i].nome === nome) {
-                    if (pontuacao > ranking[i].score) {
-                        ranking[i].score = pontuacao;
-                    }
-                    encontrado = true;
-                    break;
-                }
-            }
-            if (!encontrado) {
-                ranking.push({ nome: nome, score: pontuacao });
-            }
-            ranking.sort((a, b) => b.score - a.score);
-            if (ranking.length > 3) {
-                ranking = ranking.slice(0, 3);
-            }
-            localStorage.setItem('rocketScores', JSON.stringify(ranking));
+          // Chamas secundárias
+          ctx.shadowBlur = 40;
+          ctx.fillStyle = '#ffaa33cc';
+          ctx.beginPath();
+          ctx.ellipse(rocket.x-10, rocket.y + ROCKET_HEIGHT/2 + 10, 6, 16, 0.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(rocket.x+10, rocket.y + ROCKET_HEIGHT/2 + 10, 6, 16, -0.2, 0, Math.PI * 2);
+          ctx.fill();
         }
 
-        function salvarRecordeInfinito(pousos, pontuacao) {
-            let novoRecorde = false;
-            if (pousos > recordePousos) {
-                recordePousos = pousos;
-                localStorage.setItem('rocketRecordePousos', recordePousos);
-                novoRecorde = true;
-            }
-            if (pontuacao > recordePontuacaoInfinito) {
-                recordePontuacaoInfinito = pontuacao;
-                localStorage.setItem('rocketRecordePontuacaoInfinito', recordePontuacaoInfinito);
-            }
-            return novoRecorde;
+        // --- NAVE (foguete) ---
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#7fc0ff';
+
+        // Corpo principal
+        const gradientBody = ctx.createLinearGradient(rocket.x-16, rocket.y-20, rocket.x+16, rocket.y+20);
+        gradientBody.addColorStop(0, '#e0f0ff');
+        gradientBody.addColorStop(0.4, '#b0d0f0');
+        gradientBody.addColorStop(1, '#7a9ec0');
+        ctx.fillStyle = gradientBody;
+
+        ctx.beginPath();
+        ctx.roundRect(rocket.x - ROCKET_WIDTH/2, rocket.y - ROCKET_HEIGHT/2, ROCKET_WIDTH, ROCKET_HEIGHT, 10);
+        ctx.fill();
+
+        // Detalhe da janela
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = '#7fc8ff';
+        ctx.beginPath();
+        ctx.arc(rocket.x, rocket.y - 6, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#b3e4ff';
+        ctx.beginPath();
+        ctx.arc(rocket.x-2, rocket.y-10, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cone superior
+        ctx.fillStyle = '#c6dff5';
+        ctx.beginPath();
+        ctx.moveTo(rocket.x, rocket.y - ROCKET_HEIGHT/2 - 16);
+        ctx.lineTo(rocket.x - 16, rocket.y - ROCKET_HEIGHT/2 + 4);
+        ctx.lineTo(rocket.x + 16, rocket.y - ROCKET_HEIGHT/2 + 4);
+        ctx.closePath();
+        ctx.fill();
+
+        // Asas laterais
+        ctx.fillStyle = '#a0bcd9';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.roundRect(rocket.x - ROCKET_WIDTH/2 - 6, rocket.y + 2, 6, 18, 4);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(rocket.x + ROCKET_WIDTH/2, rocket.y + 2, 6, 18, 4);
+        ctx.fill();
+
+        // Sombra no chão (opcional)
+        ctx.shadowBlur = 0;
+
+        // --- Mensagem de vitória / game over ---
+        ctx.font = 'bold 36px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#000000aa';
+
+        if (victory) {
+          ctx.fillStyle = '#b7ffb7';
+          ctx.shadowColor = '#00ff88';
+          ctx.fillText('✨ POUSO PERFEITO! ✨', 300, 120);
+        } else if (gameOver) {
+          ctx.fillStyle = '#ff7b7b';
+          ctx.shadowColor = '#ff2244';
+          ctx.fillText('💥 EXPLODIU! 💥', 300, 120);
         }
 
-        function atualizarRecordeDisplay() {
-            const display = document.getElementById('recordeDisplay');
-            if (display) {
-                const concluidos = planetasConcluidos.length;
-                const total = planetasAtuais.length;
-                const modo = modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo';
-                display.innerHTML = `🏆 Recorde: ${recordePousos} pousos | ${modo}: ${concluidos}/${total}`;
-            }
+        // Reset do shadow
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+      }
+
+      // roundRect helper
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        return this;
+      };
+
+      // ----- LOOP PRINCIPAL -----
+      function gameLoop() {
+        updateGame();
+        draw();
+        animFrameId = requestAnimationFrame(gameLoop);
+      }
+
+      // ----- CONTROLES (teclado e mouse) -----
+      function handleKeyDown(e) {
+        const key = e.key;
+        if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+          e.preventDefault();
+          if (!gameOver && !victory && rocket.fuel > 0) {
+            thrustActive = true;
+          }
         }
-
-        function atualizarProgressoPlanetas() {
-            const total = planetasAtuais.length;
-            const concluidos = planetasConcluidos.length;
-            document.getElementById('progressText').textContent = `Progresso: ${concluidos} / ${total} corpos`;
-            
-            if (concluidos === total) {
-                document.getElementById('progressText').textContent = '🎉 PARABÉNS! Você conquistou todo o sistema solar! 🎉';
-            }
+        // Reset com tecla R
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetGame();
         }
+      }
 
-        // =========================================
-        // SISTEMA DE SKINS
-        // =========================================
-        const SKINS = [
-            { id: 'classic', nome: 'Clássico', cor: '#e0e0e0', corDetalhe: '#4fc3f7', corChama: '#4fc3f7', desbloqueada: true },
-            { id: 'ruby', nome: 'Rubi', cor: '#e63946', corDetalhe: '#ffd700', corChama: '#ff6b6b', desbloqueada: false },
-            { id: 'emerald', nome: 'Esmeralda', cor: '#2d6a4f', corDetalhe: '#00ff88', corChama: '#00ff88', desbloqueada: false },
-            { id: 'sapphire', nome: 'Safira', cor: '#1a3a5c', corDetalhe: '#4fc3f7', corChama: '#4fc3f7', desbloqueada: false },
-            { id: 'gold', nome: 'Ouro', cor: '#ffd700', corDetalhe: '#ff6b6b', corChama: '#ffd700', desbloqueada: false },
-            { id: 'neon', nome: 'Neon', cor: '#9c27b0', corDetalhe: '#ff6b6b', corChama: '#ff44ff', desbloqueada: false },
-            { id: 'carbon', nome: 'Carbono', cor: '#333', corDetalhe: '#ff6b6b', corChama: '#ff6600', desbloqueada: false },
-            { id: 'ice', nome: 'Gelo', cor: '#b3e5fc', corDetalhe: '#e0f7fa', corChama: '#81d4fa', desbloqueada: false }
-        ];
-
-        let skinsDisponiveis = safeJSONParse('rocketSkins', []);
-        let skinAtual = localStorage.getItem('rocketSkinAtual') || 'classic';
-
-        function atualizarSkinsDisponiveis() {
-            if (skinsDisponiveis.length === 0) {
-                skinsDisponiveis = ['classic'];
-                localStorage.setItem('rocketSkins', JSON.stringify(skinsDisponiveis));
-            }
-            if (!skinsDisponiveis.includes(skinAtual)) {
-                skinAtual = 'classic';
-                localStorage.setItem('rocketSkinAtual', skinAtual);
-            }
-            const totalConcluidos = planetasConcluidos.length;
-            if (totalConcluidos >= 3) desbloquearSkin('ruby');
-            if (totalConcluidos >= 5) desbloquearSkin('emerald');
-            if (totalConcluidos >= 8) desbloquearSkin('sapphire');
-            if (totalConcluidos >= 11) desbloquearSkin('gold');
-            if (totalConcluidos >= 14) desbloquearSkin('neon');
-            if (totalConcluidos >= 17) desbloquearSkin('carbon');
-            if (totalConcluidos >= 20) desbloquearSkin('ice');
+      function handleKeyUp(e) {
+        const key = e.key;
+        if (key === 'ArrowUp' || key === 'w' || key === 'W') {
+          e.preventDefault();
+          thrustActive = false;
         }
+      }
 
-        function desbloquearSkin(id) {
-            if (!skinsDisponiveis.includes(id) && id !== 'classic') {
-                skinsDisponiveis.push(id);
-                localStorage.setItem('rocketSkins', JSON.stringify(skinsDisponiveis));
-                atualizarUI_Skins();
-            }
+      // Clique no canvas: alterna thrust (mobile/desktop)
+      function handleCanvasClick(e) {
+        e.preventDefault();
+        if (gameOver || victory) return;
+        if (rocket.fuel <= 0) {
+          thrustActive = false;
+          return;
         }
+        thrustActive = !thrustActive;
+      }
 
-        function selecionarSkin(id) {
-            if (skinsDisponiveis.includes(id) || id === 'classic') {
-                skinAtual = id;
-                localStorage.setItem('rocketSkinAtual', skinAtual);
-                atualizarUI_Skins();
-                const skin = SKINS.find(s => s.id === skinAtual);
-                if (skin && fogueteAtual) {
-                    fogueteAtual.cor = skin.cor;
-                    fogueteAtual.corDetalhe = skin.corDetalhe;
-                    fogueteAtual.corChama = skin.corChama;
-                }
-            }
+      // Evita que a página role com as setas
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') {
+          e.preventDefault();
         }
-
-        function getSkinAtual() {
-            return SKINS.find(s => s.id === skinAtual) || SKINS[0];
-        }
-
-        function atualizarUI_Skins() {
-            const container = document.getElementById('skin-selector');
-            if (!container) return;
-
-            const grid = document.getElementById('skinsGridMenu');
-            if (grid) {
-                grid.innerHTML = '';
-                SKINS.forEach(skin => {
-                    const disponivel = skinsDisponiveis.includes(skin.id);
-                    const div = document.createElement('div');
-                    div.className = `skin-item ${disponivel ? 'unlocked' : 'locked'}`;
-                    div.innerHTML = `
-                        <div class="color-preview" style="background:${skin.cor}"></div>
-                        <div class="skin-name">${skin.nome}${!disponivel && skin.id !== 'classic' ? ' 🔒' : ''}</div>
-                    `;
-                    grid.appendChild(div);
-                });
-            }
-
-            let html = '';
-            SKINS.forEach(skin => {
-                const disponivel = skinsDisponiveis.includes(skin.id);
-                const ativa = skinAtual === skin.id;
-                const locked = !disponivel && skin.id !== 'classic';
-                html += `
-                    <button 
-                        class="${ativa ? 'active' : ''} ${locked ? 'locked' : ''}"
-                        style="background:${skin.cor};${locked ? 'opacity:0.4;' : ''}"
-                        data-id="${skin.id}"
-                        ${locked ? 'disabled' : ''}
-                        title="${skin.nome}${locked ? ' (🔒 Bloqueado)' : ''}"
-                    ></button>
-                `;
-            });
-            container.innerHTML = html;
-
-            container.querySelectorAll('button:not(.locked)').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    if (skinsDisponiveis.includes(id) || id === 'classic') {
-                        selecionarSkin(id);
-                    }
-                });
-            });
-        }
-
-        // =========================================
-        // SUPORTE A CONTROLE (XBOX/PS5)
-        // =========================================
-        let gamepadConnected = false;
-        let gamepadIndex = -1;
-
-        function conectarControle() {
-            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-            
-            for (let i = 0; i < gamepads.length; i++) {
-                const gp = gamepads[i];
-                if (gp && gp.connected) {
-                    gamepadConnected = true;
-                    gamepadIndex = i;
-                    console.log(`🎮 Controle conectado: ${gp.id}`);
-                    return true;
-                }
-            }
-            
-            gamepadConnected = false;
-            gamepadIndex = -1;
-            return false;
-        }
-
-        function lerControle() {
-            if (!gamepadConnected || gamepadIndex === -1) return null;
-            
-            const gp = navigator.getGamepads()[gamepadIndex];
-            if (!gp || !gp.connected) {
-                gamepadConnected = false;
-                return null;
-            }
-            
-            return gp;
-        }
-
-        window.addEventListener('gamepadconnected', function(e) {
-            console.log(`🎮 Controle conectado: ${e.gamepad.id}`);
-            gamepadConnected = true;
-            gamepadIndex = e.gamepad.index;
-        });
-
-        window.addEventListener('gamepaddisconnected', function(e) {
-            console.log(`🎮 Controle desconectado`);
-            gamepadConnected = false;
-            gamepadIndex = -1;
-        });
-
-        function verificarControle() {
-            if (!gamepadConnected) {
-                conectarControle();
-                return;
-            }
-            
-            const gp = lerControle();
-            if (!gp) return;
-            
-            if (gp.buttons[0] && gp.buttons[0].pressed) {
-                touchKeys.thrust = true;
-            } else {
-                touchKeys.thrust = false;
-            }
-            
-            if (gp.buttons[1] && gp.buttons[1].pressed) {
-                if (!window._reiniciarPressed) {
-                    window._reiniciarPressed = true;
-                    if (gameState === "gameover") {
-                        reiniciarDoGameOver();
-                    } else {
-                        resetGame();
-                        audio.stopEngine();
-                    }
-                }
-            } else {
-                window._reiniciarPressed = false;
-            }
-            
-            const leftStickX = gp.axes[0] || 0;
-            const deadZone = 0.15;
-            
-            if (leftStickX < -deadZone) {
-                touchKeys.left = true;
-                touchKeys.right = false;
-            } else if (leftStickX > deadZone) {
-                touchKeys.right = true;
-                touchKeys.left = false;
-            } else {
-                touchKeys.left = false;
-                touchKeys.right = false;
-            }
-            
-            if (gp.buttons[12] && gp.buttons[12].pressed) {
-                touchKeys.thrust = true;
-            }
-            if (gp.buttons[14] && gp.buttons[14].pressed) {
-                touchKeys.left = true;
-                touchKeys.right = false;
-            }
-            if (gp.buttons[15] && gp.buttons[15].pressed) {
-                touchKeys.right = true;
-                touchKeys.left = false;
-            }
-        }
-
-        // =========================================
-        // ÁUDIO
-        // =========================================
-        class AudioManager {
-            constructor() {
-                this.enabled = true;
-                this.ctx = null;
-                this.masterGain = null;
-                this.engineOsc = null;
-                this.engineGain = null;
-                this.isEngineRunning = false;
-            }
-            init() {
-                if (!this.ctx) {
-                    try {
-                        this.ctx = new(window.AudioContext || window.webkitAudioContext)();
-                        this.masterGain = this.ctx.createGain();
-                        this.masterGain.gain.value = 0.3;
-                        this.masterGain.connect(this.ctx.destination);
-                    } catch (e) {
-                        console.warn("Web Audio API não suportada");
-                        this.enabled = false;
-                    }
-                }
-                return this.ctx;
-            }
-            startEngine() {
-                if (!this.enabled || !this.ctx) return;
-                if (this.isEngineRunning) return;
-                try {
-                    this.engineGain = this.ctx.createGain();
-                    this.engineGain.gain.value = 0.15;
-                    this.engineGain.connect(this.masterGain);
-                    this.engineOsc = this.ctx.createOscillator();
-                    this.engineOsc.type = 'sawtooth';
-                    this.engineOsc.frequency.value = 80 + Math.random() * 20;
-                    this.engineOsc.connect(this.engineGain);
-                    const bufferSize = this.ctx.sampleRate * 0.05;
-                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        data[i] = Math.random() * 2 - 1;
-                    }
-                    const noise = this.ctx.createBufferSource();
-                    noise.buffer = buffer;
-                    noise.loop = true;
-                    const noiseGain = this.ctx.createGain();
-                    noiseGain.gain.value = 0.06;
-                    noise.connect(noiseGain);
-                    noiseGain.connect(this.engineGain);
-                    this.engineOsc.start();
-                    noise.start();
-                    this.isEngineRunning = true;
-                    this.engineNoise = noise;
-                    this.engineNoiseGain = noiseGain;
-                } catch (e) {
-                    console.warn("Erro ao iniciar motor:", e);
-                }
-            }
-            stopEngine() {
-                if (!this.enabled || !this.ctx) return;
-                if (!this.isEngineRunning) return;
-                try {
-                    if (this.engineOsc) {
-                        this.engineOsc.stop();
-                        this.engineOsc.disconnect();
-                        this.engineOsc = null;
-                    }
-                    if (this.engineNoise) {
-                        this.engineNoise.stop();
-                        this.engineNoise.disconnect();
-                        this.engineNoise = null;
-                    }
-                    if (this.engineGain) {
-                        this.engineGain.disconnect();
-                        this.engineGain = null;
-                    }
-                    if (this.engineNoiseGain) {
-                        this.engineNoiseGain.disconnect();
-                        this.engineNoiseGain = null;
-                    }
-                    this.isEngineRunning = false;
-                } catch (e) {
-                    console.warn("Erro ao parar motor:", e);
-                }
-            }
-            playExplosion() {
-                if (!this.enabled || !this.ctx) return;
-                try {
-                    const bufferSize = this.ctx.sampleRate * 0.8;
-                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        const envelope = Math.exp(-i / (this.ctx.sampleRate * 0.3));
-                        data[i] = (Math.random() * 2 - 1) * envelope;
-                    }
-                    const source = this.ctx.createBufferSource();
-                    source.buffer = buffer;
-                    const gain = this.ctx.createGain();
-                    gain.gain.value = 0.5;
-                    gain.connect(this.masterGain);
-                    const filter = this.ctx.createBiquadFilter();
-                    filter.type = 'lowpass';
-                    filter.frequency.value = 300 + Math.random() * 200;
-                    filter.Q.value = 1;
-                    source.connect(filter);
-                    filter.connect(gain);
-                    source.start();
-                    source.onended = () => {
-                        source.disconnect();
-                        filter.disconnect();
-                        gain.disconnect();
-                    };
-                } catch (e) {
-                    console.warn("Erro ao tocar explosão:", e);
-                }
-            }
-            playLanding() {
-                if (!this.enabled || !this.ctx) return;
-                try {
-                    const notes = [523, 659, 784, 1047];
-                    notes.forEach((freq, index) => {
-                        setTimeout(() => {
-                            const osc = this.ctx.createOscillator();
-                            const gain = this.ctx.createGain();
-                            osc.type = 'sine';
-                            osc.frequency.value = freq;
-                            gain.gain.value = 0.15 * (1 - index * 0.1);
-                            gain.connect(this.masterGain);
-                            osc.connect(gain);
-                            osc.start();
-                            osc.stop(this.ctx.currentTime + 0.3);
-                            osc.onended = () => {
-                                osc.disconnect();
-                                gain.disconnect();
-                            };
-                        }, index * 80);
-                    });
-                } catch (e) {
-                    console.warn("Erro ao tocar pouso:", e);
-                }
-            }
-            toggle() {
-                this.enabled = !this.enabled;
-                if (!this.enabled) {
-                    this.stopEngine();
-                }
-                return this.enabled;
-            }
-        }
-
-        const audio = new AudioManager();
-
-        // =========================================
-        // CONFIGURAÇÕES DO JOGO
-        // =========================================
-        const canvas = document.getElementById("game");
-        const ctx = canvas.getContext("2d");
-        const wrapper = document.getElementById("game-wrapper");
-        const GAME_WIDTH = 1000;
-        const GAME_HEIGHT = 700;
-
-        function resizeCanvas() {
-            const wrapperWidth = wrapper.clientWidth;
-            const wrapperHeight = wrapper.clientHeight;
-            const aspectRatio = GAME_WIDTH / GAME_HEIGHT;
-            let displayWidth = wrapperWidth;
-            let displayHeight = wrapperHeight;
-            if (displayWidth / displayHeight > aspectRatio) {
-                displayWidth = displayHeight * aspectRatio;
-            } else {
-                displayHeight = displayWidth / aspectRatio;
-            }
-            canvas.style.width = displayWidth + 'px';
-            canvas.style.height = displayHeight + 'px';
-            canvas.width = GAME_WIDTH;
-            canvas.height = GAME_HEIGHT;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-
-        const info = document.getElementById("info");
-        const faseInfo = document.getElementById("fase-info");
-        const soundBtn = document.getElementById("sound-toggle");
-        const rankingBtn = document.getElementById("ranking-btn");
-        const rankingScreen = document.getElementById("rankingScreen");
-        const closeRanking = document.getElementById("closeRanking");
-        const loginScreen = document.getElementById('loginScreen');
-        const startBtn = document.getElementById('startBtn');
-        const nameInput = document.getElementById('nameInput');
-        const skinToggle = document.getElementById('skin-toggle');
-        const skinSelector = document.getElementById('skin-selector');
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const goRetry = document.getElementById('goRetry');
-        const goMenu = document.getElementById('goMenu');
-        const goPlanets = document.getElementById('goPlanets');
-
-        const menuScreen = document.getElementById('menuScreen');
-        const helpScreen = document.getElementById('helpScreen');
-        const skinsMenuScreen = document.getElementById('skinsMenuScreen');
-        const planetScreen = document.getElementById('planetScreen');
-        const modeScreen = document.getElementById('modeScreen');
-
-        // Controles Touch
-        const btnLeft = document.getElementById('btn-left');
-        const btnRight = document.getElementById('btn-right');
-        const btnThrust = document.getElementById('btn-thrust');
-        let touchKeys = { left: false, right: false, thrust: false };
-
-        function setupTouchButton(element, keyOn, keyOff) {
-            if (!element) return;
-            element.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                touchKeys[keyOn] = true;
-                if (keyOff) touchKeys[keyOff] = false;
-            }, { passive: false });
-            element.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                touchKeys[keyOn] = false;
-            }, { passive: false });
-            element.addEventListener('touchcancel', function(e) {
-                e.preventDefault();
-                touchKeys[keyOn] = false;
-            }, { passive: false });
-            element.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                touchKeys[keyOn] = true;
-                if (keyOff) touchKeys[keyOff] = false;
-            });
-            element.addEventListener('mouseup', function(e) {
-                e.preventDefault();
-                touchKeys[keyOn] = false;
-            });
-            element.addEventListener('mouseleave', function(e) {
-                touchKeys[keyOn] = false;
-            });
-        }
-        setupTouchButton(btnLeft, 'left', 'right');
-        setupTouchButton(btnRight, 'right', 'left');
-        setupTouchButton(btnThrust, 'thrust');
-
-        // =========================================
-        // TECLADO
-        // =========================================
-        let keys = {};
-
-        document.addEventListener("keydown", function(e) {
-            keys[e.key] = true;
-            
-            if (e.key === "r" || e.key === "R") {
-                if (gameState === "gameover") {
-                    reiniciarDoGameOver();
-                } else {
-                    resetGame();
-                    audio.stopEngine();
-                }
-            }
-            
-            if (e.key === "Enter" || e.key === " ") {
-                if (gameState === "gameover") {
-                    reiniciarDoGameOver();
-                }
-            }
-            
-            if (!audio.ctx) {
-                audio.init();
-            }
-        });
-
-        document.addEventListener("keyup", function(e) {
-            keys[e.key] = false;
-            if (e.key === "ArrowUp") {
-                audio.stopEngine();
-            }
-        });
-
-        // =========================================
-        // FUNÇÕES DO HUD
-        // =========================================
-        function mostrarHUD() {
-            document.getElementById('info').classList.add('visible');
-            document.getElementById('fase-info').classList.add('visible');
-        }
-
-        function ocultarHUD() {
-            document.getElementById('info').classList.remove('visible');
-            document.getElementById('fase-info').classList.remove('visible');
-        }
-
-        // =========================================
-        // NUVENS
-        // =========================================
-        let nuvens = [];
-
-        function criarNuvem(cor = 'rgba(255, 255, 255, 0.6)') {
-            const largura = 100 + Math.random() * 200;
-            const altura = 30 + Math.random() * 50;
-            nuvens.push({
-                x: -largura - Math.random() * 200,
-                y: 50 + Math.random() * 300,
-                largura: largura,
-                altura: altura,
-                velocidade: 0.2 + Math.random() * 0.4,
-                opacity: 0.15 + Math.random() * 0.25,
-                cor: cor
-            });
-        }
-
-        function atualizarNuvens() {
-            if (nuvens.length < 6) {
-                const planeta = planetasAtuais[planetaAtualIndex];
-                const cor = planeta ? planeta.cor : '#ffffff';
-                criarNuvem(`rgba(255, 255, 255, 0.15)`);
-            }
-            nuvens.forEach(n => {
-                n.x += n.velocidade;
-                if (n.x > canvas.width + n.largura) {
-                    n.x = -n.largura - Math.random() * 200;
-                    n.y = 50 + Math.random() * 300;
-                }
-            });
-        }
-
-        function desenharNuvens() {
-            nuvens.forEach(n => {
-                ctx.save();
-                ctx.globalAlpha = n.opacity;
-                ctx.fillStyle = n.cor || 'rgba(255, 255, 255, 0.15)';
-                
-                const cx = n.x + n.largura / 2;
-                const cy = n.y + n.altura / 2;
-                const r = n.altura / 2;
-                
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(cx - r * 0.7, cy + r * 0.1, r * 0.7, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(cx + r * 0.7, cy - r * 0.1, r * 0.7, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(cx - r * 0.3, cy - r * 0.5, r * 0.6, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(cx + r * 0.3, cy + r * 0.5, r * 0.6, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.restore();
-            });
-        }
-
-        // =========================================
-        // POEIRA NO POUSO
-        // =========================================
-        let poeira = [];
-
-        function criarPoeira(x, y, cor, quantidade = 25) {
-            for (let i = 0; i < quantidade; i++) {
-                const angulo = Math.random() * Math.PI * 2;
-                const velocidade = 1 + Math.random() * 3;
-                const tamanho = 3 + Math.random() * 6;
-                poeira.push({
-                    x: x + (Math.random() - 0.5) * 20,
-                    y: y + (Math.random() - 0.5) * 10,
-                    vx: Math.cos(angulo) * velocidade,
-                    vy: -Math.random() * 2 - 0.5,
-                    tamanho: tamanho,
-                    vida: 1,
-                    decay: 0.008 + Math.random() * 0.012,
-                    cor: cor || `hsl(${30 + Math.random() * 20}, 80%, ${60 + Math.random() * 30}%)`
-                });
-            }
-        }
-
-        function atualizarPoeira() {
-            poeira.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vy += 0.02;
-                p.vx *= 0.99;
-                p.vida -= p.decay;
-                p.tamanho *= 0.99;
-            });
-            poeira = poeira.filter(p => p.vida > 0 && p.tamanho > 0.5);
-        }
-
-        function desenharPoeira() {
-            poeira.forEach(p => {
-                ctx.save();
-                ctx.globalAlpha = p.vida * 0.7;
-                ctx.fillStyle = p.cor;
-                ctx.shadowColor = 'rgba(255, 200, 100, 0.1)';
-                ctx.shadowBlur = 10;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.tamanho, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            });
-        }
-
-        // =========================================
-        // METEOROS
-        // =========================================
-        let meteoros = [];
-
-        function criarMeteoro() {
-            const x = Math.random() * canvas.width;
-            const y = -20 - Math.random() * 100;
-            const speed = 1 + Math.random() * 3;
-            const size = 2 + Math.random() * 4;
-            const angle = 0.1 + Math.random() * 0.3;
-            const rastro = [];
-            meteoros.push({ x, y, speed, size, angle, rastro, life: 1 });
-        }
-
-        function atualizarMeteoros() {
-            if (Math.random() < 0.02) {
-                criarMeteoro();
-            }
-            meteoros.forEach(m => {
-                m.rastro.push({ x: m.x, y: m.y });
-                if (m.rastro.length > 10) m.rastro.shift();
-                m.x += Math.cos(m.angle) * m.speed;
-                m.y += Math.sin(m.angle) * m.speed;
-                m.life -= 0.001;
-                if (m.y > canvas.height + 50 || m.x > canvas.width + 50 || m.x < -50 || m.life <= 0) {
-                    m.dead = true;
-                }
-            });
-            meteoros = meteoros.filter(m => !m.dead);
-        }
-
-        function desenharMeteoros() {
-            meteoros.forEach(m => {
-                m.rastro.forEach((pos, i) => {
-                    const alpha = (i / m.rastro.length) * 0.5;
-                    const size = m.size * (0.3 + 0.7 * (i / m.rastro.length));
-                    ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                const grad = ctx.createRadialGradient(
-                    m.x - m.size * 0.3, m.y - m.size * 0.3, 0,
-                    m.x, m.y, m.size
-                );
-                grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-                grad.addColorStop(0.3, 'rgba(255, 200, 100, 0.8)');
-                grad.addColorStop(0.7, 'rgba(255, 150, 50, 0.6)');
-                grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.arc(m.x, m.y, m.size * 2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
-                ctx.beginPath();
-                ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        // =========================================
-        // CONFIGURAÇÕES DO FOGUETE POR PLANETA
-        // =========================================
-        let gravity = 0.01;
-        let thrustPower = 0.12;
-        let fuelConsumption = 0.7;
-        let rotationSpeed = 0.04;
-        let consumoMultiplicador = 1.0;
-
-        let pad = { x: 420, y: 650, width: 160, height: 10 };
-        let rocket;
-        let fogueteAtual = {};
-        let engineWasOn = false;
-        let gameState = "playing";
-        let gameLoopStarted = false;
-        let currentLevel = 1;
-
-        // Rastro do foguete
-        let rastro = [];
-
-        function atualizarRastro() {
-            rastro.push({ x: rocket.x, y: rocket.y, life: 1 });
-            if (rastro.length > 50) rastro.shift();
-            rastro.forEach(p => p.life -= 0.02);
-            rastro = rastro.filter(p => p.life > 0);
-        }
-
-        function desenharRastro() {
-            rastro.forEach((p, i) => {
-                const alpha = p.life * 0.3;
-                const size = 2 + p.life * 4;
-                ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        function getPlanetaConfig(index) {
-            const planeta = planetasAtuais[index];
-            if (!planeta) return planetasAtuais[0];
-            return planeta;
-        }
-
-        function resetGame() {
-            pousosAtuais = 0;
-            pontuacaoAtual = 0;
-            applyPlaneta(planetaAtualIndex);
-            resetRocket();
-            gameState = "playing";
-            explosaoAtiva = false;
-            tempoExplosao = 0;
-            audio.stopEngine();
-            rastro = [];
-            poeira = [];
-            nuvens = [];
-            gameOverScreen.classList.remove('active');
-            for (let i = 0; i < 6; i++) {
-                criarNuvem();
-            }
-            atualizarSkinsDisponiveis();
-            atualizarUI_Skins();
-            atualizarRecordeDisplay();
-            atualizarProgressoPlanetas();
-        }
-
-        function resetRocket() {
-            const planeta = getPlanetaConfig(planetaAtualIndex);
-            rocket = {
-                x: 500,
-                y: 120,
-                vx: 0,
-                vy: 0,
-                angle: 0,
-                fuel: planeta.fuel || 30,
-                startFuel: planeta.fuel || 30
-            };
-        }
-
-        function applyPlaneta(index) {
-            const planeta = getPlanetaConfig(index);
-            fogueteAtual = { 
-                nome: `${planeta.emoji} ${planeta.nome}`,
-                cor: planeta.cor || '#e0e0e0',
-                corDetalhe: '#ffb454',
-                corChama: planeta.corChama || '#5fd4d6',
-                tamanho: 0.8 + (index * 0.02),
-                padWidth: planeta.padWidth || 160,
-                maxSpeedV: planeta.maxSpeedV || 2.0,
-                maxSpeedH: planeta.maxSpeedH || 1.5,
-                maxAngle: planeta.maxAngle || 12,
-                fuelBonus: planeta.fuelBonus || 1.0,
-                label: `${planeta.emoji} ${planeta.nome}`,
-                corCeu1: planeta.corCeu1 || '#000814',
-                corCeu2: planeta.corCeu2 || '#001d3d'
-            };
-
-            const skin = getSkinAtual();
-            fogueteAtual.cor = skin.cor;
-            fogueteAtual.corDetalhe = skin.corDetalhe;
-            fogueteAtual.corChama = skin.corChama;
-
-            gravity = planeta.gravity || 0.01;
-            thrustPower = Math.max(0.04, 0.12 - index * 0.005);
-            // Antes: fuelConsumption escalava com o índice do planeta E era multiplicado
-            // de novo por consumoMultiplicador (definido por planeta) — dobrava o efeito
-            // e deixava os últimos planetas quase impossíveis (tanque esvaziava em frações
-            // de segundo). Agora só consumoMultiplicador comanda a curva de dificuldade,
-            // que já foi balanceada planeta a planeta nas tabelas CAMPANHA/TEMPO.
-            const FUEL_CONSUMPTION_BASE = 0.65;
-            fuelConsumption = FUEL_CONSUMPTION_BASE;
-            consumoMultiplicador = planeta.consumoMultiplicador || 1.0;
-            pad.width = planeta.padWidth || 160;
-            pad.x = (canvas.width - pad.width) / 2;
-
-            if (rocket) {
-                rocket.fuel = planeta.fuel || 30;
-                rocket.startFuel = planeta.fuel || 30;
-            }
-
-            atualizarUI_Skins();
-
-            const modoTexto = modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo';
-            faseInfo.innerHTML = `
-                <div style="background:rgba(7,11,20,0.8);padding:8px 14px;border-radius:8px;border:1px solid var(--panel-line, rgba(255,255,255,0.1));font-size:12px;line-height:1.6;text-align:right;font-family:var(--font-mono, 'Courier New', monospace);">
-                    <div style="color:var(--cyan);font-weight:bold;">${planeta.emoji} ${planeta.nome}</div>
-                    <div style="color:var(--amber);font-size:11px;">${planeta.dificuldade || 'Normal'}</div>
-                    <div style="color:#aaa;font-size:10px;">🎯 Vel. Máx: ${planeta.maxSpeedV.toFixed(1)}</div>
-                    <div style="color:#aaa;font-size:10px;">📏 Plataforma: ${pad.width}px</div>
-                    <div style="color:var(--amber);font-size:10px;">⭐ Bônus: ${planeta.fuelBonus.toFixed(1)}x</div>
-                    ${consumoMultiplicador > 1.0 ? `<div style="color:#ff6b6b;font-size:10px;">⚠️ Consumo: ${(consumoMultiplicador * 100).toFixed(0)}%</div>` : ''}
-                    <div style="color:var(--cyan);font-size:10px;">🔄 Pousos: ${pousosAtuais}</div>
-                    <div style="color:#888;font-size:9px;">${modoTexto}</div>
-                </div>
-            `;
-            
-            ocultarHUD();
-        }
-
-        // =========================================
-        // VELOCÍMETRO
-        // =========================================
-        function drawSpeedometer() {
-            const cx = 100;
-            const cy = canvas.height - 80;
-            const raio = 50;
-
-            const speed = Math.sqrt(rocket.vx * rocket.vx + rocket.vy * rocket.vy);
-            const speedKmh = speed * 250;
-            const maxSpeed = 8;
-            const percent = Math.min(speed / maxSpeed, 1);
-
-            ctx.save();
-
-            ctx.shadowColor = "rgba(0,0,0,0.5)";
-            ctx.shadowBlur = 15;
-
-            const grad = ctx.createRadialGradient(cx, cy, 5, cx, cy, raio);
-            grad.addColorStop(0, "rgba(20, 30, 50, 0.85)");
-            grad.addColorStop(0.7, "rgba(10, 15, 30, 0.9)");
-            grad.addColorStop(1, "rgba(0, 0, 0, 0.95)");
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(cx, cy, raio, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.shadowBlur = 0;
-            ctx.strokeStyle = "rgba(255,255,255,0.2)";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(cx, cy, raio, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.strokeStyle = "rgba(255,255,255,0.05)";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.arc(cx, cy, raio - 4, 0, Math.PI * 2);
-            ctx.stroke();
-
-            const startAngle = 0.75 * Math.PI;
-            const endAngle = 2.25 * Math.PI;
-            const arcLength = endAngle - startAngle;
-
-            for (let i = 0; i < 100; i++) {
-                const t = i / 100;
-                const angle = startAngle + t * arcLength;
-                const innerRadius = raio - 12;
-                const outerRadius = raio - 6;
-
-                let color;
-                if (t < 0.4) color = `rgba(0, 255, 136, ${0.6 + t * 0.4})`;
-                else if (t < 0.7) color = `rgba(255, 180, 84, ${0.8 + (t - 0.4) * 0.2})`;
-                else color = `rgba(255, 68, 68, ${0.8 + (t - 0.7) * 0.2})`;
-
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                ctx.arc(cx, cy, outerRadius, angle, angle + 0.025);
-                ctx.arc(cx, cy, innerRadius, angle + 0.025, angle, true);
-                ctx.fill();
-            }
-
-            const pointerAngle = startAngle + percent * arcLength;
-            const pointerLength = raio - 10;
-
-            ctx.shadowColor = "rgba(255,255,255,0.2)";
-            ctx.shadowBlur = 8;
-            ctx.strokeStyle = "#ff6b6b";
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(
-                cx + Math.cos(pointerAngle) * pointerLength,
-                cy + Math.sin(pointerAngle) * pointerLength
-            );
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = "#ff6b6b";
-            ctx.beginPath();
-            ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = "white";
-            ctx.beginPath();
-            ctx.arc(cx, cy, 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = "#e9edf6";
-            ctx.font = "bold 15px 'Courier New', monospace";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "bottom";
-            ctx.fillText(Math.floor(speedKmh), cx, cy + raio - 16);
-
-            ctx.fillStyle = "rgba(255,255,255,0.5)";
-            ctx.font = "9px 'Courier New', monospace";
-            ctx.textBaseline = "top";
-            ctx.fillText("km/h", cx, cy + raio - 14);
-
-            ctx.fillStyle = "rgba(255,255,255,0.3)";
-            ctx.font = "7px 'Courier New', monospace";
-            ctx.textBaseline = "bottom";
-            ctx.fillText("VEL.", cx, cy - raio + 8);
-
-            ctx.restore();
-        }
-
-        // =========================================
-        // INDICADOR DE ALVO
-        // =========================================
-        function drawTarget() {
-            const groundY = 655;
-            const x = rocket.x;
-
-            const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 300);
-            const radius = 20 * pulse;
-
-            const grad = ctx.createRadialGradient(x, groundY, 0, x, groundY, radius + 15);
-            grad.addColorStop(0, 'rgba(255, 200, 100, 0.25)');
-            grad.addColorStop(0.5, 'rgba(255, 200, 100, 0.1)');
-            grad.addColorStop(1, 'rgba(255, 200, 100, 0)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(x, groundY, radius + 15, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.strokeStyle = `rgba(255, 200, 100, ${0.3 + 0.3 * pulse})`;
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 6]);
-            ctx.beginPath();
-            ctx.arc(x, groundY, radius, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            ctx.strokeStyle = `rgba(255, 200, 100, ${0.2 + 0.2 * pulse})`;
-            ctx.lineWidth = 1.5;
-            const crossSize = 6;
-            ctx.beginPath();
-            ctx.moveTo(x - crossSize, groundY);
-            ctx.lineTo(x + crossSize, groundY);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, groundY - crossSize);
-            ctx.lineTo(x, groundY + crossSize);
-            ctx.stroke();
-
-            ctx.fillStyle = `rgba(255, 200, 100, ${0.3 + 0.3 * pulse})`;
-            ctx.beginPath();
-            ctx.arc(x, groundY, 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // =========================================
-        // DESENHO DO FOGUETE
-        // =========================================
-        function drawRocket() {
-            ctx.save();
-            ctx.translate(rocket.x, rocket.y);
-            ctx.rotate(rocket.angle);
-
-            const fog = fogueteAtual;
-            const tamanho = fog.tamanho || 0.8;
-            const cor = fog.cor || "#e0e0e0";
-            const corDetalhe = fog.corDetalhe || "#5fd4d6";
-            const corChama = fog.corChama || "#5fd4d6";
-
-            const scale = tamanho;
-            const seatY = 16 * scale;
-            const seatWidth = 22 * scale;
-            const seatHeight = 8 * scale;
-
-            ctx.fillStyle = "#b8860b";
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowBlur = 6;
-            ctx.beginPath();
-            ctx.roundRect(-seatWidth / 2, seatY, seatWidth, seatHeight, 4);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = "#cd853f";
-            ctx.beginPath();
-            ctx.roundRect(-12 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.roundRect(8 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
-            ctx.fill();
-
-            ctx.fillStyle = "#4a7c59";
-            ctx.shadowBlur = 0;
-            ctx.beginPath();
-            ctx.roundRect(-8 * scale, seatY - 18 * scale, 16 * scale, 18 * scale, 3);
-            ctx.fill();
-
-            ctx.fillStyle = "#f5f5dc";
-            ctx.shadowColor = "rgba(0,0,0,0.2)";
-            ctx.shadowBlur = 4;
-            ctx.beginPath();
-            ctx.arc(0, seatY - 22 * scale, 8 * scale, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = "#1a1a2e";
-            ctx.beginPath();
-            ctx.arc(1 * scale, seatY - 24 * scale, 5 * scale, 0, Math.PI);
-            ctx.fill();
-
-            ctx.strokeStyle = "#888";
-            ctx.lineWidth = 3 * scale;
-            ctx.shadowBlur = 0;
-
-            ctx.beginPath();
-            ctx.moveTo(-12 * scale, seatY + seatHeight);
-            ctx.lineTo(-20 * scale, seatY + seatHeight + 12 * scale);
-            ctx.stroke();
-
-            ctx.fillStyle = "#666";
-            ctx.beginPath();
-            ctx.roundRect(-24 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(12 * scale, seatY + seatHeight);
-            ctx.lineTo(20 * scale, seatY + seatHeight + 12 * scale);
-            ctx.stroke();
-
-            ctx.fillStyle = "#666";
-            ctx.beginPath();
-            ctx.roundRect(16 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
-            ctx.fill();
-
-            const grad = ctx.createLinearGradient(-12 * scale, -25 * scale, 12 * scale, 25 * scale);
-            grad.addColorStop(0, cor);
-            grad.addColorStop(0.5, cor);
-            grad.addColorStop(1, cor);
-            ctx.fillStyle = grad;
-            ctx.shadowColor = "rgba(255,255,255,0.1)";
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.roundRect(-12 * scale, -25 * scale, 24 * scale, 40 * scale, 3);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = "#5fd4d6";
-            ctx.shadowColor = "#5fd4d6";
-            ctx.shadowBlur = 20;
-            ctx.beginPath();
-            ctx.arc(0, -10 * scale, 7 * scale, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = "rgba(255,255,255,0.3)";
-            ctx.beginPath();
-            ctx.arc(-2 * scale, -12 * scale, 2.5 * scale, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = corDetalhe;
-            ctx.fillRect(-10 * scale, -22 * scale, 20 * scale, 3 * scale);
-            ctx.fillRect(-8 * scale, 8 * scale, 16 * scale, 3 * scale);
-
-            ctx.fillStyle = corDetalhe;
-            ctx.shadowColor = corDetalhe;
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.moveTo(-10 * scale, -25 * scale);
-            ctx.lineTo(0, -40 * scale);
-            ctx.lineTo(10 * scale, -25 * scale);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
-            if (isThrusting && gameState === "playing") {
-                const flameHeight = (25 + Math.random() * 20) * scale * (1 + (consumoMultiplicador - 1) * 0.3);
-                const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 + flameHeight /
-                    2, flameHeight);
-                gradFlame.addColorStop(0, "rgba(255,255,255,1)");
-                gradFlame.addColorStop(0.1, corChama + "cc");
-                gradFlame.addColorStop(0.3, corChama + "99");
-                gradFlame.addColorStop(0.6, corChama + "66");
-                gradFlame.addColorStop(1, corChama + "00");
-                ctx.fillStyle = gradFlame;
-                ctx.beginPath();
-                ctx.moveTo(-10 * scale, seatY + seatHeight + 2);
-                ctx.quadraticCurveTo(-5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 +
-                    flameHeight);
-                ctx.quadraticCurveTo(5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 10 * scale, seatY + seatHeight + 2);
-                ctx.fill();
-
-                for (let i = 0; i < 5; i++) {
-                    const alpha = 0.2 + Math.random() * 0.6;
-                    const size = (1 + Math.random() * 3) * scale;
-                    const px = (Math.random() - 0.5) * 10 * scale;
-                    const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
-                    ctx.fillStyle = `rgba(255,200,50,${alpha})`;
-                    ctx.beginPath();
-                    ctx.arc(px, py, size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-
-            ctx.restore();
-        }
-
-        // =========================================
-        // FUNÇÕES DE DESENHO
-        // =========================================
-        function drawStars() {
-            const planeta = getPlanetaConfig(planetaAtualIndex);
-            const corCeu1 = planeta.corCeu1 || '#000814';
-            const corCeu2 = planeta.corCeu2 || '#001d3d';
-
-            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grad.addColorStop(0, corCeu1);
-            grad.addColorStop(1, corCeu2);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < 120; i++) {
-                const x = (i * 97 + planetaAtualIndex * 13) % canvas.width;
-                const y = (i * 53 + planetaAtualIndex * 7) % canvas.height;
-                const size = 0.5 + (i % 3) * 0.5;
-                const brightness = 0.3 + (i % 5) / 5;
-                ctx.fillStyle = `rgba(255,255,255,${brightness})`;
-                ctx.beginPath();
-                ctx.arc(x, y, size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function drawGround() {
-            const grad = ctx.createLinearGradient(0, 660, 0, 700);
-            grad.addColorStop(0, "#1b4332");
-            grad.addColorStop(1, "#0d2818");
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 660, canvas.width, 40);
-
-            ctx.fillStyle = "#2d6a4f";
-            ctx.fillRect(0, 655, canvas.width, 10);
-
-            ctx.fillStyle = "rgba(255,0,0,0.05)";
-            ctx.fillRect(0, 655, pad.x, 10);
-            ctx.fillRect(pad.x + pad.width, 655, canvas.width - pad.x - pad.width, 10);
-
-            const padGlow = ctx.createRadialGradient(pad.x + pad.width / 2, pad.y, 10, pad.x + pad.width / 2, pad.y, pad
-                .width);
-            padGlow.addColorStop(0, "rgba(244,162,97,0.3)");
-            padGlow.addColorStop(1, "rgba(244,162,97,0)");
-            ctx.fillStyle = padGlow;
-            ctx.fillRect(pad.x - 40, pad.y - 20, pad.width + 80, 40);
-
-            ctx.fillStyle = "#e9c46a";
-            ctx.shadowColor = "#f4a261";
-            ctx.shadowBlur = 25;
-            ctx.beginPath();
-            ctx.roundRect(pad.x, pad.y, pad.width, pad.height, 3);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = "rgba(255,200,100,0.3)";
-            for (let i = 0; i < pad.width; i += 20) {
-                ctx.fillRect(pad.x + i, pad.y + 2, 10, 3);
-            }
-
-            const planeta = getPlanetaConfig(planetaAtualIndex);
-            ctx.fillStyle = "rgba(255,255,255,0.15)";
-            ctx.font = "bold 14px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText(`${planeta.emoji} ${planeta.nome}`, pad.x + pad.width / 2, pad.y + 22);
-            ctx.textAlign = "left";
-        }
-
-        function drawFuelBar() {
-            const barX = 20;
-            const barY = 70;
-            const barWidth = 180;
-            const barHeight = 18;
-
-            ctx.fillStyle = "rgba(0,0,0,0.7)";
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.roundRect(barX - 2, barY - 2, barWidth + 4, barHeight + 4, 4);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.strokeStyle = "rgba(255,255,255,0.3)";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.roundRect(barX, barY, barWidth, barHeight, 3);
-            ctx.stroke();
-
-            const fuelPercent = Math.max(0, rocket.fuel / (rocket.startFuel || 30));
-            let color = "#00ff88";
-            if (fuelPercent < 0.2) color = "#ff4444";
-            else if (fuelPercent < 0.5) color = "#ffaa00";
-
-            const grad = ctx.createLinearGradient(barX, barY, barX + barWidth * fuelPercent, barY);
-            grad.addColorStop(0, color);
-            grad.addColorStop(1, color + "88");
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(barX + 2, barY + 2, Math.max(0, (barWidth - 4) * fuelPercent), barHeight - 4, 2);
-            ctx.fill();
-
-            ctx.fillStyle = "#e9edf6";
-            ctx.font = "bold 11px 'Courier New', monospace";
-            ctx.textAlign = "left";
-            ctx.fillText("🔥 " + Math.round(fuelPercent * 100) + "%", barX + 6, barY + 14);
-
-            if (consumoMultiplicador > 1.0) {
-                ctx.fillStyle = "rgba(255,100,100,0.6)";
-                ctx.font = "9px 'Courier New', monospace";
-                ctx.fillText(`⚠️ x${consumoMultiplicador.toFixed(1)}`, barX + 130, barY + 14);
-            }
-
-            ctx.fillStyle = "rgba(255,255,255,0.6)";
-            ctx.font = "10px 'Courier New', monospace";
-            ctx.fillText("COMBUSTÍVEL", barX, barY - 5);
-        }
-
-        // =========================================
-        // GAME OVER
-        // =========================================
-        function mostrarGameOver() {
-            const stats = document.getElementById('gameOverStats');
-            const foiRecorde = salvarRecordeInfinito(pousosAtuais, pontuacaoAtual);
-            
-            let html = `
-                <div>📊 Pousos: <span class="highlight">${pousosAtuais}</span></div>
-                <div>⭐ Pontuação: <span class="highlight">${pontuacaoAtual}</span></div>
-                <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;">
-                    🏆 <span class="record">Recorde de Pousos:</span> <strong>${recordePousos}</strong>
-                </div>
-                <div>⭐ <span class="record">Recorde de Pontuação:</span> <strong>${recordePontuacaoInfinito}</strong></div>
-            `;
-            
-            if (foiRecorde) {
-                html += `<div class="novo-record">🎉 NOVO RECORDE DE POUSOS!</div>`;
-            }
-            
-            stats.innerHTML = html;
-            gameOverScreen.classList.add('active');
-            gameState = "gameover";
-            mostrarHUD();
-        }
-
-        // =========================================
-        // DRAW MESSAGE (EXPLOSÃO)
-        // =========================================
-        function drawMessage() {
-            if (gameState === "crashed" && explosaoAtiva) {
-                for (let i = 0; i < 30; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const distance = 20 + Math.random() * 100;
-                    const size = 3 + Math.random() * 25;
-                    const alpha = 0.2 + Math.random() * 0.7;
-                    const colors = ["#ff4444", "#ff8800", "#ffcc00", "#ff6600", "#ff2200", "#ffaa00", "#ffffff"];
-                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)] + Math.floor(alpha * 255).toString(16).padStart(2, '0');
-                    ctx.shadowColor = 'rgba(255, 100, 0, 0.5)';
-                    ctx.shadowBlur = 20;
-                    ctx.beginPath();
-                    ctx.arc(rocket.x + Math.cos(angle) * distance, rocket.y + Math.sin(angle) * distance, size, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
-                
-                for (let i = 0; i < 10; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const distance = 5 + Math.random() * 30;
-                    const size = 2 + Math.random() * 8;
-                    ctx.fillStyle = `rgba(200, 200, 200, ${0.5 + Math.random() * 0.5})`;
-                    ctx.beginPath();
-                    ctx.arc(rocket.x + Math.cos(angle) * distance, rocket.y + Math.sin(angle) * distance, size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                
-                ctx.fillStyle = "rgba(0,0,0,0.3)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.textAlign = "center";
-                ctx.fillStyle = "#ff4444";
-                ctx.font = "bold 48px Arial";
-                ctx.shadowColor = "#ff4444";
-                ctx.shadowBlur = 30;
-                ctx.fillText("💥 EXPLODIU!", canvas.width / 2, 240);
-                ctx.shadowBlur = 0;
-                ctx.textAlign = "left";
-            }
-        }
-
-        // =========================================
-        // ATUALIZAÇÃO DO JOGO
-        // =========================================
-        function update() {
-            verificarControle();
-            
-            if (gameState === "gameover") return;
-            
-            if (explosaoAtiva) {
-                tempoExplosao++;
-                if (tempoExplosao > 30) {
-                    explosaoAtiva = false;
-                    mostrarGameOver();
-                }
-                return;
-            }
-            
-            if (gameState !== "playing") return;
-
-            if (keys["ArrowLeft"] || touchKeys.left) rocket.angle -= rotationSpeed;
-            if (keys["ArrowRight"] || touchKeys.right) rocket.angle += rotationSpeed;
-
-            const isThrusting = (keys["ArrowUp"] || touchKeys.thrust) && rocket.fuel > 0;
-
-            if (isThrusting) {
-                const thrustX = Math.sin(rocket.angle) * thrustPower;
-                const thrustY = -Math.cos(rocket.angle) * thrustPower;
-                rocket.vx += thrustX;
-                rocket.vy += thrustY;
-                rocket.fuel -= fuelConsumption * consumoMultiplicador;
-                if (rocket.fuel < 0) rocket.fuel = 0;
-
-                if (!engineWasOn) {
-                    audio.init();
-                    audio.startEngine();
-                    engineWasOn = true;
-                }
-            } else {
-                if (engineWasOn) {
-                    audio.stopEngine();
-                    engineWasOn = false;
-                }
-            }
-
-            rocket.vy += gravity;
-            rocket.x += rocket.vx;
-            rocket.y += rocket.vy;
-
-            if (rocket.x < -30) rocket.x = canvas.width + 30;
-            if (rocket.x > canvas.width + 30) rocket.x = -30;
-
-            atualizarNuvens();
-            atualizarPoeira();
-            atualizarRastro();
-            atualizarMeteoros();
-
-            if (rocket.y > 750) {
-                gameState = "crashed";
-                explosaoAtiva = true;
-                tempoExplosao = 0;
-                audio.playExplosion();
-                audio.stopEngine();
-                engineWasOn = false;
-                return;
-            }
-
-            const bottom = rocket.y + 25;
-            const insidePadX = rocket.x > pad.x && rocket.x < pad.x + pad.width;
-            const planeta = getPlanetaConfig(planetaAtualIndex);
-            const speedV = Math.abs(rocket.vy);
-            const speedH = Math.abs(rocket.vx);
-            const angleDeg = Math.abs(rocket.angle * 180 / Math.PI);
-
-            if (bottom >= pad.y && insidePadX) {
-                if (speedV < planeta.maxSpeedV && speedH < planeta.maxSpeedH && angleDeg < planeta.maxAngle) {
-                    audio.stopEngine();
-                    engineWasOn = false;
-                    audio.playLanding();
-
-                    criarPoeira(rocket.x, pad.y, planeta.cor || '#ffb454', 30);
-
-                    pousosAtuais++;
-                    
-                    const fuelBonus = planeta.fuelBonus || 1;
-                    const baseScore = 1000 + Math.floor(rocket.fuel * 20) + Math.floor((planeta.maxSpeedV - speedV) * 300);
-                    const pontoPouso = Math.floor(baseScore * fuelBonus);
-                    pontuacaoAtual += pontoPouso;
-                    
-                    const foiRecorde = salvarRecordeInfinito(pousosAtuais, pontuacaoAtual);
-                    atualizarRecordeDisplay();
-
-                    if (currentPlayer && pontuacaoAtual > 0) {
-                        salvarRecorde(currentPlayer, pontuacaoAtual);
-                    }
-
-                    mostrarHUD();
-
-                    if (!planetasConcluidos.includes(planeta.id)) {
-                        planetasConcluidos.push(planeta.id);
-                        salvarProgressoPlanetas();
-                        atualizarProgressoPlanetas();
-                        atualizarUI_Planetas();
-                    }
-
-                    if (planetasConcluidos.length === planetasAtuais.length) {
-                        setTimeout(() => {
-                            alert('🎉 PARABÉNS! Você conquistou todo o sistema solar! 🌍🚀');
-                        }, 500);
-                    }
-
-                    const proximo = getProximoPlanetaNaoConcluido();
-                    if (proximo !== -1) {
-                        planetaAtualIndex = proximo;
-                        applyPlaneta(planetaAtualIndex);
-                        resetRocket();
-                        gameState = "playing";
-                        audio.stopEngine();
-                        engineWasOn = false;
-                    } else {
-                        setTimeout(() => {
-                            gameState = "gameover";
-                            gameOverScreen.classList.remove('active');
-                            planetScreen.classList.add('active');
-                            atualizarUI_Planetas();
-                        }, 1000);
-                    }
-                } else {
-                    gameState = "crashed";
-                    explosaoAtiva = true;
-                    tempoExplosao = 0;
-                    audio.playExplosion();
-                    audio.stopEngine();
-                    engineWasOn = false;
-                }
-                return;
-            }
-
-            if (bottom >= 660 && !insidePadX) {
-                gameState = "crashed";
-                explosaoAtiva = true;
-                tempoExplosao = 0;
-                audio.playExplosion();
-                audio.stopEngine();
-                engineWasOn = false;
-            }
-        }
-
-        // =========================================
-        // UI DOS PLANETAS
-        // =========================================
-        function atualizarUI_Planetas() {
-            const grid = document.getElementById('planetGrid');
-            grid.innerHTML = '';
-            
-            planetasAtuais.forEach((planeta, index) => {
-                const concluido = planetasConcluidos.includes(planeta.id);
-                const desbloqueado = planetaEstaDesbloqueado(index);
-                const isCurrent = index === planetaAtualIndex && !concluido;
-                
-                const div = document.createElement('div');
-                div.className = `planet-item ${concluido ? 'completed' : ''} ${!desbloqueado ? 'locked' : 'unlocked'} ${isCurrent ? 'current' : ''}`;
-                
-                div.innerHTML = `
-                    <span class="emoji">${planeta.emoji}</span>
-                    <span class="name">${planeta.nome}</span>
-                    <span class="status">${concluido ? '✅ Concluído' : !desbloqueado ? '🔒 Bloqueado' : isCurrent ? '▶ Jogar' : '🔓 Disponível'}</span>
-                `;
-                
-                if (desbloqueado && !concluido) {
-                    div.addEventListener('click', function() {
-                        planetaAtualIndex = index;
-                        iniciarJogoNoPlaneta();
-                    });
-                }
-                
-                grid.appendChild(div);
-            });
-            
-            atualizarProgressoPlanetas();
-
-            const badge = document.getElementById('modeBadge');
-            if (badge) {
-                badge.textContent = modoAtual === 'campanha' ? '🌍 Modo Campanha' : '🔬 Modo Tempo';
-            }
-        }
-
-        function iniciarJogoNoPlaneta() {
-            planetScreen.classList.remove('active');
-            document.getElementById('game-wrapper').style.display = 'block';
-            
-            resizeCanvas();
-            resetGame();
-            applyPlaneta(planetaAtualIndex);
-            resetRocket();
-            gameState = "playing";
-            audio.stopEngine();
-            engineWasOn = false;
-            
-            atualizarRankingPreview();
-            atualizarUI_Skins();
-            atualizarRecordeDisplay();
-            
-            soundBtn.style.display = 'none';
-            rankingBtn.style.display = 'none';
-            skinToggle.style.display = 'none';
-            skinSelector.style.display = 'none';
-            
-            ocultarHUD();
-            
-            if (!gameLoopStarted) {
-                gameLoop();
-                gameLoopStarted = true;
-            }
-            
-            render();
-        }
-
-        // =========================================
-        // RANKING FUNCTIONS
-        // =========================================
-        function atualizarRankingPreview() {
-            const list = document.getElementById('rankingList');
-            if (!list) return;
-            if (ranking.length === 0) {
-                list.innerHTML = 'Nenhum recorde ainda. Seja o primeiro! 🏆';
-                list.className = 'empty';
-                return;
-            }
-            list.className = '';
-            const medalhas = ['🥇', '🥈', '🥉'];
-            let html = '';
-            ranking.forEach((item, index) => {
-                const medalha = medalhas[index] || '🏅';
-                html += `${medalha} <strong>${item.nome}</strong> — ${item.score} pts<br>`;
-            });
-            list.innerHTML = html;
-        }
-
-        function atualizarRankingFull() {
-            const list = document.getElementById('rankingListFull');
-            if (!list) return;
-            if (ranking.length === 0) {
-                list.innerHTML = '<div class="empty">Nenhum recorde ainda.<br>Seja o primeiro! 🚀</div>';
-                return;
-            }
-            const medalhas = ['🥇', '🥈', '🥉'];
-            let html = '';
-            ranking.forEach((item, index) => {
-                const medalha = medalhas[index] || '🏅';
-                html += `<div>${medalha} <strong>${item.nome}</strong> — ${item.score} pts</div>`;
-            });
-            list.innerHTML = html;
-
-            const extra = document.getElementById('recordesExtra');
-            if (extra) {
-                const total = planetasAtuais.length;
-                extra.innerHTML = `
-                    🏆 Recorde de Pousos: <strong>${recordePousos}</strong> pousos<br>
-                    ⭐ Recorde de Pontuação: <strong>${recordePontuacaoInfinito}</strong> pts<br>
-                    🌍 ${modoAtual === 'campanha' ? '🌍 Campanha' : '🔬 Tempo'}: <strong>${planetasConcluidos.length}/${total}</strong> corpos
-                `;
-            }
-        }
-
-        // =========================================
-        // SELEÇÃO DE MODO
-        // =========================================
-        function selecionarModo(modo) {
-            modoAtual = modo;
-            planetasAtuais = modo === 'campanha' ? CAMPANHA : TEMPO;
-            
-            planetasConcluidos = safeJSONParse(`rocketPlanetasConcluidos_${modo}`, []);
-            planetaAtualIndex = getProximoPlanetaNaoConcluido();
-            if (planetaAtualIndex === -1) planetaAtualIndex = 0;
-            
-            modeScreen.classList.remove('active');
-            planetScreen.classList.add('active');
-            atualizarUI_Planetas();
-            atualizarRecordeDisplay();
-            atualizarProgressoPlanetas();
-        }
-
-        // =========================================
-        // RESETAR PROGRESSO
-        // =========================================
-        document.getElementById('resetProgressBtn').addEventListener('click', function() {
-            const modoNome = modoAtual === 'campanha' ? 'Campanha' : 'Tempo';
-            if (confirm(`⚠️ Tem certeza que deseja resetar todo o progresso do MODO ${modoNome.toUpperCase()}?\n\nIsso vai apagar todos os planetas concluídos e você vai começar do zero!`)) {
-                planetasConcluidos = [];
-                salvarProgressoPlanetas();
-                planetaAtualIndex = 0;
-                atualizarUI_Planetas();
-                atualizarProgressoPlanetas();
-                atualizarRecordeDisplay();
-                alert(`✅ Progresso do MODO ${modoNome.toUpperCase()} resetado com sucesso!`);
-            }
-        });
-
-        // =========================================
-        // EVENTOS DOS BOTÕES (RANKING CORRIGIDO)
-        // =========================================
-        soundBtn.addEventListener("click", function() {
-            const enabled = audio.toggle();
-            soundBtn.textContent = enabled ? "🔊 Som: Ligado" : "🔇 Som: Desligado";
-            const menuSound = document.getElementById('menuSound');
-            if (menuSound) menuSound.textContent = enabled ? '🔊 SOM' : '🔇 SOM';
-        });
-
-        document.getElementById('menuJogar').addEventListener('click', function() {
-            menuScreen.classList.add('hidden');
-            modeScreen.classList.add('active');
-        });
-
-        document.getElementById('backMode').addEventListener('click', function() {
-            modeScreen.classList.remove('active');
-            menuScreen.classList.remove('hidden');
-        });
-
-        document.getElementById('backModeBtn').addEventListener('click', function() {
-            modeScreen.classList.remove('active');
-            menuScreen.classList.remove('hidden');
-        });
-
-        document.getElementById('modeCampaign').addEventListener('click', function() {
-            selecionarModo('campanha');
-        });
-
-        document.getElementById('modeTime').addEventListener('click', function() {
-            selecionarModo('tempo');
-        });
-
-        document.getElementById('backPlanet').addEventListener('click', function() {
-            planetScreen.classList.remove('active');
-            modeScreen.classList.add('active');
-        });
-
-        document.getElementById('backPlanetBtn').addEventListener('click', function() {
-            planetScreen.classList.remove('active');
-            modeScreen.classList.add('active');
-        });
-
-        // RANKING - CORRIGIDO
-        document.getElementById('menuRanking').addEventListener('click', function() {
-            menuScreen.classList.add('hidden');
-            atualizarRankingFull();
-            rankingScreen.classList.add('active');
-        });
-
-        document.getElementById('ranking-btn').addEventListener('click', function() {
-            menuScreen.classList.add('hidden');
-            atualizarRankingFull();
-            rankingScreen.classList.toggle('active');
-        });
-
-        document.getElementById('backRanking').addEventListener('click', function() {
-            rankingScreen.classList.remove('active');
-            menuScreen.classList.remove('hidden');
-        });
-
-        document.getElementById('closeRanking').addEventListener('click', function() {
-            rankingScreen.classList.remove('active');
-            menuScreen.classList.remove('hidden');
-        });
-
-        document.getElementById('backSkins').addEventListener('click', function() {
-            skinsMenuScreen.classList.remove('active');
-        });
-
-        document.getElementById('backHelp').addEventListener('click', function() {
-            helpScreen.classList.remove('active');
-        });
-
-        document.addEventListener("keydown", function(e) {
-            if (e.key === "Escape") {
-                if (helpScreen.classList.contains('active')) {
-                    helpScreen.classList.remove('active');
-                }
-                if (skinsMenuScreen.classList.contains('active')) {
-                    skinsMenuScreen.classList.remove('active');
-                }
-                if (rankingScreen.classList.contains('active')) {
-                    rankingScreen.classList.remove('active');
-                    menuScreen.classList.remove('hidden');
-                }
-                if (planetScreen.classList.contains('active')) {
-                    planetScreen.classList.remove('active');
-                    modeScreen.classList.add('active');
-                }
-                if (modeScreen.classList.contains('active')) {
-                    modeScreen.classList.remove('active');
-                    menuScreen.classList.remove('hidden');
-                }
-                if (skinSelector.style.display === 'flex') {
-                    skinSelector.style.display = 'none';
-                }
-                if (gameOverScreen.classList.contains('active')) {
-                    voltarMenuDoGameOver();
-                }
-            }
-        });
-
-        // SKIN TOGGLE
-        skinToggle.addEventListener("click", function() {
-            if (skinSelector.style.display === 'flex') {
-                skinSelector.style.display = 'none';
-            } else {
-                skinSelector.style.display = 'flex';
-                atualizarUI_Skins();
-            }
-        });
-
-        document.addEventListener('click', function(e) {
-            if (skinSelector.style.display === 'flex') {
-                if (!skinSelector.contains(e.target) && e.target !== skinToggle) {
-                    skinSelector.style.display = 'none';
-                }
-            }
-        });
-
-        // MENU PRINCIPAL
-        document.getElementById('menuSkins').addEventListener('click', function() {
-            atualizarUI_Skins();
-            skinsMenuScreen.classList.add('active');
-        });
-
-        document.getElementById('closeSkinsMenu').addEventListener('click', function() {
-            skinsMenuScreen.classList.remove('active');
-        });
-
-        document.getElementById('menuHelp').addEventListener('click', function() {
-            helpScreen.classList.add('active');
-        });
-
-        document.getElementById('closeHelp').addEventListener('click', function() {
-            helpScreen.classList.remove('active');
-        });
-
-        document.getElementById('menuSound').addEventListener('click', function() {
-            const enabled = audio.toggle();
-            const btn = document.getElementById('menuSound');
-            btn.textContent = enabled ? '🔊 SOM' : '🔇 SOM';
-            soundBtn.textContent = enabled ? '🔊 Som: Ligado' : '🔇 Som: Desligado';
-        });
-
-        // GAME OVER
-        function reiniciarDoGameOver() {
-            gameOverScreen.classList.remove('active');
-            if (planetasConcluidos.length === planetasAtuais.length) {
-                planetScreen.classList.add('active');
-                atualizarUI_Planetas();
-                return;
-            }
-            resetGame();
-            gameState = "playing";
-            audio.stopEngine();
-            engineWasOn = false;
-        }
-
-        function voltarMenuDoGameOver() {
-            gameOverScreen.classList.remove('active');
-            menuScreen.classList.remove('hidden');
-            loginScreen.classList.add('hidden');
-            gameState = "playing";
-            audio.stopEngine();
-            engineWasOn = false;
-            atualizarRecordeDisplay();
-        }
-
-        goRetry.addEventListener('click', reiniciarDoGameOver);
-        goMenu.addEventListener('click', voltarMenuDoGameOver);
-        goPlanets.addEventListener('click', function() {
-            gameOverScreen.classList.remove('active');
-            planetScreen.classList.add('active');
-            atualizarUI_Planetas();
-        });
-
-        // =========================================
-        // HUD
-        // =========================================
-        function drawHUD() {
-            const planeta = getPlanetaConfig(planetaAtualIndex);
-            const modoTexto = modoAtual === 'campanha' ? '🌍' : '🔬';
-            info.innerHTML = `
-                <div style="background:rgba(7,11,20,0.8);padding:8px 14px;border-radius:8px;border:1px solid var(--panel-line, rgba(255,255,255,0.1));font-size:12px;line-height:1.6;font-family:var(--font-mono, 'Courier New', monospace);">
-                    <div>⬆️ Vel. Vertical: <span style="color:var(--cyan);">${Math.abs(rocket.vy).toFixed(2)}</span> / ${planeta.maxSpeedV.toFixed(1)}</div>
-                    <div>➡️ Vel. Horizontal: <span style="color:var(--cyan);">${Math.abs(rocket.vx).toFixed(2)}</span> / ${planeta.maxSpeedH.toFixed(1)}</div>
-                    <div style="color:var(--amber);">⭐ Pontuação: ${pontuacaoAtual}</div>
-                    <div style="color:var(--cyan);">🔄 Pousos: ${pousosAtuais}</div>
-                    <div style="color:#ff6b6b;">🏆 Recorde: ${recordePousos}</div>
-                    <div style="color:var(--cyan);font-size:11px;">👤 ${currentPlayer || "Anônimo"}</div>
-                    <div style="color:#aaa;font-size:10px;">${modoTexto} ${planeta.emoji} ${planeta.nome}</div>
-                    ${gamepadConnected ? '<div style="color:var(--cyan);font-size:9px;">🎮 Controle: Conectado</div>' : ''}
-                </div>
-            `;
-        }
-
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawStars();
-            desenharNuvens();
-            desenharMeteoros();
-            drawGround();
-            drawTarget();
-            desenharRastro();
-            drawRocket();
-            drawFuelBar();
-            drawSpeedometer();
-            desenharPoeira();
-            drawMessage();
-            drawHUD();
-        }
-
-        // =========================================
-        // POLYFILL
-        // =========================================
-        if (!CanvasRenderingContext2D.prototype.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
-                const r = typeof radii === 'number' ? radii : (radii || 0);
-                this.moveTo(x + r, y);
-                this.arcTo(x + w, y, x + w, y + h, r);
-                this.arcTo(x + w, y + h, x, y + h, r);
-                this.arcTo(x, y + h, x, y, r);
-                this.arcTo(x, y, x + w, y, r);
-                return this;
-            };
-        }
-
-        // =========================================
-        // FUNÇÃO PARA MOSTRAR/OCULTAR BOTÕES
-        // =========================================
-        function toggleButtons(show) {
-            const btns = [
-                document.getElementById('sound-toggle'),
-                document.getElementById('ranking-btn'),
-                document.getElementById('skin-toggle'),
-                document.getElementById('skin-selector')
-            ];
-            btns.forEach(btn => {
-                if (btn) {
-                    if (show) {
-                        btn.classList.add('show-buttons');
-                    } else {
-                        btn.classList.remove('show-buttons');
-                    }
-                }
-            });
-        }
-
-        // =========================================
-        // LOOP DO JOGO
-        // =========================================
-        function gameLoop() {
-            update();
-            render();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // =========================================
-        // INICIAR JOGO
-        // =========================================
-        function iniciarJogo(nome) {
-            currentPlayer = nome.trim() || "Anônimo";
-            localStorage.setItem('rocketPlayerName', currentPlayer);
-
-            menuScreen.classList.add('hidden');
-            loginScreen.classList.add('hidden');
-            gameOverScreen.classList.remove('active');
-
-            resizeCanvas();
-
-            planetasConcluidos = safeJSONParse(`rocketPlanetasConcluidos_${modoAtual}`, []);
-            planetaAtualIndex = getProximoPlanetaNaoConcluido();
-            if (planetaAtualIndex === -1) planetaAtualIndex = 0;
-
-            resetGame();
-            applyPlaneta(planetaAtualIndex);
-            resetRocket();
-            gameState = "playing";
-            audio.stopEngine();
-            engineWasOn = false;
-
-            atualizarRankingPreview();
-            atualizarUI_Skins();
-            atualizarRecordeDisplay();
-            atualizarProgressoPlanetas();
-
-            toggleButtons(false);
-
-            soundBtn.style.display = 'none';
-            rankingBtn.style.display = 'none';
-            skinToggle.style.display = 'none';
-            skinSelector.style.display = 'none';
-
-            ocultarHUD();
-
-            if (!gameLoopStarted) {
-                gameLoop();
-                gameLoopStarted = true;
-            }
-
-            render();
-            console.log(`🚀 Bem-vindo, ${currentPlayer}!`);
-            console.log(`🌍 Modo: ${modoAtual.toUpperCase()}`);
-            console.log(`🌍 Corpo: ${planetasAtuais[planetaAtualIndex].emoji} ${planetasAtuais[planetaAtualIndex].nome}`);
-        }
-
-        // =========================================
-        // EVENTOS DA TELA DE LOGIN
-        // =========================================
-        document.addEventListener("DOMContentLoaded", function() {
-            atualizarRankingPreview();
-            atualizarRecordeDisplay();
-            atualizarProgressoPlanetas();
-
-            const nomeSalvo = localStorage.getItem('rocketPlayerName');
-            if (nomeSalvo) {
-                nameInput.value = nomeSalvo;
-            }
-
-            atualizarSkinsDisponiveis();
-
-            menuScreen.classList.remove('hidden');
-            loginScreen.classList.add('hidden');
-
-            startBtn.addEventListener("click", function() {
-                const nome = nameInput.value.trim() || "Anônimo";
-                modoAtual = 'campanha';
-                planetasAtuais = CAMPANHA;
-                iniciarJogo(nome);
-            });
-
-            nameInput.addEventListener("keydown", function(e) {
-                if (e.key === "Enter") {
-                    startBtn.click();
-                }
-            });
-
-            const menuSoundBtn = document.getElementById('menuSound');
-            if (!audio.enabled) {
-                menuSoundBtn.textContent = '🔇 SOM';
-                soundBtn.textContent = '🔇 Som: Desligado';
-            }
-
-            document.addEventListener('click', function initAudio() {
-                audio.init();
-                document.removeEventListener('click', initAudio);
-            }, { once: true });
-
-            console.log("⏳ Parado no Tempo — Jornada Planetária carregado!");
-            console.log("🌍 Dois modos de jogo disponíveis!");
-            console.log("🎮 Ranking corrigido!");
-            console.log("🔄 Botão de resetar progresso adicionado!");
-        });
-
-        document.addEventListener('click', function initAudio() {
-            audio.init();
-            document.removeEventListener('click', initAudio);
-        }, { once: true });
-
-        console.log("⏳ PARADO NO TEMPO — JORNADA PLANETÁRIA v2.1");
-        console.log("🌍 Modo Campanha — Dificuldade progressiva");
-        console.log("🔬 Modo Tempo — Gravidade baseada na ciência real");
-        console.log("🏆 Ranking corrigido — agora abre por cima do menu");
-        console.log("🔄 Botão de resetar progresso adicionado");
-        console.log("🚀 Conquiste todos os 22 corpos celestes!");
-        console.log("🎮 Aproveite!");
-    </script>
+      });
+
+      // Reset pelo botão
+      document.getElementById('resetButton').addEventListener('click', resetGame);
+
+      // Registro dos eventos principais
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keyup', handleKeyUp);
+      canvas.addEventListener('click', handleCanvasClick);
+
+      // Inicializa
+      resetGame();
+      gameLoop();
+
+      // Cleanup (opcional, mas bom para recarregar)
+      window.addEventListener('beforeunload', function() {
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('keyup', handleKeyUp);
+        canvas.removeEventListener('click', handleCanvasClick);
+      });
+
+    })();
+  </script>
 </body>
 </html>
