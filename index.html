@@ -1,495 +1,211 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🚀 Pouso Lunar</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      user-select: none;
-    }
-
-    body {
-      background: #0b0e1a;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Courier New', monospace;
-    }
-
-    .game-container {
-      background: #141a2b;
-      padding: 20px 30px 30px;
-      border-radius: 40px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    canvas {
-      display: block;
-      background: radial-gradient(circle at 20% 30%, #1a2340, #0a0e1a);
-      border-radius: 24px;
-      box-shadow: inset 0 0 30px rgba(0, 20, 60, 0.8), 0 10px 20px rgba(0,0,0,0.6);
-      cursor: pointer;
-      width: 600px;
-      height: 600px;
-    }
-
-    .dashboard {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 18px;
-      color: #b7e1fa;
-      text-shadow: 0 0 8px #00a6ff;
-      font-weight: bold;
-      font-size: 1.2rem;
-      background: #0e1422cc;
-      padding: 12px 24px;
-      border-radius: 60px;
-      backdrop-filter: blur(4px);
-      border: 1px solid #2f4b7a;
-      box-shadow: inset 0 0 12px #1a3355;
-    }
-
-    .data {
-      display: flex;
-      gap: 30px;
-    }
-
-    .data span {
-      background: #070b14;
-      padding: 6px 18px;
-      border-radius: 40px;
-      border: 1px solid #2f6f9f;
-      color: #8fcbff;
-    }
-
-    button {
-      background: #1e3b5e;
-      border: none;
-      color: white;
-      font-weight: bold;
-      font-size: 1.2rem;
-      padding: 8px 28px;
-      border-radius: 40px;
-      cursor: pointer;
-      box-shadow: 0 0 10px #0077ff66, inset 0 1px 0 #7abaff;
-      transition: all 0.15s;
-      font-family: inherit;
-      letter-spacing: 1px;
-      border: 1px solid #3f7fb0;
-    }
-
-    button:hover {
-      background: #2a4f7a;
-      box-shadow: 0 0 20px #0080ffaa, inset 0 1px 0 #b0daff;
-      transform: scale(1.02);
-    }
-
-    button:active {
-      transform: scale(0.96);
-      background: #12324f;
-    }
-
-    .controls {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .key-hint {
-      color: #6b8aaa;
-      font-size: 0.8rem;
-      letter-spacing: 1px;
-      background: #0a111f;
-      padding: 4px 16px;
-      border-radius: 30px;
-      border: 1px solid #28415e;
-    }
-
-    @media (max-width: 700px) {
-      canvas {
-        width: 90vw;
-        height: 90vw;
-      }
-      .dashboard {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 12px;
-      }
-      .data {
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Lunar Lander</title>
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:black;
+    color:#0f0;
+    font-family:monospace;
+}
+canvas{
+    display:block;
+}
+#hud{
+    position:absolute;
+    top:10px;
+    left:10px;
+}
+</style>
 </head>
 <body>
-  <div class="game-container">
-    <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-    <div class="dashboard">
-      <div class="data">
-        <span>📉 <span id="altitudeDisplay">100</span>m</span>
-        <span>⚡ <span id="velocityDisplay">0.0</span>m/s</span>
-        <span>⛽ <span id="fuelDisplay">100</span>%</span>
-      </div>
-      <div class="controls">
-        <span class="key-hint">⬆️ acelera</span>
-        <button id="resetButton">🔄 Reiniciar</button>
-      </div>
-    </div>
-  </div>
+<div id="hud"></div>
+<canvas id="game"></canvas>
 
-  <script>
-    (function(){
-      const canvas = document.getElementById('gameCanvas');
-      const ctx = canvas.getContext('2d');
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-      // Elementos do display
-      const altitudeSpan = document.getElementById('altitudeDisplay');
-      const velocitySpan = document.getElementById('velocityDisplay');
-      const fuelSpan = document.getElementById('fuelDisplay');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-      // Configurações do jogo
-      const GRAVITY = 0.15;        // aceleração por frame (queda)
-      const THRUST_POWER = 0.22;    // aceleração para cima por frame
-      const FUEL_CONSUMPTION = 0.7; // consumo por frame com thrust
-      const MAX_FUEL = 100;
-      const LANDING_Y = 530;        // y do chão (base da nave)
-      const ROCKET_WIDTH = 32;
-      const ROCKET_HEIGHT = 48;
+const keys = {};
 
-      // Estado do jogo
-      let rocket = {
-        x: 300,
-        y: 80,           // começa no alto
-        vy: 0.2,
-        fuel: MAX_FUEL,
-        altitude: 100,   // metros (simulado)
-      };
+document.addEventListener("keydown",e=>keys[e.key]=true);
+document.addEventListener("keyup",e=>keys[e.key]=false);
 
-      let gameOver = false;
-      let victory = false;
-      let thrustActive = false;
-      let animFrameId = null;
+let fuel, x, y, vx, vy, angle;
+let landed = false;
+let crashed = false;
 
-      // reset completo
-      function resetGame() {
-        rocket = {
-          x: 300,
-          y: 80,
-          vy: 0.2,
-          fuel: MAX_FUEL,
-          altitude: 100,
-        };
-        gameOver = false;
-        victory = false;
-        thrustActive = false;
-        updateDisplay();
-        draw(); // redesenho imediato
-      }
+const pad = {
+    x: canvas.width/2 - 60,
+    y: canvas.height - 80,
+    width: 120
+};
 
-      // Atualiza os textos do painel
-      function updateDisplay() {
-        const alt = Math.max(0, Math.round(rocket.altitude));
-        altitudeSpan.textContent = alt;
+function reset(){
+    fuel = 1000;
+    x = canvas.width/2;
+    y = 100;
+    vx = 0;
+    vy = 0;
+    angle = 0;
+    landed = false;
+    crashed = false;
+}
 
-        const vel = rocket.vy;
-        velocitySpan.textContent = vel.toFixed(1);
+reset();
 
-        const fuelPercent = Math.max(0, Math.round(rocket.fuel));
-        fuelSpan.textContent = fuelPercent;
-      }
+function update(){
 
-      // Lógica principal de física e colisão
-      function updateGame() {
-        if (gameOver || victory) return;
+    if(landed || crashed){
+        if(keys["r"] || keys["R"]) reset();
+        return;
+    }
 
-        // 1. Aplica gravidade (sempre)
-        rocket.vy += GRAVITY;
+    if(keys["ArrowLeft"]) angle -= 0.05;
+    if(keys["ArrowRight"]) angle += 0.05;
 
-        // 2. Aplica thrust se ativo e com combustível
-        if (thrustActive && rocket.fuel > 0 && !gameOver && !victory) {
-          rocket.vy -= THRUST_POWER;
-          rocket.fuel = Math.max(0, rocket.fuel - FUEL_CONSUMPTION);
+    vy += 0.04;
+
+    if(keys["ArrowUp"] && fuel > 0){
+
+        fuel -= 2;
+
+        vx += Math.sin(angle) * 0.08;
+        vy -= Math.cos(angle) * 0.08;
+    }
+
+    x += vx;
+    y += vy;
+
+    if(y >= pad.y - 15){
+
+        const onPad =
+            x > pad.x &&
+            x < pad.x + pad.width;
+
+        const safeVertical = Math.abs(vy) < 1.5;
+        const safeHorizontal = Math.abs(vx) < 1;
+        const safeAngle = Math.abs(angle) < 0.2;
+
+        if(onPad && safeVertical && safeHorizontal && safeAngle){
+            landed = true;
+        }else{
+            crashed = true;
         }
+    }
+}
 
-        // 3. Atualiza posição Y
-        rocket.y += rocket.vy;
+function drawTerrain(){
 
-        // 4. Calcula altitude (em metros) baseado na posição Y
-        //    Distância do chão (LANDING_Y) até o topo da nave (y)
-        const distanceFromGround = LANDING_Y - rocket.y;
-        rocket.altitude = Math.max(0, (distanceFromGround / 5.3).toFixed(1)); // escala arbitrária
+    ctx.strokeStyle="#0f0";
+    ctx.lineWidth=2;
 
-        // 5. Verifica colisão com o chão
-        if (rocket.y >= LANDING_Y) {
-          rocket.y = LANDING_Y; // trava no chão
+    ctx.beginPath();
+    ctx.moveTo(0,pad.y);
 
-          // Velocidade de impacto (módulo)
-          const impactSpeed = Math.abs(rocket.vy);
+    for(let i=0;i<canvas.width;i+=40){
 
-          // Critério de pouso suave: velocidade < 1.2 m/s e nave razoavelmente vertical
-          if (impactSpeed < 1.2) {
-            victory = true;
-            gameOver = false; // não é game over, é vitória
-          } else {
-            gameOver = true;
-            victory = false;
-          }
-
-          // Congela a velocidade após o impacto
-          rocket.vy = 0;
+        if(i > pad.x-40 && i < pad.x+pad.width+40){
+            ctx.lineTo(i,pad.y);
+        }else{
+            ctx.lineTo(
+                i,
+                pad.y + Math.sin(i*0.03)*20
+            );
         }
+    }
 
-        // 6. Se ficar sem combustível, desativa o thrust visual
-        if (rocket.fuel <= 0) {
-          thrustActive = false;
-        }
+    ctx.stroke();
 
-        // 7. Se sair da tela por cima (não deve acontecer, mas segurança)
-        if (rocket.y < -50) {
-          rocket.y = -30;
-          rocket.vy = 0.2;
-        }
+    ctx.strokeRect(
+        pad.x,
+        pad.y-2,
+        pad.width,
+        4
+    );
+}
 
-        // Atualiza display
-        updateDisplay();
-      }
+function drawShip(){
 
-      // ----- DESENHO -----
-      function draw() {
-        ctx.clearRect(0, 0, 600, 600);
+    ctx.save();
 
-        // --- Chão lunar ---
-        ctx.fillStyle = '#2b3f5e';
-        ctx.shadowColor = '#2f6f9f';
-        ctx.shadowBlur = 20;
-        ctx.beginPath();
-        ctx.rect(0, LANDING_Y, 600, 70);
-        ctx.fill();
+    ctx.translate(x,y);
+    ctx.rotate(angle);
 
-        // Base de pouso (plataforma)
-        ctx.shadowBlur = 30;
-        ctx.fillStyle = '#3d5f7a';
-        ctx.beginPath();
-        ctx.rect(240, LANDING_Y-4, 120, 12);
-        ctx.fill();
-        ctx.fillStyle = '#5f8bb0';
-        ctx.beginPath();
-        ctx.rect(260, LANDING_Y-8, 80, 8);
-        ctx.fill();
+    ctx.strokeStyle="#FFF";
+    ctx.lineWidth=2;
 
-        // Detalhes da base
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#aac7e6';
-        ctx.beginPath();
-        ctx.rect(290, LANDING_Y-16, 20, 12);
-        ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0,-15);
+    ctx.lineTo(10,10);
+    ctx.lineTo(-10,10);
+    ctx.closePath();
+    ctx.stroke();
 
-        // --- Estrelas (decoração) ---
-        ctx.shadowBlur = 6;
-        ctx.fillStyle = '#f0f9ff';
-        for (let i = 0; i < 40; i++) {
-          const x = (i * 31) % 600;
-          const y = (i * 17) % 300;
-          ctx.beginPath();
-          ctx.arc(x, y, (i % 3) + 1, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // --- FOGO DO MOTOR (se thrust ativo e combustível > 0) ---
-        if (thrustActive && rocket.fuel > 0 && !gameOver && !victory) {
-          ctx.shadowBlur = 60;
-          ctx.shadowColor = '#ff8800';
-          const gradient = ctx.createRadialGradient(
-            rocket.x, rocket.y + ROCKET_HEIGHT/2 + 10, 2,
-            rocket.x, rocket.y + ROCKET_HEIGHT/2 + 30, 28
-          );
-          gradient.addColorStop(0, '#ffcc44');
-          gradient.addColorStop(0.6, '#ff7700');
-          gradient.addColorStop(1, '#ff2200aa');
-          ctx.fillStyle = gradient;
-          ctx.beginPath();
-          ctx.ellipse(rocket.x, rocket.y + ROCKET_HEIGHT/2 + 20, 18, 32, 0, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Chamas secundárias
-          ctx.shadowBlur = 40;
-          ctx.fillStyle = '#ffaa33cc';
-          ctx.beginPath();
-          ctx.ellipse(rocket.x-10, rocket.y + ROCKET_HEIGHT/2 + 10, 6, 16, 0.2, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.beginPath();
-          ctx.ellipse(rocket.x+10, rocket.y + ROCKET_HEIGHT/2 + 10, 6, 16, -0.2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // --- NAVE (foguete) ---
-        ctx.shadowBlur = 30;
-        ctx.shadowColor = '#7fc0ff';
-
-        // Corpo principal
-        const gradientBody = ctx.createLinearGradient(rocket.x-16, rocket.y-20, rocket.x+16, rocket.y+20);
-        gradientBody.addColorStop(0, '#e0f0ff');
-        gradientBody.addColorStop(0.4, '#b0d0f0');
-        gradientBody.addColorStop(1, '#7a9ec0');
-        ctx.fillStyle = gradientBody;
+    if(keys["ArrowUp"] && fuel > 0 && !landed){
 
         ctx.beginPath();
-        ctx.roundRect(rocket.x - ROCKET_WIDTH/2, rocket.y - ROCKET_HEIGHT/2, ROCKET_WIDTH, ROCKET_HEIGHT, 10);
-        ctx.fill();
+        ctx.moveTo(-4,10);
+        ctx.lineTo(0,20 + Math.random()*10);
+        ctx.lineTo(4,10);
+        ctx.stroke();
+    }
 
-        // Detalhe da janela
-        ctx.shadowBlur = 16;
-        ctx.fillStyle = '#7fc8ff';
-        ctx.beginPath();
-        ctx.arc(rocket.x, rocket.y - 6, 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#b3e4ff';
-        ctx.beginPath();
-        ctx.arc(rocket.x-2, rocket.y-10, 5, 0, Math.PI * 2);
-        ctx.fill();
+    ctx.restore();
+}
 
-        // Cone superior
-        ctx.fillStyle = '#c6dff5';
-        ctx.beginPath();
-        ctx.moveTo(rocket.x, rocket.y - ROCKET_HEIGHT/2 - 16);
-        ctx.lineTo(rocket.x - 16, rocket.y - ROCKET_HEIGHT/2 + 4);
-        ctx.lineTo(rocket.x + 16, rocket.y - ROCKET_HEIGHT/2 + 4);
-        ctx.closePath();
-        ctx.fill();
+function draw(){
 
-        // Asas laterais
-        ctx.fillStyle = '#a0bcd9';
-        ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.roundRect(rocket.x - ROCKET_WIDTH/2 - 6, rocket.y + 2, 6, 18, 4);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.roundRect(rocket.x + ROCKET_WIDTH/2, rocket.y + 2, 6, 18, 4);
-        ctx.fill();
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        // Sombra no chão (opcional)
-        ctx.shadowBlur = 0;
+    drawTerrain();
+    drawShip();
 
-        // --- Mensagem de vitória / game over ---
-        ctx.font = 'bold 36px "Courier New", monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowBlur = 30;
-        ctx.shadowColor = '#000000aa';
+    document.getElementById("hud").innerHTML = `
+        COMBUSTÍVEL: ${Math.floor(fuel)}<br>
+        VEL X: ${vx.toFixed(2)}<br>
+        VEL Y: ${vy.toFixed(2)}<br>
+        ÂNGULO: ${(angle*57.3).toFixed(1)}°
+    `;
 
-        if (victory) {
-          ctx.fillStyle = '#b7ffb7';
-          ctx.shadowColor = '#00ff88';
-          ctx.fillText('✨ POUSO PERFEITO! ✨', 300, 120);
-        } else if (gameOver) {
-          ctx.fillStyle = '#ff7b7b';
-          ctx.shadowColor = '#ff2244';
-          ctx.fillText('💥 EXPLODIU! 💥', 300, 120);
-        }
+    if(landed){
 
-        // Reset do shadow
-        ctx.shadowBlur = 0;
-        ctx.shadowColor = 'transparent';
-      }
+        ctx.fillStyle="#0f0";
+        ctx.font="40px monospace";
+        ctx.fillText(
+            "POUSO BEM-SUCEDIDO",
+            canvas.width/2-220,
+            canvas.height/2
+        );
+    }
 
-      // roundRect helper
-      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-        if (w < 2 * r) r = w / 2;
-        if (h < 2 * r) r = h / 2;
-        this.moveTo(x + r, y);
-        this.lineTo(x + w - r, y);
-        this.quadraticCurveTo(x + w, y, x + w, y + r);
-        this.lineTo(x + w, y + h - r);
-        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        this.lineTo(x + r, y + h);
-        this.quadraticCurveTo(x, y + h, x, y + h - r);
-        this.lineTo(x, y + r);
-        this.quadraticCurveTo(x, y, x + r, y);
-        return this;
-      };
+    if(crashed){
 
-      // ----- LOOP PRINCIPAL -----
-      function gameLoop() {
-        updateGame();
-        draw();
-        animFrameId = requestAnimationFrame(gameLoop);
-      }
+        ctx.fillStyle="red";
+        ctx.font="40px monospace";
+        ctx.fillText(
+            "CRASH!",
+            canvas.width/2-80,
+            canvas.height/2
+        );
+    }
+}
 
-      // ----- CONTROLES (teclado e mouse) -----
-      function handleKeyDown(e) {
-        const key = e.key;
-        if (key === 'ArrowUp' || key === 'w' || key === 'W') {
-          e.preventDefault();
-          if (!gameOver && !victory && rocket.fuel > 0) {
-            thrustActive = true;
-          }
-        }
-        // Reset com tecla R
-        if (key === 'r' || key === 'R') {
-          e.preventDefault();
-          resetGame();
-        }
-      }
+function loop(){
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
 
-      function handleKeyUp(e) {
-        const key = e.key;
-        if (key === 'ArrowUp' || key === 'w' || key === 'W') {
-          e.preventDefault();
-          thrustActive = false;
-        }
-      }
+loop();
+</script>
 
-      // Clique no canvas: alterna thrust (mobile/desktop)
-      function handleCanvasClick(e) {
-        e.preventDefault();
-        if (gameOver || victory) return;
-        if (rocket.fuel <= 0) {
-          thrustActive = false;
-          return;
-        }
-        thrustActive = !thrustActive;
-      }
-
-      // Evita que a página role com as setas
-      window.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') {
-          e.preventDefault();
-        }
-      });
-
-      // Reset pelo botão
-      document.getElementById('resetButton').addEventListener('click', resetGame);
-
-      // Registro dos eventos principais
-      document.addEventListener('keydown', handleKeyDown);
-      document.addEventListener('keyup', handleKeyUp);
-      canvas.addEventListener('click', handleCanvasClick);
-
-      // Inicializa
-      resetGame();
-      gameLoop();
-
-      // Cleanup (opcional, mas bom para recarregar)
-      window.addEventListener('beforeunload', function() {
-        if (animFrameId) cancelAnimationFrame(animFrameId);
-        document.removeEventListener('keydown', handleKeyDown);
-        document.removeEventListener('keyup', handleKeyUp);
-        canvas.removeEventListener('click', handleCanvasClick);
-      });
-
-    })();
-  </script>
 </body>
 </html>
