@@ -27,6 +27,21 @@ canvas{
 <canvas id="game"></canvas>
 
 <script>
+// =========================================
+// POLYFILL roundRect para o foguete estilizado
+// =========================================
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+        const r = typeof radii === 'number' ? radii : (radii || 0);
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        return this;
+    };
+}
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
@@ -41,6 +56,13 @@ document.addEventListener("keyup",e=>keys[e.key]=false);
 let fuel, x, y, vx, vy, angle;
 let landed = false;
 let crashed = false;
+
+// Skin do foguete (cores)
+const skinAtual = {
+    cor: '#e0e0e0',
+    corDetalhe: '#5fd4d6',
+    corChama: '#5fd4d6'
+};
 
 const pad = {
     x: canvas.width/2 - 60,
@@ -124,38 +146,168 @@ function drawTerrain(){
 
     ctx.stroke();
 
-    ctx.strokeRect(
-        pad.x,
-        pad.y-2,
-        pad.width,
-        4
-    );
+    // Plataforma com brilho
+    ctx.fillStyle = "#0f0";
+    ctx.shadowColor = "#0f0";
+    ctx.shadowBlur = 20;
+    ctx.fillRect(pad.x, pad.y-2, pad.width, 4);
+    ctx.shadowBlur = 0;
 }
 
+// =========================================
+// FOGUETE ESTILIZADO (do segundo código)
+// =========================================
 function drawShip(){
-
     ctx.save();
-
-    ctx.translate(x,y);
+    ctx.translate(x, y);
     ctx.rotate(angle);
 
-    ctx.strokeStyle="#FFF";
-    ctx.lineWidth=2;
+    const scale = 0.8;
+    const cor = skinAtual.cor;
+    const corDetalhe = skinAtual.corDetalhe;
+    const corChama = skinAtual.corChama;
+
+    // Assento
+    const seatY = 16 * scale;
+    const seatWidth = 22 * scale;
+    const seatHeight = 8 * scale;
+
+    ctx.fillStyle = "#b8860b";
+    ctx.shadowColor = "rgba(0,0,0,0.3)";
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    ctx.roundRect(-seatWidth/2, seatY, seatWidth, seatHeight, 4);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Braços do assento
+    ctx.fillStyle = "#cd853f";
+    ctx.beginPath();
+    ctx.roundRect(-12 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(8 * scale, seatY - 10 * scale, 4 * scale, 14 * scale, 2);
+    ctx.fill();
+
+    // Corpo do foguete
+    ctx.fillStyle = "#4a7c59";
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.roundRect(-8 * scale, seatY - 18 * scale, 16 * scale, 18 * scale, 3);
+    ctx.fill();
+
+    // Capacete
+    ctx.fillStyle = "#f5f5dc";
+    ctx.shadowColor = "rgba(0,0,0,0.2)";
+    ctx.shadowBlur = 4;
+    ctx.beginPath();
+    ctx.arc(0, seatY - 22 * scale, 8 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Visor
+    ctx.fillStyle = "#1a1a2e";
+    ctx.beginPath();
+    ctx.arc(1 * scale, seatY - 24 * scale, 5 * scale, 0, Math.PI);
+    ctx.fill();
+
+    // Pernas
+    ctx.strokeStyle = "#888";
+    ctx.lineWidth = 3 * scale;
+    ctx.shadowBlur = 0;
 
     ctx.beginPath();
-    ctx.moveTo(0,-15);
-    ctx.lineTo(10,10);
-    ctx.lineTo(-10,10);
-    ctx.closePath();
+    ctx.moveTo(-12 * scale, seatY + seatHeight);
+    ctx.lineTo(-20 * scale, seatY + seatHeight + 12 * scale);
     ctx.stroke();
 
-    if(keys["ArrowUp"] && fuel > 0 && !landed){
+    ctx.fillStyle = "#666";
+    ctx.beginPath();
+    ctx.roundRect(-24 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
+    ctx.fill();
 
+    ctx.beginPath();
+    ctx.moveTo(12 * scale, seatY + seatHeight);
+    ctx.lineTo(20 * scale, seatY + seatHeight + 12 * scale);
+    ctx.stroke();
+
+    ctx.fillStyle = "#666";
+    ctx.beginPath();
+    ctx.roundRect(16 * scale, seatY + seatHeight + 10 * scale, 8 * scale, 4 * scale, 2);
+    ctx.fill();
+
+    // Cabine
+    const grad = ctx.createLinearGradient(-12 * scale, -25 * scale, 12 * scale, 25 * scale);
+    grad.addColorStop(0, cor);
+    grad.addColorStop(0.5, cor);
+    grad.addColorStop(1, cor);
+    ctx.fillStyle = grad;
+    ctx.shadowColor = "rgba(255,255,255,0.1)";
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.roundRect(-12 * scale, -25 * scale, 24 * scale, 40 * scale, 3);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Luz na cabine
+    ctx.fillStyle = "#5fd4d6";
+    ctx.shadowColor = "#5fd4d6";
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.arc(0, -10 * scale, 7 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Reflexo
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.beginPath();
+    ctx.arc(-2 * scale, -12 * scale, 2.5 * scale, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Detalhes
+    ctx.fillStyle = corDetalhe;
+    ctx.fillRect(-10 * scale, -22 * scale, 20 * scale, 3 * scale);
+    ctx.fillRect(-8 * scale, 8 * scale, 16 * scale, 3 * scale);
+
+    // Antena
+    ctx.fillStyle = corDetalhe;
+    ctx.shadowColor = corDetalhe;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(-10 * scale, -25 * scale);
+    ctx.lineTo(0, -40 * scale);
+    ctx.lineTo(10 * scale, -25 * scale);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // CHAMA DO MOTOR
+    const isThrusting = (keys["ArrowUp"]) && fuel > 0 && !landed;
+    if (isThrusting) {
+        const flameHeight = (25 + Math.random() * 20) * scale;
+        const gradFlame = ctx.createRadialGradient(0, seatY + seatHeight + 2, 2, 0, seatY + seatHeight + 2 + flameHeight/2, flameHeight);
+        gradFlame.addColorStop(0, "rgba(255,255,255,1)");
+        gradFlame.addColorStop(0.1, corChama + "cc");
+        gradFlame.addColorStop(0.3, corChama + "99");
+        gradFlame.addColorStop(0.6, corChama + "66");
+        gradFlame.addColorStop(1, corChama + "00");
+        ctx.fillStyle = gradFlame;
         ctx.beginPath();
-        ctx.moveTo(-4,10);
-        ctx.lineTo(0,20 + Math.random()*10);
-        ctx.lineTo(4,10);
-        ctx.stroke();
+        ctx.moveTo(-10 * scale, seatY + seatHeight + 2);
+        ctx.quadraticCurveTo(-5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 0, seatY + seatHeight + 2 + flameHeight);
+        ctx.quadraticCurveTo(5 * scale, seatY + seatHeight + 2 + flameHeight * 0.6, 10 * scale, seatY + seatHeight + 2);
+        ctx.fill();
+
+        // Partículas da chama
+        for (let i = 0; i < 5; i++) {
+            const alpha = 0.2 + Math.random() * 0.6;
+            const size = (1 + Math.random() * 3) * scale;
+            const px = (Math.random() - 0.5) * 10 * scale;
+            const py = seatY + seatHeight + 4 + flameHeight * 0.5 + Math.random() * flameHeight * 0.5;
+            ctx.fillStyle = `rgba(255,200,50,${alpha})`;
+            ctx.beginPath();
+            ctx.arc(px, py, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     ctx.restore();
@@ -176,25 +328,29 @@ function draw(){
     `;
 
     if(landed){
-
         ctx.fillStyle="#0f0";
         ctx.font="40px monospace";
+        ctx.shadowColor="#0f0";
+        ctx.shadowBlur=30;
         ctx.fillText(
             "POUSO BEM-SUCEDIDO",
             canvas.width/2-220,
             canvas.height/2
         );
+        ctx.shadowBlur=0;
     }
 
     if(crashed){
-
         ctx.fillStyle="red";
         ctx.font="40px monospace";
+        ctx.shadowColor="red";
+        ctx.shadowBlur=30;
         ctx.fillText(
             "CRASH!",
             canvas.width/2-80,
             canvas.height/2
         );
+        ctx.shadowBlur=0;
     }
 }
 
@@ -205,6 +361,14 @@ function loop(){
 }
 
 loop();
+
+// Redimensionamento
+window.addEventListener('resize', function() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    pad.x = canvas.width/2 - 60;
+    pad.y = canvas.height - 80;
+});
 </script>
 
 </body>
